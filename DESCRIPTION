@@ -1,0 +1,19 @@
+Package: fertestr
+Title: Package for Fertility and Parity Estimation
+Version: 0.0.0.9000
+Authors@R: c(
+    person(given = "José H",
+           family = "Monteiro da Silva",
+           role = c("aut", "cre"),
+           email = "zecosta.monteiro@gmail.com",
+           comment = c(ORCID = "0000-0001-9674-3041")),
+    person(given = "Everton",
+           family = "Lima",
+           role = c("aut", "cre"),
+           email = "everton.emanuel@gmail.com",
+           comment = c(ORCID = "0000-0001-6275-9854"))
+           )
+Description: What the package does (one paragraph).
+License: What license it uses
+Encoding: UTF-8
+LazyData: true
