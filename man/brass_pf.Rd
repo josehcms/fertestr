@@ -4,7 +4,7 @@
 \alias{brass_pf}
 \title{Brass PF Function}
 \usage{
-brass.pf(ages = seq(15, 45, 5), P, asfr, adjust_group = c(20))
+brass_pf(ages = seq(15, 45, 5), P, asfr, adjust_group = c(20))
 }
 \arguments{
 \item{ages}{A vector of starting ages of five-year age groups ranging from 15 to 45}

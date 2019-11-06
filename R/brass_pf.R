@@ -9,7 +9,7 @@
 #' pf_data data frame with columns ages, P for mean parities, asfr, Fi for cumulate fertility estimated from Brass coefficients,PF for ratios P/F and adj_asfr for adjusted asfr;
 #' tfr_unadj for unadjusted total fertility rate estimate;
 #' and tfr_adj for adjusted total fertility rate estimate by applying the selected age-group PF ratio
-#'
+#' @export
 #' @examples
 #' ## Malawi 2008 Census data:
 #' ages_ma = c(15, 20, 25, 30, 35, 40, 45)
