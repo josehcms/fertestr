@@ -2,14 +2,15 @@
 % Please edit documentation in R/parity_assess.R
 \name{avg.parity}
 \alias{avg.parity}
-\title{Parity Assessment Function}
+\title{Average parity estimation}
 \usage{
 avg.parity(data_par, na_code = NA, eb_cor = FALSE, impl_par = FALSE,
   eb_graph = FALSE, par_assess = FALSE, par_assess_graph = FALSE,
   age_group = "q")
 }
 \arguments{
-\item{data_par}{A data.frame composed by 3 vectors:}
+\item{data_par}{data.frame with columns $ages (vector of ages or starting ages of age group intervals),
+$parity (vector of parities for each age group) and $women (vector of women counts by parity and age group)}
 
 \item{na_code}{A numeric value representing the code for missing parities (default = NA)}
 
@@ -24,19 +25,13 @@ avg.parity(data_par, na_code = NA, eb_cor = FALSE, impl_par = FALSE,
 \item{par_assess_graph}{TRUE or FALSE for parity assessment plot output (default = FALSE)}
 
 \item{age_group}{Character assuming values 'q' (default) for quinquennial age group or 's' for single age group input}
-
-\item{ages}{A vector of ages or starting ages of age group intervals}
-
-\item{parity}{A vector of parities for each age group}
-
-\item{women}{A vector of women counts by parity and age group}
 }
 \value{
 A data.frame with 2 variables:
 ages and P for mean parities by age group
 }
 \description{
-Parity Assessment Function
+Average parity estimation
 }
 \examples{
 ## Kenya 1989 data:

@@ -1,9 +1,7 @@
-#' Parity Assessment Function
+#' Average parity estimation
 #'
-#' @param data_par A data.frame composed by 3 vectors:
-#' @param ages A vector of ages or starting ages of age group intervals
-#' @param parity A vector of parities for each age group
-#' @param women A vector of women counts by parity and age group
+#' @param data_par data.frame with columns $ages (vector of ages or starting ages of age group intervals),
+#' $parity (vector of parities for each age group) and $women (vector of women counts by parity and age group)
 #' @param na_code A numeric value representing the code for missing parities (default = NA)
 #' @param eb_cor TRUE or FALSE for correction of zeros and missing values by El-Badry method (default = FALSE)
 #' @param impl_par TRUE or FALSE for correction of implausible parities
@@ -119,11 +117,9 @@ avg.parity <-
 
 #' El-Badry correction Function
 #'
-#' @param data_par A data.frame composed by 3 vectors:
-#' @param ages A vector of ages or starting ages of age group intervals
-#' @param parity A vector of parities for each age group
-#' @param women A vector of women counts by parity and age group
-#' @param na_code A numeric value representing the code for missing parities (default = NA)
+#' @param data_par data.frame with columns $ages (vector of ages or starting ages of age group intervals),
+#' $parity (vector of parities for each age group) and $women (vector of women counts by parity and age group)
+#' @param na_code numeric value representing the code for missing parities (default = NA)
 #' @param eb_graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #'
 #' @return The original data_par data.frame with corrected numbers of zero and missing parities
@@ -225,9 +221,8 @@ el_badry <-
 
 #' Implausible Parities correction Function
 #'
-#' @param data_par A data.frame composed by 3 vectors:
-#' @param ages A vector of ages or starting ages of age group intervals
-#' @param parity A vector of parities for each age group
+#' @param data_par data.frame with columns $ages (vector of ages or starting ages of age group intervals),
+#' $parity (vector of parities for each age group) and $women (vector of women counts by parity and age group)
 #' @param women A vector of women counts by parity and age group
 #' @param age_group Character assuming values 'q' (default) for quinquennial
 #' age group or 's' for single age group input
@@ -257,9 +252,8 @@ implausib_parity <-
 
 #' El-Badry correction Function
 #'
-#' @param avg_par A data.frame composed by 2 vectors:
-#' @param ages A vector of ages or starting ages of age group intervals
-#' @param P A vector of average parities by women age group
+#' @param avg_par data.frame with two columns $ages (vector of ages or starting ages of age group intervals) and $P
+#' (vector of average parities by women age group)
 #' @param eb_graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #'
 #' @return The original data_par data.frame with corrected numbers of zero and missing parities

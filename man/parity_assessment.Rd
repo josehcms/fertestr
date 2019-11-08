@@ -7,11 +7,8 @@
 parity_assessment(avg_par, par_assess_graph = FALSE)
 }
 \arguments{
-\item{avg_par}{A data.frame composed by 2 vectors:}
-
-\item{ages}{A vector of ages or starting ages of age group intervals}
-
-\item{P}{A vector of average parities by women age group}
+\item{avg_par}{data.frame with two columns $ages (vector of ages or starting ages of age group intervals) and $P
+(vector of average parities by women age group)}
 
 \item{eb_graph}{TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)}
 }

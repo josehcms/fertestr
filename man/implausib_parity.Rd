@@ -7,14 +7,11 @@
 implausib_parity(data_par, age_group)
 }
 \arguments{
-\item{data_par}{A data.frame composed by 3 vectors:}
+\item{data_par}{data.frame with columns $ages (vector of ages or starting ages of age group intervals),
+$parity (vector of parities for each age group) and $women (vector of women counts by parity and age group)}
 
 \item{age_group}{Character assuming values 'q' (default) for quinquennial
 age group or 's' for single age group input}
-
-\item{ages}{A vector of ages or starting ages of age group intervals}
-
-\item{parity}{A vector of parities for each age group}
 
 \item{women}{A vector of women counts by parity and age group}
 }

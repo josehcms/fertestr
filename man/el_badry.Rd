@@ -7,17 +7,12 @@
 el_badry(data_par, eb_graph = FALSE, na_code = NA)
 }
 \arguments{
-\item{data_par}{A data.frame composed by 3 vectors:}
+\item{data_par}{data.frame with columns $ages (vector of ages or starting ages of age group intervals),
+$parity (vector of parities for each age group) and $women (vector of women counts by parity and age group)}
 
 \item{eb_graph}{TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)}
 
-\item{na_code}{A numeric value representing the code for missing parities (default = NA)}
-
-\item{ages}{A vector of ages or starting ages of age group intervals}
-
-\item{parity}{A vector of parities for each age group}
-
-\item{women}{A vector of women counts by parity and age group}
+\item{na_code}{numeric value representing the code for missing parities (default = NA)}
 }
 \value{
 The original data_par data.frame with corrected numbers of zero and missing parities
