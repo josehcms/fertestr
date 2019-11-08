@@ -219,7 +219,7 @@ el_badry <-
   }
 
 
-#' Implausible Parities correction Function
+#' Implausible Parities correction function
 #'
 #' @param data_par data.frame with columns $ages (vector of ages or starting ages of age group intervals),
 #' $parity (vector of parities for each age group) and $women (vector of women counts by parity and age group)
@@ -250,18 +250,18 @@ implausib_parity <-
   }
 
 
-#' El-Badry correction Function
+#' Parity Assessment function
 #'
-#' @param avg_par data.frame with two columns $ages (vector of ages or starting ages of age group intervals) and $P
+#' @param avg_par data.frame with at least two columns $ages (vector of ages or starting ages of age group intervals) and $P
 #' (vector of average parities by women age group)
-#' @param eb_graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
+#' @param par_assess_graph TRUE of FALSE for parity assessment diagnose plot output (default = FALSE)
 #'
-#' @return The original data_par data.frame with corrected numbers of zero and missing parities
-#' estimated by the El-Badry function
+#' @return A warning message if the average parities are not monotonically increasing by age group and the
+#' original avg_par data.frame with an additional column $diff_P with the inter-cohort average parity differences
 #' @export
 #' @examples
-#' ## Kenya 1989 data:
-#' el_badry(data_par = ken_par_1989, eb_graph = T)
+#' ## Malawi 2008 average parity:
+#' parity_assessment(avg_par = mwi_fert_2008, par_assess_graph = T)
 
 
 parity_assessment <-
