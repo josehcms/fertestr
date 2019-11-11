@@ -2,7 +2,7 @@
 % Please edit documentation in R/parity_assess.R
 \name{implausib_parity}
 \alias{implausib_parity}
-\title{Implausible Parities correction Function}
+\title{Implausible Parities correction function}
 \usage{
 implausib_parity(data_par, age_group)
 }
@@ -19,7 +19,7 @@ age group or 's' for single age group input}
 The original data_par data.frame with implausible parities set to 0
 }
 \description{
-Implausible Parities correction Function
+Implausible Parities correction function
 }
 \examples{
 ## Kenya 1989 data:
