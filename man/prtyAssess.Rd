@@ -4,23 +4,23 @@
 \alias{prtyAssess}
 \title{Parity Assessment  Function}
 \usage{
-prtyAssess(ages, P, par_assess_graph = FALSE)
+prtyAssess(ages, P, prtyAssess.graph = FALSE)
 }
 \arguments{
 \item{ages}{A vector of ages or starting ages of age group intervals}
 
 \item{P}{A vector of average parities by women age group}
 
-\item{eb_graph}{TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)}
+\item{prtyAssess.graph}{TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)}
 }
 \value{
-The original data_par data.frame with corrected numbers of zero and missing parities
-estimated by the El-Badry function
+A warning message if the average parities are not monotonically increasing by age group and the
+original avg_par data.frame with an additional column $diff_P with the inter-cohort average parity differences
 }
 \description{
 Parity Assessment  Function
 }
 \examples{
-## Kenya 1989 data:
-prtyAssess(data_par = ken_par_1989, eb_graph = T)
+### Malawi 2008 data:
+prtyAssess( ages = data.pf_MWI$ages, P = data.pf_MWI$P )
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/parity_assess.R
 \name{prtyImplaus}
 \alias{prtyImplaus}
-\title{Implausible Parities correction Function}
+\title{Implausible Parities correction function}
 \usage{
 prtyImplaus(ages, parity, women, age_group = "q")
 }
@@ -20,9 +20,9 @@ age group or 's' for single age group input}
 The original data_par data.frame with implausible parities set to 0
 }
 \description{
-Implausible Parities correction Function
+Implausible Parities correction function
 }
 \examples{
-## Kenya 1989 data:
-prtyImplaus(data_par = ken_par_1989)
+### Kenya 1989 data:
+prtyImplaus( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
 }

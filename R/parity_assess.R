@@ -270,7 +270,7 @@ prtyElBadry <-
   }
 
 
-#' Implausible Parities correction Function
+#' Implausible Parities correction function
 #'
 #' @param ages A vector of ages or starting ages of age group intervals
 #' @param parity A vector of parities for each age group
@@ -332,8 +332,8 @@ prtyImplaus <-
 #' @param P A vector of average parities by women age group
 #' @param prtyAssess.graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #'
-#' @return The original data_par data.frame with corrected numbers of zero and missing parities
-#' estimated by the El-Badry function
+#' @return A warning message if the average parities are not monotonically increasing by age group and the
+#' original avg_par data.frame with an additional column $diff_P with the inter-cohort average parity differences
 #' @export
 #' @examples
 #' ### Malawi 2008 data:
@@ -364,6 +364,63 @@ prtyAssess <-
     }
 
     if ( prtyAssess.graph ){
+      plot(
+        x = as.numeric(avg_par$ages),
+        y = as.numeric(avg_par$P),
+        main = 'Assessment of estimated average parities by age group',
+        xlab = 'Ages',
+        ylab = 'Average parity (P)',
+        pch  = 16,
+        cex  = 1.5,
+        xlim = c(15,50),
+        ylim = c(0,ceiling(max(as.numeric(avg_par$P),na.rm=T)+0.5))
+      )
+      lines(
+        x = as.numeric(avg_par$ages),
+        y = as.numeric(avg_par$P),
+        type = 'l',
+        lty  = 5,
+        cex  = 1.25
+      )
+    }
+
+    return(avg_par)
+  }
+
+
+#' Cohort Parity Assessment function
+#'
+#' @param avg_par1 data.frame with at least two columns $ages (vector of ages or starting ages of age group intervals) and $P
+#' (vector of average parities by women age group) for census/survey year 1
+#' @param avg_par2 data.frame with at least two columns $ages (vector of ages or starting ages of age group intervals) and $P
+#' (vector of average parities by women age group) for census/survey year 2
+#' @param time_span census/survey time span (default = FALSE)
+#'
+#' @return
+#'
+#' @export
+#' @examples
+#'
+
+
+coh_parassess <-
+  function(avg_par1,
+           avg_par2,
+           time_span = 10){
+
+
+    avg_par$diff_P <-
+      c(NA,diff(avg_par$P))
+
+    # verify if avg_par is monotonically increasing
+    verif_monoin <-
+      prod(diff(avg_par$P) > 0) == 1
+
+    if( !verif_monoin ){
+      warning('Average parity estimates do not increase monotonically. Verify parity data!')
+    }
+
+    if ( par_assess_graph ){
       plot(
         x = as.numeric(avg_par$ages),
         y = as.numeric(avg_par$P),

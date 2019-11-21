@@ -4,7 +4,8 @@
 \alias{prtyElBadry}
 \title{El-Badry correction Function}
 \usage{
-prtyElBadry(ages, parity, women, eb_graph = FALSE, na_code = NA)
+prtyElBadry(ages, parity, women, prtyElBadry.graph = FALSE,
+  na_code = NA)
 }
 \arguments{
 \item{ages}{A vector of ages or starting ages of age group intervals}
@@ -13,7 +14,7 @@ prtyElBadry(ages, parity, women, eb_graph = FALSE, na_code = NA)
 
 \item{women}{A vector of women counts by parity and age group}
 
-\item{eb_graph}{TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)}
+\item{prtyElBadry.graph}{TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)}
 
 \item{na_code}{A numeric value representing the code for missing parities (default = NA)}
 }
@@ -25,6 +26,10 @@ estimated by the El-Badry function
 El-Badry correction Function
 }
 \examples{
-## Kenya 1989 data:
-prtyElBadry(data_par = ken_par_1989, eb_graph = T)
+### Kenya 1989 data:
+prtyElBadry( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyElBadry.graph = T )
+###
+### Cambodia 2008 data:
+prtyElBadry( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
+###
 }

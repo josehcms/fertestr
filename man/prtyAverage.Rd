@@ -3,10 +3,15 @@
 \name{prtyAverage}
 \alias{prtyAverage}
 \title{Average Parity Computation Function}
+\source{
+Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
+  Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
+  Population. demographicestimation.iussp.org
+}
 \usage{
-prtyAverage(ages, parity, women, na_code = NA, eb_cor = FALSE,
-  impl_par = FALSE, eb_graph = FALSE, par_assess = FALSE,
-  par_assess_graph = FALSE, age_group = "q")
+prtyAverage(ages, parity, women, na_code = NA, prtyElBadry.set = FALSE,
+  prtyImp.set = FALSE, prtyElBadry.graph = FALSE,
+  prtyAssess.set = FALSE, prtyAssess.graph = FALSE, age_group = "q")
 }
 \arguments{
 \item{ages}{A vector of ages or starting ages of age group intervals}
@@ -17,15 +22,15 @@ prtyAverage(ages, parity, women, na_code = NA, eb_cor = FALSE,
 
 \item{na_code}{A numeric value representing the label for missing parities (default = NA)}
 
-\item{eb_cor}{TRUE or FALSE for correction of zeros and missing values by El-Badry method (default = FALSE)}
+\item{prtyElBadry.set}{TRUE or FALSE for correction of zeros and missing values by El-Badry method (default = FALSE)}
 
-\item{impl_par}{TRUE or FALSE for correction of implausible parities (default = FALSE)}
+\item{prtyImp.set}{TRUE or FALSE for correction of implausible parities (default = FALSE)}
 
-\item{eb_graph}{TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)}
+\item{prtyElBadry.graph}{TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)}
 
-\item{par_assess}{TRUE or FALSE for parity assessment of average parity results (default = FALSE)}
+\item{prtyAssess.set}{TRUE or FALSE for parity assessment of average parity results (default = FALSE)}
 
-\item{par_assess_graph}{TRUE or FALSE for parity assessment plot output (default = FALSE)}
+\item{prtyAssess.graph}{TRUE or FALSE for parity assessment plot output (default = FALSE)}
 
 \item{age_group}{Character assuming values 'q' (default) for quinquennial age group or 's' for single age group input}
 }
@@ -36,10 +41,15 @@ A data.frame with 2 variables: ages and P for average parities by age group
 Average Parity Computation Function
 }
 \examples{
-## Kenya 1989 data:
-avg.parity(data_par = ken_par_1989)
+### Kenya 1989 data:
+avg.parity( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
 # With El-Badry:
-avg.parity(data_par = ken_par_1989, eb_cor = TRUE, eb_graph = TRUE)
+avg.parity(  ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women,
+prtyElBadry.set = TRUE, prtyElBadry.graph = TRUE)
 # Correction for implausible parities
-prtyAverage(data_par = ken_par_1989, impl_par = TRUE)
+avg.parity(  ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyImp.set = TRUE)
+###
+### Cambodia 2008 data:
+avg.parity( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
+###
 }
