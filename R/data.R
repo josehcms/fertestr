@@ -12,7 +12,7 @@
 #'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
 #'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
 #'   Population. demographicestimation.iussp.org
-"mwi_fert_2008"
+"data.pf_MWI"
 
 #' Parity data from Cambodia 2008 Census
 #'
@@ -28,7 +28,7 @@
 #'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
 #'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
 #'   Population. demographicestimation.iussp.org
-"khm_par_2008"
+"data.prty_KHM"
 
 #' Parity data from Kenya 1989 Census
 #'
@@ -44,4 +44,4 @@
 #'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
 #'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
 #'   Population. demographicestimation.iussp.org
-"ken_par_1989"
+"data.prty_KEN"

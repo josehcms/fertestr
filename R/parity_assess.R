@@ -1,39 +1,52 @@
+#########################################
+### Author  : Jose H C Monteiro da Silva
+### Updated : NOV-21-2019
+#########################################
+
 #' Average Parity Computation Function
 #'
 #' @param ages A vector of ages or starting ages of age group intervals
 #' @param parity A vector of parities for each age group
 #' @param women A vector of women counts by parity and age group
 #' @param na_code A numeric value representing the label for missing parities (default = NA)
-#' @param eb_cor TRUE or FALSE for correction of zeros and missing values by El-Badry method (default = FALSE)
-#' @param impl_par TRUE or FALSE for correction of implausible parities (default = FALSE)
-#' @param eb_graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
-#' @param par_assess TRUE or FALSE for parity assessment of average parity results (default = FALSE)
-#' @param par_assess_graph TRUE or FALSE for parity assessment plot output (default = FALSE)
+#' @param prtyElBadry.set TRUE or FALSE for correction of zeros and missing values by El-Badry method (default = FALSE)
+#' @param prtyElBadry.graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
+#' @param prtyImp.set TRUE or FALSE for correction of implausible parities (default = FALSE)
+#' @param prtyAssess.set TRUE or FALSE for parity assessment of average parity results (default = FALSE)
+#' @param prtyAssess.graph TRUE or FALSE for parity assessment plot output (default = FALSE)
 #' @param age_group Character assuming values 'q' (default) for quinquennial age group or 's' for single age group input
 #'
 #' @return A data.frame with 2 variables: ages and P for average parities by age group
 #' @export
 #' @examples
-#' ## Kenya 1989 data:
-#' avg.parity(data_par = ken_par_1989)
+#' ### Kenya 1989 data:
+#' avg.parity( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
 #' # With El-Badry:
-#' avg.parity(data_par = ken_par_1989, eb_cor = TRUE, eb_graph = TRUE)
+#' avg.parity(  ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women,
+#' prtyElBadry.set = TRUE, prtyElBadry.graph = TRUE)
 #' # Correction for implausible parities
-#' prtyAverage(data_par = ken_par_1989, impl_par = TRUE)
-
+#' avg.parity(  ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyImp.set = TRUE)
+#' ###
+#' ### Cambodia 2008 data:
+#' avg.parity( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
+#' ###
+#' @source
+#'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
+#'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
+#'   Population. demographicestimation.iussp.org
 
 prtyAverage <-
   function(
     ages,
     parity,
     women,
-    na_code          = NA,
-    eb_cor           = FALSE,
-    impl_par         = FALSE,
-    eb_graph         = FALSE,
-    par_assess       = FALSE,
-    par_assess_graph = FALSE,
-    age_group        = 'q'){
+    na_code           = NA,
+    prtyElBadry.set   = FALSE,
+    prtyImp.set       = FALSE,
+    prtyElBadry.graph = FALSE,
+    prtyAssess.set    = FALSE,
+    prtyAssess.graph  = FALSE,
+    age_group         = 'q'){
 
     # stop with lengths are not equal
     stopifnot( all.equal( length(ages), length(parity), length(women) ) )
@@ -45,7 +58,7 @@ prtyAverage <-
     # Change na_code for NA
     data_par$parity[data_par$parity==na_code] <- NA
 
-    if ( impl_par ){
+    if ( prtyImp.set ){
       data_par <-
         prtyImplaus( ages   = data_par$ages,
                      parity = data_par$parity,
@@ -98,7 +111,7 @@ prtyAverage <-
                      sum
                      )
            )
-    if ( eb_cor ){
+    if ( prtyElBadry.set ){
       if ( max_missing_rt < 2 ){
         warning('Maximum parity missing percentage lower than 2% , verify whether El Badry correction is necessary!')
       }
@@ -106,10 +119,10 @@ prtyAverage <-
         prtyElBadry( ages   = data_par$ages,
                      parity = data_par$parity,
                      women  = data_par$women,
-                     eb_graph
+                     prtyElBadry.graph
                      )
     }
-    if ( eb_cor == FALSE & max_missing_rt >= 2 ){
+    if ( prtyElBadry.set == FALSE & max_missing_rt >= 2 ){
       warning('Maximum unknown women parity percentage exceeds 2% , El Badry correction is recommended!')
     }
 
@@ -128,11 +141,11 @@ prtyAverage <-
         row.names = NULL
       )
 
-    if( par_assess ){
+    if( prtyAssess.set ){
       avg_par <-
         prtyAssess( ages = avg_par$ages,
                     P    = avg_par$P,
-                    par_assess_graph
+                    prtyAssess.graph
                     )
     }
 
@@ -145,21 +158,25 @@ prtyAverage <-
 #' @param parity A vector of parities for each age group
 #' @param women A vector of women counts by parity and age group
 #' @param na_code A numeric value representing the code for missing parities (default = NA)
-#' @param eb_graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
+#' @param prtyElBadry.graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #'
 #' @return The original data_par data.frame with corrected numbers of zero and missing parities
 #' estimated by the El-Badry function
 #' @export
 #' @examples
-#' ## Kenya 1989 data:
-#' prtyElBadry(data_par = ken_par_1989, eb_graph = T)
+#' ### Kenya 1989 data:
+#' prtyElBadry( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyElBadry.graph = T )
+#' ###
+#' ### Cambodia 2008 data:
+#' prtyElBadry( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
+#' ###
 
 
 prtyElBadry <-
   function(ages,
            parity,
            women,
-           eb_graph = FALSE,
+           prtyElBadry.graph = FALSE,
            na_code  = NA){
 
     # stop with lengths are not equal
@@ -211,7 +228,7 @@ prtyElBadry <-
               sum
       )
 
-    if (eb_graph==TRUE){
+    if (prtyElBadry.graph==TRUE){
       plot(
         x = as.numeric(Zi),
         y = as.numeric(Ui),
@@ -264,8 +281,8 @@ prtyElBadry <-
 #' @return The original data_par data.frame with implausible parities set to 0
 #' @export
 #' @examples
-#' ## Kenya 1989 data:
-#' prtyImplaus(data_par = ken_par_1989)
+#' ### Kenya 1989 data:
+#' prtyImplaus( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
 
 # correct implausible parities
 prtyImplaus <-
@@ -313,20 +330,20 @@ prtyImplaus <-
 #'
 #' @param ages A vector of ages or starting ages of age group intervals
 #' @param P A vector of average parities by women age group
-#' @param eb_graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
+#' @param prtyAssess.graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #'
 #' @return The original data_par data.frame with corrected numbers of zero and missing parities
 #' estimated by the El-Badry function
 #' @export
 #' @examples
-#' ## Kenya 1989 data:
-#' prtyAssess(data_par = ken_par_1989, eb_graph = T)
+#' ### Malawi 2008 data:
+#' prtyAssess( ages = data.pf_MWI$ages, P = data.pf_MWI$P )
 
 
 prtyAssess <-
   function( ages,
             P,
-            par_assess_graph = FALSE){
+            prtyAssess.graph = FALSE){
 
     # stop with lengths are not equal
     stopifnot( all.equal( length(ages), length(P) ) )
@@ -346,7 +363,7 @@ prtyAssess <-
       warning('Average parity estimates do not increase monotonically. Verify parity data!')
     }
 
-    if ( par_assess_graph ){
+    if ( prtyAssess.graph ){
       plot(
         x = as.numeric(avg_par$ages),
         y = as.numeric(avg_par$P),
