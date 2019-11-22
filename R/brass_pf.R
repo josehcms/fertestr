@@ -1,9 +1,10 @@
-#' Brass PF Function
+#' Brass PF Fertility Estimation
 #'
-#' @param ages A vector of starting ages of five-year age groups ranging from 15 to 45
+#' @param ages A vector of starting ages of five-year age groups ranging from 15 to 45 (default = c(15,20,25,30,35,40,45))
 #' @param P A vector of mean parities by five-year age group - same groups as 'ages'
 #' @param asfr A vector of age-specific fertility rates by five-year age group - same groups as 'ages'
 #' @param adjust_group A vector of age-groups from 'ages' to be used for selection of PF ratios to adjust asfr data
+#' (default set to 20 (20-24 five-year age group))
 #'
 #' @return A list with 3 elements:
 #' pf_data data frame with columns ages, P for mean parities, asfr, Fi for cumulate fertility estimated from Brass coefficients,PF for ratios P/F and adj_asfr for adjusted asfr;
@@ -15,11 +16,11 @@
 #' ages_ma = c(15, 20, 25, 30, 35, 40, 45)
 #' asfr_ma = c(0.111, 0.245, 0.230, 0.195, 0.147, 0.072, 0.032)
 #' P_ma    = c(0.283, 1.532, 2.849, 4.185, 5.214, 6.034, 6.453)
-#' brass_pf(P = P_ma, asfr = asfr_ma)
+#' fertBrassPF(P = P_ma, asfr = asfr_ma)
 #'
 #'
 
-brass_pf <-
+fertBrassPF <-
   function( ages = seq(15,45,5),
             P,
             asfr,
@@ -31,17 +32,7 @@ brass_pf <-
   ## asfr : age specific fertility rates of age group x
 
   # 1. Check if inputs have the correct dimensions
-  check.inputs <-
-    function( ages , P , asfr ){
-      if (length(ages)!=7 | length(P)!=7 | length(asfr)!=7){
-        stop('Wrong dimension of inputs - please check if lengths==7')
-      }
-      if ( sum(ages == seq(15,45,5) ) != 7){
-        stop('Vector ages is not in the correct format, try ages = seq(15,45,5)')
-      }
-  }
-
-  check.inputs( ages , P , asfr )
+    stopifnot( all.equal( length(ages), length(P), length(asfr)) )
 
   # 2. Create a matrix with three input vectors
   pf_data <-
