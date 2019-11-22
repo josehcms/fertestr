@@ -122,22 +122,22 @@ fertBrassPF <-
 
   # 16. Multiply coefficients ki by asfr and add to delta to estimate Fi
   pf_data$Fi <-
-    pf_data$delta + pf_data$ki * pf_data$asfr
+    round( pf_data$delta + pf_data$ki * pf_data$asfr, 3 )
 
   # 17. Compute PF ratios
   pf_data$PF <-
-    pf_data$P / pf_data$Fi
+    round( pf_data$P / pf_data$Fi, 3)
 
   # 18. Adjust asfr by selected age groups PF ratio mean (default = 20-24)
   pf_data$adj_asfr <-
-    mean( pf_data$PF[ ages %in% adjust_group ] ) * pf_data$asfr
+    round( mean( pf_data$PF[ ages %in% adjust_group ] ) * pf_data$asfr, 3 )
 
   # 19. set returning list of results
   pf_output <-
     list(
       pf_data   = pf_data[,c('ages', 'P', 'asfr', 'Fi', 'PF', 'adj_asfr')],
-      tfr_unadj = sum( pf_data$asfr*5 ),
-      tfr_adj   = sum( pf_data$adj_asfr*5 )
+      tfr_unadj = round( sum( pf_data$asfr*5 ), 3),
+      tfr_adj   = round( sum( pf_data$adj_asfr * 5 ), 3)
     )
 
   return(pf_output)
