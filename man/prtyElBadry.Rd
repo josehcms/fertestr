@@ -3,6 +3,20 @@
 \name{prtyElBadry}
 \alias{prtyElBadry}
 \title{El-Badry correction Function}
+\source{
+Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
+Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
+Population. demographicestimation.iussp.org
+
+el-Badry MA. 1961.
+"Failure of enumerators to make entries of zero: errors in recording childless cases in population censuses",
+ Journal of the American Statistical Association 56(296):909–924.
+ doi: http://dx.doi.org/10.1080/01621459.1961.10482134
+
+ UN Population Division. 1983. Manual X: Indirect Techniques for Demographic Estimation.
+ New York: United Nations, Department of Economic and Social Affairs, ST/ESA/SER.A/81.
+ http://www.un.org/esa/population/techcoop/DemEst/manual10/manual10.html
+}
 \usage{
 prtyElBadry(ages, parity, women, prtyElBadry.graph = FALSE,
   na_code = NA)

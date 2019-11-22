@@ -18,6 +18,13 @@
 #'
 #' @return A data.frame with 2 variables: ages and P for average parities by age group
 #' @export
+#' @source
+#'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
+#'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
+#'   Population. demographicestimation.iussp.org
+#'
+#'   Feeney G. 1991. "Child survivorship estimation: Methods and data analysis",
+#'   Asian and Pacific Population Forum 5(2-3):51-55, 76-87. http://hdl.handle.net/10125/3600.
 #' @examples
 #' ### Kenya 1989 data:
 #' prtyAverage( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
@@ -30,10 +37,7 @@
 #' ### Cambodia 2008 data:
 #' prtyAverage( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
 #' ###
-#' @source
-#'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
-#'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
-#'   Population. demographicestimation.iussp.org
+
 
 prtyAverage <-
   function(
@@ -163,6 +167,19 @@ prtyAverage <-
 #' @return The original data_par data.frame with corrected numbers of zero and missing parities
 #' estimated by the El-Badry function
 #' @export
+#' @source
+#' Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
+#' Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
+#' Population. demographicestimation.iussp.org
+#'
+#' el-Badry MA. 1961.
+#' "Failure of enumerators to make entries of zero: errors in recording childless cases in population censuses",
+#'  Journal of the American Statistical Association 56(296):909–924.
+#'  doi: http://dx.doi.org/10.1080/01621459.1961.10482134
+#'
+#'  UN Population Division. 1983. Manual X: Indirect Techniques for Demographic Estimation.
+#'  New York: United Nations, Department of Economic and Social Affairs, ST/ESA/SER.A/81.
+#'  http://www.un.org/esa/population/techcoop/DemEst/manual10/manual10.html
 #' @examples
 #' ### Kenya 1989 data:
 #' prtyElBadry( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyElBadry.graph = T )
@@ -280,6 +297,10 @@ prtyElBadry <-
 #'
 #' @return The original data_par data.frame with implausible parities set to 0
 #' @export
+#' @source
+#'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
+#'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
+#'   Population. demographicestimation.iussp.org
 #' @examples
 #' ### Kenya 1989 data:
 #' prtyImplaus( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
@@ -335,6 +356,10 @@ prtyImplaus <-
 #' @return A warning message if the average parities are not monotonically increasing by age group and the
 #' original avg_par data.frame with an additional column $diff_P with the inter-cohort average parity differences
 #' @export
+#' @source
+#'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
+#'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
+#'   Population. demographicestimation.iussp.org
 #' @examples
 #' ### Malawi 2008 data:
 #' prtyAssess( ages = data.pf_MWI$ages, P = data.pf_MWI$P )

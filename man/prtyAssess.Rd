@@ -3,6 +3,11 @@
 \name{prtyAssess}
 \alias{prtyAssess}
 \title{Parity Assessment  Function}
+\source{
+Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
+  Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
+  Population. demographicestimation.iussp.org
+}
 \usage{
 prtyAssess(ages, P, prtyAssess.graph = FALSE)
 }

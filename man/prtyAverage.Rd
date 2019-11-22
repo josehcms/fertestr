@@ -7,6 +7,9 @@
 Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
   Population. demographicestimation.iussp.org
+
+  Feeney G. 1991. "Child survivorship estimation: Methods and data analysis",
+  Asian and Pacific Population Forum 5(2-3):51-55, 76-87. http://hdl.handle.net/10125/3600.
 }
 \usage{
 prtyAverage(ages, parity, women, na_code = NA, prtyElBadry.set = FALSE,
