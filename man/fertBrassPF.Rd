@@ -3,6 +3,10 @@
 \name{fertBrassPF}
 \alias{fertBrassPF}
 \title{Brass PF Fertility Estimation}
+\source{
+Brass W, AJ. 1968. Coale Methods  of  analysis  and  estimation.  In:  BRASS,  W.  et  al.  (Ed.).  The demography of tropical Africa. 1. ed. New Jersey: Princeton University Press, p. 88-139.
+Brass W. 1975. Methods for Estimating Fertility and Mortality from Limited and Defected Data. North Carolina: Carolina Population Center.
+}
 \usage{
 fertBrassPF(ages = seq(15, 45, 5), P, asfr, adjust_group = c(20))
 }

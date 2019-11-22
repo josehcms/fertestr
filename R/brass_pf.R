@@ -11,6 +11,9 @@
 #' tfr_unadj for unadjusted total fertility rate estimate;
 #' and tfr_adj for adjusted total fertility rate estimate by applying the selected age-group PF ratio
 #' @export
+#' @source
+#' Brass W, AJ. 1968. Coale Methods  of  analysis  and  estimation.  In:  BRASS,  W.  et  al.  (Ed.).  The demography of tropical Africa. 1. ed. New Jersey: Princeton University Press, p. 88-139.
+#' Brass W. 1975. Methods for Estimating Fertility and Mortality from Limited and Defected Data. North Carolina: Carolina Population Center.
 #' @examples
 #' ## Malawi 2008 Census data:
 #' ages_ma = c(15, 20, 25, 30, 35, 40, 45)

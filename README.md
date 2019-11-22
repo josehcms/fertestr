@@ -22,13 +22,24 @@ Soon we will add some tutorials on the usage of the package. By now, we recommen
 ```
 library(fertestr)
 # Brass PF ratio fertility correction:
-?brass_pf
+?fertBrassPF
 
 # Average parities computing with several adjustment and assessment options
-?avg.parity
+?prtyAverage
 
 # El-Badry correction
-?el_badry
+?prtyElBadry
+
+# Age Specific Fertility Rates and Average Parity data for Malawi 2008
+?data.pf_MWI
+
+# Parity data for Cambodia 2008
+?data.prty_KHM
+
+# Parity data for Kenya 1989
+?data.prty_KEN
+
+
 ```
 ## References
 [Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013. Tools for Demographic Estimation. Paris: International Union for the Scientific Study of Population.](https://demographicestimation.iussp.org/)
