@@ -33,8 +33,9 @@ prtyElBadry(ages, parity, women, prtyElBadry.graph = FALSE,
 \item{na_code}{A numeric value representing the code for missing parities (default = NA)}
 }
 \value{
-The original data_par data.frame with corrected numbers of zero and missing parities
-estimated by the El-Badry function
+A list with 3 elements: $data_par data.frame with corrected numbers of zero and missing parities
+estimated by the El-Badry function, $prty.Zi data.frame with proportion of zero parities and $prty.Ui with
+proportion of unkown parities
 }
 \description{
 El-Badry correction Function

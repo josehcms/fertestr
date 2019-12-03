@@ -119,12 +119,15 @@ prtyAverage <-
       if ( max_missing_rt < 2 ){
         warning('Maximum parity missing percentage lower than 2% , verify whether El Badry correction is necessary!')
       }
-      data_par <-
+
+      out.elbadry <-
         prtyElBadry( ages   = data_par$ages,
                      parity = data_par$parity,
                      women  = data_par$women,
                      prtyElBadry.graph
                      )
+      data_par <-
+        out.elbadry$data_par
     }
     if ( prtyElBadry.set == FALSE & max_missing_rt >= 2 ){
       warning('Maximum unknown women parity percentage exceeds 2% , El Badry correction is recommended!')
@@ -164,8 +167,9 @@ prtyAverage <-
 #' @param na_code A numeric value representing the code for missing parities (default = NA)
 #' @param prtyElBadry.graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #'
-#' @return The original data_par data.frame with corrected numbers of zero and missing parities
-#' estimated by the El-Badry function
+#' @return A list with 3 elements: $data_par data.frame with corrected numbers of zero and missing parities
+#' estimated by the El-Badry function, $prty.Zi data.frame with proportion of zero parities and $prty.Ui with
+#' proportion of unkown parities
 #' @export
 #' @source
 #' Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
@@ -221,6 +225,14 @@ prtyElBadry <-
       ) /
       totals_1
 
+    # get data.frame of Ui
+    Ui.df <-
+      data.frame(
+        ages = seq(15,45,5),
+        Ui = round( Ui, 4 ),
+        row.names = NULL
+        )
+
     # Compute percentage of zero parities by age group
     Zi <-
       tapply( data_par[!is.na(data_par$parity) & data_par$parity == 0,]$women,
@@ -228,6 +240,14 @@ prtyElBadry <-
               sum
       ) /
       totals_1
+
+    # get data.frame of Zi
+    Zi.df <-
+      data.frame(
+        ages = seq(15,45,5),
+        Zi = round( Zi, 4 ),
+        row.names = NULL
+      )
 
     # Take the intercept of regression Ui vs Zi
     alpha <- lm(as.numeric(Ui)~as.numeric(Zi))$coefficients[1]
@@ -283,7 +303,15 @@ prtyElBadry <-
 
     }
 
-    return(data_par)
+    # generate list for outputs of function (zeros proportion, unknown prop and updated parities)
+    out.list <-
+      list(
+        prty.Zi = Zi.df,
+        prty.Ui = Ui.df,
+        data_par = data_par
+      )
+
+    return(out.list)
   }
 
 
