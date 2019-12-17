@@ -164,8 +164,8 @@ fertBrassPF <-
 #' and tfr_adj for adjusted total fertility rate estimate by applying the selected age-group PF ratio
 #' @export
 #' @source
-#' Brass W, AJ. 1968. Coale Methods  of  analysis  and  estimation.  In:  BRASS,  W.  et  al.  (Ed.).  The demography of tropical Africa. 1. ed. New Jersey: Princeton University Press, p. 88-139.
-#' Brass W. 1975. Methods for Estimating Fertility and Mortality from Limited and Defected Data. North Carolina: Carolina Population Center.
+#' United Nations. 1983. Manual X: Indirect techniques for demographic estimation
+#' (United Nations publication, Sales No. E.83.XIII.2).
 #' @examples
 #' ## Bangladesh 1974 survey data:
 #' ages_bd = c(15, 20, 25, 30, 35, 40, 45)
