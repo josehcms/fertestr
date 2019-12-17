@@ -263,7 +263,7 @@ fertBrassPF.cltrss <-
       round( pf_data$P / pf_data$Fi, 3)
 
     # 8. Adjust asfr by selected age groups PF ratio mean (default = 20-24)
-    if (shift == TRUE){
+    if (age_shift == TRUE){
       pf_data$adj_asfr <-
         round( mean( pf_data$PF[ pf_data$ages %in% adjust_group ] ) * pf_data$asfr_shift, 3 )
     } else{
