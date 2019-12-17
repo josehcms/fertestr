@@ -118,3 +118,15 @@
 #' United Nations. 1983. Manual X: Indirect techniques for demographic estimation
 #' (United Nations publication, Sales No. E.83.XIII.2).
 "mult.age_shift"
+
+#' Zaba standard table for fertility estimation
+#'
+#' Zaba standard table for fertility estimation
+#'
+#' @format
+#'
+#' @source
+#'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
+#'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
+#'   Population. demographicestimation.iussp.org
+"std.zaba"
