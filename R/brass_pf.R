@@ -145,3 +145,139 @@ fertBrassPF <-
 
   return(pf_output)
 }
+
+
+#' Brass PF Fertility Estimation using Coale-Trussel coefficients
+#'
+#' @param ages A vector of starting ages of five-year age groups ranging from 15 to 45 (default = c(15,20,25,30,35,40,45))
+#' @param P A vector of mean parities by five-year age group - same groups as 'ages'
+#' @param asfr A vector of age-specific fertility rates by five-year age group - same groups as 'ages'
+#' @param adjust_group A vector of age-groups from 'ages' to be used for selection of PF ratios to adjust asfr data
+#' (default set to 20 (20-24 five-year age group))
+#' @param age_shift TRUE (default) if fertility rates are calculated from births in a 12-month period
+#' by age of mothed at the end of period and FALSE if fertility rates are calculated from births by
+#' age of mother at the end of the period
+#'
+#' @return A list with 3 elements:
+#' pf_data data frame with columns ages, P for mean parities, asfr, Fi for cumulate fertility estimated from Brass coefficients,PF for ratios P/F and adj_asfr for adjusted asfr;
+#' tfr_unadj for unadjusted total fertility rate estimate;
+#' and tfr_adj for adjusted total fertility rate estimate by applying the selected age-group PF ratio
+#' @export
+#' @source
+#' Brass W, AJ. 1968. Coale Methods  of  analysis  and  estimation.  In:  BRASS,  W.  et  al.  (Ed.).  The demography of tropical Africa. 1. ed. New Jersey: Princeton University Press, p. 88-139.
+#' Brass W. 1975. Methods for Estimating Fertility and Mortality from Limited and Defected Data. North Carolina: Carolina Population Center.
+#' @examples
+#' ## Bangladesh 1974 survey data:
+#' ages_bd = c(15, 20, 25, 30, 35, 40, 45)
+#' asfr_bd = c(0.1063, 0.2296, 0.2154, 0.1825, 0.1339, 0.0644, 0.0336)
+#' P_bd    = c(0.385, 1.847, 3.485, 4.917, 5.861, 6.194, 6.084)
+#' fertBrassPF.cltrss(P = P_bd, asfr = asfr_bd, adjust_group = c(20,25,30))
+#'
+#'
+
+fertBrassPF.cltrss <-
+  function( ages = seq(15,45,5),
+            P,
+            asfr,
+            adjust_group = c(20),
+            age_shift = TRUE){
+
+    # 1. Check if inputs have the correct dimensions
+    stopifnot( all.equal( length(ages), length(P), length(asfr)) )
+
+    # 2. Create a matrix with three input vectors
+    pf_data <-
+      data.frame( ages , P , asfr)
+
+    # 3. Cumulate asfr for Fi estimation
+    pf_data$phi <-
+      pf_data$asfr * 5
+
+    for ( i in 2:7 ) {
+      pf_data[ i , 'phi'] <-
+        ( pf_data[ i , 'asfr' ] ) * 5 + ( pf_data[ i - 1 , 'phi' ] )
+    }
+
+    # 4. Select which multipliers to use
+    if (age_shift == TRUE){
+      mult.cltrs <-
+        mult.cltrs_shift
+    } else{
+      mult.cltrs <-
+        mult.cltrs_noshift
+    }
+
+    # 5. Compute Fi from phi values and Coale-Trussel multipliers
+    pf_data$Fi <- NA
+
+    pf_data$Fi[1] <-
+      0 +
+      mult.cltrs$ai[1] * pf_data$asfr[1] +
+      mult.cltrs$bi[1] * pf_data$asfr[2] +
+      mult.cltrs$ci[1] * pf_data$phi[7]
+
+    for ( i in 2:6 ) {
+      pf_data$Fi[i] <-
+        pf_data$phi[ i - 1 ] +
+        mult.cltrs$ai[ i ] * pf_data$asfr[ i ] +
+        mult.cltrs$bi[ i ] * pf_data$asfr[ i + 1] +
+        mult.cltrs$ci[ i ] * pf_data$phi[7]
+    }
+
+    pf_data$Fi[7] <-
+      pf_data$phi[6] +
+      mult.cltrs$ai[7] * pf_data$asfr[7] +
+      mult.cltrs$bi[7] * pf_data$asfr[6] +
+      mult.cltrs$ci[7] * pf_data$phi[7]
+
+    # 6. Calculation of fertility schedule for conventional 5-year age group if age_shift == TRUE
+    if (age_shift == TRUE){
+      pf_data$wi <-
+        NA
+
+      for (i in 1:6){
+        pf_data$wi[i] <-
+          mult.age_shift$xi[i] +
+          mult.age_shift$yi[i] * pf_data$asfr[i] / pf_data$phi[7] +
+          mult.age_shift$zi[i] * pf_data$asfr[i + 1] / pf_data$phi[7]
+      }
+
+      pf_data$asfr_shift <-
+        NA
+
+      pf_data$asfr_shift[1] <-
+        pf_data$asfr[1] * ( 1 ) + pf_data$wi[1] * pf_data$asfr[2]
+
+      pf_data$asfr_shift[7] <-
+        pf_data$asfr[7] * ( 1 - pf_data$wi[6] )
+
+      for (i in 2:6){
+        pf_data$asfr_shift[i] <-
+          pf_data$asfr[i] * ( 1 - pf_data$wi[i-1] ) +
+          pf_data$wi[i] * pf_data$asfr[i+1]
+      }
+    }
+
+    # 7. Compute PF ratios
+    pf_data$PF <-
+      round( pf_data$P / pf_data$Fi, 3)
+
+    # 8. Adjust asfr by selected age groups PF ratio mean (default = 20-24)
+    if (shift == TRUE){
+      pf_data$adj_asfr <-
+        round( mean( pf_data$PF[ pf_data$ages %in% adjust_group ] ) * pf_data$asfr_shift, 3 )
+    } else{
+      pf_data$adj_asfr <-
+        round( mean( pf_data$PF[ pf_data$ages %in% adjust_group ] ) * pf_data$asfr, 3 )
+    }
+
+    # 9. Set returning list of results
+    pf_output <-
+      list(
+        pf_data   = pf_data[,c('ages', 'P', 'asfr', 'Fi', 'PF', 'adj_asfr')],
+        tfr_unadj = round( sum( pf_data$asfr*5 ), 3),
+        tfr_adj   = round( sum( pf_data$adj_asfr * 5 ), 3)
+      )
+
+    return(pf_output)
+  }

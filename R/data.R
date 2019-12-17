@@ -14,6 +14,21 @@
 #'   Population. demographicestimation.iussp.org
 "data.pf_MWI"
 
+#' Measures of fertility from Bangladesh 1974 demographic survey
+#'
+#' Measures of fertility from Bangladesh 1974 demographic survey
+#'
+#' @format
+#'   A data frame with 3 variables:
+#'   ages (starting age of five-year age group),
+#'   P (average parity of women) and
+#'   asfr (age-specific period fertility rates)
+#'
+#' @source
+#' United Nations. 1983. Manual X: Indirect techniques for demographic estimation
+#' (United Nations publication, Sales No. E.83.XIII.2).
+"data.pf_BGD"
+
 #' Parity data from Cambodia 2008 Census
 #'
 #' Parity data from Cambodia 2008 Census
@@ -91,3 +106,15 @@
 #' (United Nations publication, Sales No. E.83.XIII.2).
 "mult.cltrs_noshift"
 
+#' Coefficients to estimate age-specific fertility rates for conventional age groups
+#'
+#' Coefficients for calculation of weighting factors to estimate age-specific fertility rates for
+#' conventional age groups shifted by six months
+#'
+#' @format
+#'   A data frame with age coefficients x, y and z
+#'
+#' @source
+#' United Nations. 1983. Manual X: Indirect techniques for demographic estimation
+#' (United Nations publication, Sales No. E.83.XIII.2).
+"mult.age_shift"
