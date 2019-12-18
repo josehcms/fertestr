@@ -119,9 +119,9 @@
 #' (United Nations publication, Sales No. E.83.XIII.2).
 "mult.age_shift"
 
-#' Zaba standard table for fertility estimation
+#' Zaba standard table for Gompertz model fertility estimation
 #'
-#' Zaba standard table for fertility estimation
+#' Zaba standard table for Gompertz model fertility estimation
 #'
 #' @format
 #'

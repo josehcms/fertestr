@@ -3,7 +3,7 @@
 \docType{data}
 \name{std.zaba}
 \alias{std.zaba}
-\title{Zaba standard table for fertility estimation}
+\title{Zaba standard table for Gompertz model fertility estimation}
 \format{}
 \source{
 Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
@@ -14,6 +14,6 @@ Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
 std.zaba
 }
 \description{
-Zaba standard table for fertility estimation
+Zaba standard table for Gompertz model fertility estimation
 }
 \keyword{datasets}

@@ -3,6 +3,7 @@
 export(coh_parassess)
 export(fertBrassPF)
 export(fertBrassPF.cltrss)
+export(fertGompPF)
 export(prtyAssess)
 export(prtyAverage)
 export(prtyElBadry)
