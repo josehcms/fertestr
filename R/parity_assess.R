@@ -48,7 +48,6 @@ prtyAverage <-
     prtyElBadry.set   = FALSE,
     prtyImp.set       = FALSE,
     prtyElBadry.graph = FALSE,
-    prtyAssess.set    = FALSE,
     prtyAssess.graph  = FALSE,
     age_group         = 'q'){
 
@@ -148,12 +147,10 @@ prtyAverage <-
         row.names = NULL
       )
 
-    if( prtyAssess.set ){
-      avg_par <-
-        prtyAssess( ages = avg_par$ages,
-                    P    = avg_par$P,
-                    prtyAssess.graph
-                    )
+    if( prtyAssess.graph ){
+      prtyAssess.plot( ages = avg_par$ages,
+                       P    = avg_par$P
+                       )
     }
 
     return(avg_par)
@@ -375,14 +372,13 @@ prtyImplaus <-
   }
 
 
-#' Parity Assessment  Function
+#' Parity Assessment Plot
 #'
 #' @param ages A vector of ages or starting ages of age group intervals
 #' @param P A vector of average parities by women age group
-#' @param prtyAssess.graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #'
-#' @return A warning message if the average parities are not monotonically increasing by age group and the
-#' original avg_par data.frame with an additional column $diff_P with the inter-cohort average parity differences
+#'
+#' @return Average parities vs ages plot
 #' @export
 #' @source
 #'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
@@ -390,13 +386,12 @@ prtyImplaus <-
 #'   Population. demographicestimation.iussp.org
 #' @examples
 #' ### Malawi 2008 data:
-#' prtyAssess( ages = data.pf_MWI$ages, P = data.pf_MWI$P )
+#' prtyAssess.plot( ages = data.pf_MWI$ages, P = data.pf_MWI$P )
 
-
-prtyAssess <-
+prtyAssess.plot <-
   function( ages,
-            P,
-            prtyAssess.graph = FALSE){
+            P
+            ){
 
     # stop with lengths are not equal
     stopifnot( all.equal( length(ages), length(P) ) )
@@ -405,40 +400,26 @@ prtyAssess <-
     avg_par <-
       data.frame( ages, P )
 
-    avg_par$diff_P <-
-      c(NA,diff(avg_par$P))
-
-    # verify if avg_par is monotonically increasing
-    verif_monoin <-
-      prod(diff(avg_par$P) > 0) == 1
-
-    if( !verif_monoin ){
-      warning('Average parity estimates do not increase monotonically. Verify parity data!')
-    }
-
-    if ( prtyAssess.graph ){
-      plot(
-        x = as.numeric(avg_par$ages),
-        y = as.numeric(avg_par$P),
-        main = 'Assessment of estimated average parities by age group',
-        xlab = 'Ages',
-        ylab = 'Average parity (P)',
-        pch  = 16,
-        cex  = 1.5,
-        xlim = c(15,50),
-        ylim = c(0,ceiling(max(as.numeric(avg_par$P),na.rm=T)+0.5))
+    # plot data
+    plot(
+      x = as.numeric(avg_par$ages),
+      y = as.numeric(avg_par$P),
+      main = 'Assessment of estimated average parities by age group',
+      xlab = 'Ages',
+      ylab = 'Average parity (P)',
+      pch  = 16,
+      cex  = 1.5,
+      xlim = c(15,50),
+      ylim = c(0,ceiling(max(as.numeric(avg_par$P),na.rm=T)+0.5))
       )
-      lines(
-        x = as.numeric(avg_par$ages),
-        y = as.numeric(avg_par$P),
-        type = 'l',
-        lty  = 5,
-        cex  = 1.25
+    lines(
+      x = as.numeric(avg_par$ages),
+      y = as.numeric(avg_par$P),
+      type = 'l',
+      lty  = 5,
+      cex  = 1.25
       )
     }
-
-    return(avg_par)
-  }
 
 
 #' Cohort Parity Assessment function
@@ -457,10 +438,21 @@ prtyAssess <-
 
 
 coh_parassess <-
-  function(avg_par1,
-           avg_par2,
-           time_span = 10){
+  function(ages1,
+           ages2,
+           P1,
+           P2,
+           time.span = 10){
 
+    # stop with lengths are not equal
+    stopifnot( all.equal( length(ages1), length(P1), length(ages2), length(P2) ) )
+
+    ages1.2 <-
+      ages1 + time.span
+
+    # set data frame:
+    avg_par <-
+      data.frame( ages, P )
 
     avg_par$diff_P <-
       c(NA,diff(avg_par$P))

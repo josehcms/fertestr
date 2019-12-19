@@ -4,7 +4,7 @@
 \alias{coh_parassess}
 \title{Cohort Parity Assessment function}
 \usage{
-coh_parassess(avg_par1, avg_par2, time_span = 10)
+coh_parassess(ages1, ages2, P1, P2, time.span = 10)
 }
 \arguments{
 \item{avg_par1}{data.frame with at least two columns $ages (vector of ages or starting ages of age group intervals) and $P

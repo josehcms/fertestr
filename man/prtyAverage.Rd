@@ -14,7 +14,7 @@ Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
 \usage{
 prtyAverage(ages, parity, women, na_code = NA, prtyElBadry.set = FALSE,
   prtyImp.set = FALSE, prtyElBadry.graph = FALSE,
-  prtyAssess.set = FALSE, prtyAssess.graph = FALSE, age_group = "q")
+  prtyAssess.graph = FALSE, age_group = "q")
 }
 \arguments{
 \item{ages}{A vector of ages or starting ages of age group intervals}
@@ -31,11 +31,11 @@ prtyAverage(ages, parity, women, na_code = NA, prtyElBadry.set = FALSE,
 
 \item{prtyElBadry.graph}{TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)}
 
-\item{prtyAssess.set}{TRUE or FALSE for parity assessment of average parity results (default = FALSE)}
-
 \item{prtyAssess.graph}{TRUE or FALSE for parity assessment plot output (default = FALSE)}
 
 \item{age_group}{Character assuming values 'q' (default) for quinquennial age group or 's' for single age group input}
+
+\item{prtyAssess.set}{TRUE or FALSE for parity assessment of average parity results (default = FALSE)}
 }
 \value{
 A data.frame with 2 variables: ages and P for average parities by age group
