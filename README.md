@@ -2,9 +2,9 @@
 # fertestr
 
 # Demographic tools for the assessment of fertility and parity data.
-Date: 2019-11-07
+Date: 2019-12-19
 
-By the end of this initial development phase, this repository will contain indirect fertility estimation functions in a package format. The functions to be implemented in here can be found at the [Tools for Demographic Estimation](https://demographicestimation.iussp.org/) This project is commissioned and financed by the [UN Population Division](http://www.un.org/en/development/desa/population/). [Everton E C Lima](https://twitter.com/notreve81) and I, [José H C Monteiro da Silva](https://josehcms.github.io/), are the authors in direct collaboration with [Patrick Gerland](https://www.researchgate.net/profile/Patrick_Gerland). 
+By the end of this initial development phase, this repository will contain indirect fertility estimation functions in a package format. The functions to be implemented in here can be found at the [Tools for Demographic Estimation](https://demographicestimation.iussp.org/) This project is commissioned and financed by the [UN Population Division](http://www.un.org/en/development/desa/population/). [Everton E C Lima](https://twitter.com/notreve81) and I, [José H C Monteiro da Silva](https://josehcms.github.io/), are the authors in direct collaboration with [Patrick Gerland](https://www.researchgate.net/profile/Patrick_Gerland) and [Helena C Castanheira](https://cl.linkedin.com/in/helena-cruz-castanheira-954061105). 
 
 ## How to load ```fertestr``` package in R?
 ```r

@@ -421,7 +421,6 @@ prtyAssess.plot <-
       )
     }
 
-
 #' Parity Assessment function between two surveys
 #'
 #' Verify if the average number of children ever born of women birth cohorts increase between two surveys/censuses
