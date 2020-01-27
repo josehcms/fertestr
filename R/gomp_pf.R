@@ -29,9 +29,11 @@ fertGompPF <-
   function(ages,
            asfr,
            P,
-           age_shift=TRUE,
-           graph_check=F,
-           rmse_check=T){
+           age_shift   = TRUE,
+           shape       = TRUE,
+           level       = TRUE,
+           graph_check = FALSE,
+           rmse_check  = TRUE){
 
 
     adjustGompInput <-
@@ -51,22 +53,22 @@ fertGompPF <-
             c( NA, P )
         }
 
-        # 3. Provide age_lo and age_up
-        age_lo <-
+        # 3. Provide lower bound and upper bound
+        age.lb <-
           seq( 10, 45, 5)
 
-        age_up <-
+        age.ub <-
           seq( 15, 50, 5)
 
-        age_group <-
+        age.group <-
           c( "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49" )
 
         # 4. return adjusted data for gompertz method
         gomp_data <-
           data.frame(
-            age_group,
-            age_lo,
-            age_up,
+            age.group,
+            age.lb,
+            age.ub,
             asfr,
             P
           )
@@ -294,7 +296,7 @@ fertGompPF <-
 
     if(age_shift){
       gomp_data$age_shifted <-
-        gomp_data$age_lo + 4.5
+        gomp_data$age.lb + 4.5
 
       gomp_data <-
         merge(
@@ -308,7 +310,7 @@ fertGompPF <-
       gomp_data <-
         merge(gomp_data,
               std.zaba[, c( 'age', 'Fx' )],
-              by.x = 'age_lo',
+              by.x = 'age.lb',
               by.y = 'age',
               all.x = TRUE
         )
@@ -322,7 +324,7 @@ fertGompPF <-
     gomp_data <-
       merge(gomp_data,
             std.zaba[, c( 'age', 'Px_x5' )],
-            by.x = 'age_up',
+            by.x = 'age.ub',
             by.y = 'age',
             all.x = TRUE
       )
@@ -335,7 +337,7 @@ fertGompPF <-
     gomp_data <-
       merge(gomp_data,
             std.zaba[, c( 'age', 'Fx' )],
-            by.x = 'age_up',
+            by.x = 'age.ub',
             by.y = 'age',
             all.x = TRUE
       )
