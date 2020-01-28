@@ -8,8 +8,8 @@ Brass W, AJ. 1968. Coale Methods  of  analysis  and  estimation.  In:  BRASS,  W
 Brass W. 1975. Methods for Estimating Fertility and Mortality from Limited and Defected Data. North Carolina: Carolina Population Center.
 }
 \usage{
-fertGompPF(ages, asfr, P, age_shift = TRUE, graph_check = F,
-  rmse_check = T)
+fertGompPF(ages, asfr, P, age_shift = TRUE, shape = TRUE,
+  level = TRUE, graph_check = FALSE, rmse_check = TRUE)
 }
 \arguments{
 \item{ages}{A vector of starting ages of five-year age groups ranging from 15 to 45 (default = c(15,20,25,30,35,40,45))}

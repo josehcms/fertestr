@@ -3,8 +3,9 @@
 #' @param ages A vector of starting ages of five-year age groups ranging from 15 to 45 (default = c(15,20,25,30,35,40,45))
 #' @param P A vector of mean parities by five-year age group - same groups as 'ages'
 #' @param asfr A vector of age-specific fertility rates by five-year age group - same groups as 'ages'
-#' @param adjust_group A vector of age-groups from 'ages' to be used for selection of PF ratios to adjust asfr data
-#' (default set to 20 (20-24 five-year age group))
+#' @param level TRUE for correction of fertility level using parity data information, false for correction of fertility shape only
+#' @param madef Mother's age definition: '0m' for age at birth of child, '12m' for age at survey for 12 months data (default),
+#' '24m' for age at survey for 24 months data, '36m' for age at survey for 36 months data
 #'
 #' @return A list with 3 elements:
 #' pf_data data frame with columns ages, P for mean parities, asfr, Fi for cumulate fertility estimated from Brass coefficients,PF for ratios P/F and adj_asfr for adjusted asfr;
@@ -29,11 +30,9 @@ fertGompPF <-
   function(ages,
            asfr,
            P,
-           age_shift   = TRUE,
-           shape       = TRUE,
-           level       = TRUE,
-           graph_check = FALSE,
-           rmse_check  = TRUE){
+           levelP       = TRUE,
+           madef        = '12m',
+           rmse_check   = TRUE){
 
 
     adjustGompInput <-
