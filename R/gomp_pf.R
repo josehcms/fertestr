@@ -134,20 +134,24 @@ fertGompPF <-
         level = level,
         madef = madef
         )
+
     # 2. Compute F gompits for estimation of ex, zx and gx points
 
     F.GompitCalc <-
       function(
-        ages,
-        asfr,
-        madef
+        age.group,
+        age.shift,
+        age.noshift,
+        asfr
       ){
 
         # 2.1 Merge ages and asfr data with correspondent zaba std Fx value for age shift defined in madef
         fgomp.dat <-
           merge(
             data.frame(
+              age.group,
               age.shift,
+              age.noshift,
               asfr
             ),
             std.zaba[ , c( 'age', 'Fx' ) ],
@@ -164,7 +168,7 @@ fertGompPF <-
           merge(
             fgomp.dat,
             std.zaba[ , c( 'age', 'Fx' ) ],
-            by.x = 'age.ub',
+            by.x = 'age.noshift',
             by.y = 'age',
             all.x = TRUE
           )
@@ -172,16 +176,228 @@ fertGompPF <-
         names(fgomp.dat)[ncol(fgomp.dat)] <-
           'Fx.stdnoshift'
 
+        # 2.3 Generate estimates for gx, ex and zx for F points
+
+        ## A. First Gompit
+        fgomp.dat$Yf.std <-
+          - log( - log( fgomp.dat$Fx.std ) )
+
+        ## B. Ratio of adjacent groups Fx/Fx+5
+        fgomp.dat$Fx_x5.std <-
+          NA
+
+        for(i in 1:7){
+          fgomp.dat$Fx_x5.std[i] <-
+            fgomp.dat$Fx.std[i] / fgomp.dat$Fx.std[i+1]
+        }
+
+        ## C. Gompit of ratios equal phi
+        fgomp.dat$phi <-
+          - log( - log( fgomp.dat$Fx_x5.std ) )
+
+        ## D. Parameter phi' = g(x)
+        ## phi'= (exp(Ys.x)*Ys.x+5)-Ys.x*exp(Ys.x+5))/(exp(Ys.x)-exp(Ys.x+5))
+
+        fgomp.dat$phi.1 <-
+          NA
+
+        for(i in 1:7){
+          fgomp.dat$phi.1[i] <-
+            ( ( exp( fgomp.dat$Yf.std[i] ) * fgomp.dat$Yf.std[i+1] ) - fgomp.dat$Yf.std[i] * exp( fgomp.dat$Yf.std[i+1] ) ) /
+            ( exp( fgomp.dat$Yf.std[i] ) - exp( fgomp.dat$Yf.std[i+1] ) )
+        }
+
+        fgomp.dat$gx <-
+          fgomp.dat$phi.1
+
+        ## E. Parameter phi''
+        ## Parameter phi'' - only for 15-30 years old, the mean gives value of parameter c
+        ## phi''= (Ys.x-Ys.x+5)?*exp(Ys.x+Ys.x+5)/(exp(Ys.x)-exp(Ys.x+5))
+
+        fgomp.dat$phi.2 <-
+          NA
+
+        for(i in 2:4){
+          fgomp.dat$phi.2[i] <-
+            ( ( fgomp.dat$Yf.std[i] - fgomp.dat$Yf.std[i+1] ) ^ 2 * exp( fgomp.dat$Yf.std[i] + fgomp.dat$Yf.std[i+1] ) ) /
+            ( exp( fgomp.dat$Yf.std[i] ) - exp( fgomp.dat$Yf.std[i+1] ) ) ^ 2
+        }
+
+        fgomp.dat$c.F <-
+          mean( fgomp.dat$phi.2, na.rm = T )
+
+        ## F. e(x) = difference between ratios gompit (phi) and phi'
+        fgomp.dat$ex <-
+          fgomp.dat$phi - fgomp.dat$phi.1
+
+        ## G. Parameter z(x) - based on observed data
+
+        ## cumulate asfr
+        fgomp.dat$Fx.obs <-
+          c( 0, 5 * cumsum( na.omit( fgomp.dat$asfr ) ) )
+
+        ## Fx ratios
+        fgomp.dat$Fx_x5.obs <-
+          NA
+
+        for(i in 1:7){
+          fgomp.dat$Fx_x5.obs[i] <-
+            fgomp.dat$Fx.obs[i] / fgomp.dat$Fx.obs[i+1]
+        }
+
+        ## estimating z(x), gompi from cumulated ratios
+        fgomp.dat$zx <-
+          c( NA, ( -log( -log( fgomp.dat$Fx_x5.obs[2:7] ) ) ), NA )
+
+        ## H. Return selected arguments
+        fgomp.dat <-
+          fgomp.dat[ , c( 'age.noshift', 'age.shift', 'asfr', 'Fx.std', 'Fx.stdnoshift', 'gx', 'ex', 'zx', 'c.F')]
+
         return(fgomp.dat)
       }
 
     Gomp.Fdat <-
       F.GompitCalc(
-        age.shift  = inputGomp.dat$age.shift,
-        age.ub     = inputGomp.dat$age.ub,
-        asfr       = inputGomp.dat$asfr
+        age.group   = inputGomp.dat$age.group,
+        age.shift   = inputGomp.dat$age.shift,
+        age.noshift = inputGomp.dat$age.ub,
+        asfr        = inputGomp.dat$asfr
         )
 
+    # 3. Compute P gompits for estimation of ei, zi and gi points
+
+    P.GompitCalc <-
+      function(
+        age.group,
+        age.noshift,
+        P
+      ){
+
+        # 3.1 Merge ages and P data with correspondent zaba std Px_x5 value for exact ages
+        pgomp.dat <-
+          merge(
+            data.frame(
+              age.group,
+              age.noshift,
+              P
+            ),
+            std.zaba[, c( 'age', 'Px_x5' )],
+            by.x = 'age.noshift',
+            by.y = 'age',
+            all.x = TRUE
+          )
+
+        names(pgomp.dat)[ncol(pgomp.dat)] <-
+          'P.std'
+
+        # 3.2 Generate estimates for gi, ei and zi for P points
+
+        ## A. First Gompi
+        pgomp.dat$Yp.std <-
+          - log( - log( pgomp.dat$P.std ) )
+
+        ## B. Ratios P(i)/P(i+1)
+        pgomp.dat$P.ratio <-
+          NA
+
+        for(i in 1:7){
+          pgomp.dat$P.ratio[i] <-
+            pgomp.dat$P.std[i] / pgomp.dat$P.std[i+1]
+        }
+
+        # For last age group, Pi/1
+        pgomp.dat$P.ratio[ nrow( pgomp.dat ) ] <-
+          pgomp.dat$P.std[ nrow( pgomp.dat ) ] / 1
+
+        ## C. Gompit of ratios equal phi
+        pgomp.dat$phi <-
+          - log( - log( pgomp.dat$P.ratio ) )
+
+        ## D. parameter phi' = gi
+        ## phi'= (exp(Ys.i)*Ys.i+1)-Ys.i*exp(Ys.i+1))/(exp(Ys.i)-exp(Ys.i+1))
+
+        pgomp.dat$phi.1 <-
+          NA
+
+        for(i in 1:7){
+          pgomp.dat$phi.1[i] <-
+            ( ( exp( pgomp.dat$Yp.std[i] ) * pgomp.dat$Yp.std[i+1]) - pgomp.dat$Yp.std[i] * exp( pgomp.dat$Yp.std[i+1] ) ) /
+            ( exp( pgomp.dat$Yp.std[i] ) - exp( pgomp.dat$Yp.std[i+1] ) )
+        }
+
+        pgomp.dat$phi.1[8] <-
+          pgomp.dat$Yp.std[8]
+
+        pgomp.dat$gi <-
+          pgomp.dat$phi.1
+
+        ## E. Parameter phi'' - only for 15-30 years old, the mean gives value of parameter c
+        ## phi''= (Ys.x-Ys.x+5)?*exp(Ys.x+Ys.x+5)/(exp(Ys.x)-exp(Ys.x+5))?
+
+        pgomp.dat$phi.2 <-
+          NA
+
+        for(i in 2:4){
+          pgomp.dat$phi.2[i]  <-
+            ( ( pgomp.dat$Yp.std[i]- pgomp.dat$Yp.std[i+1]) ^ 2 * exp( pgomp.dat$Yp.std[i] + pgomp.dat$Yp.std[i+1] ) ) /
+            ( exp( pgomp.dat$Yp.std[i] ) - exp( pgomp.dat$Yp.std[i+1] ) ) ^ 2
+        }
+
+        pgomp.dat$c.P <-
+          mean( pgomp.dat$phi.2, na.rm = T )
+
+        ## F. e(i) = difference between ratios gompit (phi) and phi'
+        pgomp.dat$ei <-
+          pgomp.dat$phi -  pgomp.dat$phi.1
+
+        ## G. Parameter z(i) - based on observed data
+
+        # x / x+5 ratios
+        pgomp.dat$Px_x5.obs <-
+          NA
+
+        for(i in 1:7){
+          pgomp.dat$Px_x5.obs[i] <-
+            pgomp.dat$P[i] / pgomp.dat$P[i+1]
+        }
+
+        # estimating z(i), gompi from P ratios
+        pgomp.dat$zi <-
+          c( NA, ( - log( -log( pgomp.dat$Px_x5.obs[2:7] ) ) ), NA )
+
+        ## H. Return selected arguments
+        pgomp.dat <-
+          pgomp.dat[ , c( 'age.noshift', 'P', 'P.std', 'gi', 'ei', 'zi', 'c.P')]
+
+        return(pgomp.dat)
+      }
+
+    if ( level ){
+      Gomp.Pdat <-
+        P.GompitCalc(
+          age.group   = inputGomp.dat$age.group,
+          age.noshift = inputGomp.dat$age.ub,
+          P           = inputGomp.dat$P
+        )
+    }
+
+    # 4. Fit Alpha and Beta values
+
+    fitGompPF <-
+      function(
+        age.group,
+        age.lb,
+        gi = NULL,
+        ei = NULL,
+        zi = NULL,
+        gx,
+        ex,
+        zx,
+        sel.ages,
+        level = FALSE
+      ){
+
+      }
     # 2) Function to select points either from rmse or graphically #-----
     diagnostic_function <- function(data_F,data_P,graph_check=F,rmse_check=T,c_F,c_P){
       require(hydroGOF)
@@ -399,175 +615,7 @@ fertGompPF <-
     ######################################################################
 
 
-  # for P no age shift adjustment is needed
-    gomp_data <-
-      merge(gomp_data,
-            std.zaba[, c( 'age', 'Px_x5' )],
-            by.x = 'age.ub',
-            by.y = 'age',
-            all.x = TRUE
-      )
 
-    # change name of Px_x5
-    names(gomp_data)[ncol(gomp_data)] <-
-      'Px_x5_std'
-
-    # add Fx_std_noshift for exact ages estimation of cumulated fertility Fx_adjust
-    gomp_data <-
-      merge(gomp_data,
-            std.zaba[, c( 'age', 'Fx' )],
-            by.x = 'age.ub',
-            by.y = 'age',
-            all.x = TRUE
-      )
-    # change name of Fx
-    names(gomp_data)[ncol(gomp_data)] <-
-      'Fx_std_noshift'
-
-    # 1) Generate estimates for gx, ex and zx for F points #----------
-    # First Gompi
-    data_F <- gomp_data
-
-    data_F$Y_std_F <-
-      -log(-log(data_F$Fx_std))
-
-    # Ratio of adjacent groups Fx/Fx+5
-    data_F$Fx_x_5_std <-
-      NA
-    for(i in 1:7){
-      data_F$Fx_x_5_std[i] = data_F$Fx_std[i]/data_F$Fx_std[i+1]
-    }
-
-    # Gompi of ratios
-    data_F$phi_F <-
-      -log(-log(data_F$Fx_x_5_std))
-
-    # Parameter phi' = g(x)
-    # phi'= (exp(Ys.x)*Ys.x+5)-Ys.x*exp(Ys.x+5))/(exp(Ys.x)-exp(Ys.x+5))
-
-    data_F$phi_1_F <-
-      NA
-    for(i in 1:7){
-      data_F$phi_1_F[i] = ((exp(data_F$Y_std_F[i])*data_F$Y_std_F[i+1])-data_F$Y_std_F[i]*exp(data_F$Y_std_F[i+1]))/
-        (exp(data_F$Y_std_F[i])-exp(data_F$Y_std_F[i+1]))
-    }
-
-    data_F$gx <-
-      data_F$phi_1_F
-
-  # Parameter phi'' - only for 15-30 years old, the mean gives value of parameter c
-  # phi''= (Ys.x-Ys.x+5)?*exp(Ys.x+Ys.x+5)/(exp(Ys.x)-exp(Ys.x+5))?
-
-  data_F$phi_2_F <-
-    NA
-
-  for(i in 2:4){
-    data_F$phi_2_F[i]=((data_F$Y_std_F[i]-data_F$Y_std_F[i+1])^2*exp(data_F$Y_std_F[i]+data_F$Y_std_F[i+1]))/
-      (exp(data_F$Y_std_F[i])-exp(data_F$Y_std_F[i+1]))^2
-  }
-
-  c_F <- mean(data_F$phi_2_F, na.rm = T)
-
-  # e(x) = difference between ratios gompit (phi) and phi'
-  data_F$ex <-
-    data_F$phi_F - data_F$phi_1_F
-
-  ### Parameter z(x) - based on observed data
-
-  # asfr - age specific fertility rates (10-49)
-  # Pi - mean number of children ever born from women at age group i
-
-  # cumulate asfr
-  data_F$Fx_obs <-
-    c(0,5*cumsum(na.omit(data_F$asfr)))
-
-  # Fx ratios
-  data_F$Fx_x5_obs <-
-    NA
-
-  for(i in 1:7){
-    data_F$Fx_x5_obs[i]=data_F$Fx_obs[i]/data_F$Fx_obs[i+1]
-  }
-
-  # estimating z(x), gompi from cumulated ratios
-  data_F$zx <-
-    c( NA, (-log(-log(data_F$Fx_x5_obs[2:7]))), NA )
-
-  ####################
-
-  # 2) Generate estimates for gx, ex and zx for P points #--------
-  data_P <-
-    gomp_data
-
-  # First Gompi
-  data_P$Y_std_P <-
-    -log(-log(data_P$Px_x5_std))
-
-  # ratios P(i)/P(i+1)
-  data_P$ratio_P <-
-    NA
-  for(i in 1:7){
-    data_P$ratio_P[i] = data_P$Px_x5_std[i]/data_P$Px_x5_std[i+1]
-  }
-
-  # For last age group, Pi/1
-  data_P$ratio_P[8] <-
-    data_P$Px_x5_std[8]/1
-
-  # Gompi of ratios phi_P
-  data_P$phi_P <-
-    -log(-log(data_P$ratio_P))
-
-  # parameter phi' = gx_P
-  # phi'= (exp(Ys.i)*Ys.i+1)-Ys.i*exp(Ys.i+1))/(exp(Ys.i)-exp(Ys.i+1))
-  data_P$phi_1_P <-
-    NA
-
-  for(i in 1:7){
-    data_P$phi_1_P[i] = ((exp(data_P$Y_std_P[i])*data_P$Y_std_P[i+1])-data_P$Y_std_P[i]*exp(data_P$Y_std_P[i+1]))/
-      (exp(data_P$Y_std_P[i])-exp(data_P$Y_std_P[i+1]))
-  }
-
-  data_P$phi_1_P[8] <-
-    data_P$Y_std_P[8]
-
-  data_P$gx <-
-    data_P$phi_1_P
-
-  # Parameter phi'' - only for 15-30 years old, the mean gives value of parameter c
-  # phi''= (Ys.x-Ys.x+5)?*exp(Ys.x+Ys.x+5)/(exp(Ys.x)-exp(Ys.x+5))?
-
-  data_P$phi_2_P <-
-    NA
-
-  for(i in 2:4){
-    data_P$phi_2_P[i] = ((data_P$Y_std_P[i]-data_P$Y_std_P[i+1])^2*exp(data_P$Y_std_P[i]+data_P$Y_std_P[i+1]))/
-      (exp(data_P$Y_std_P[i])-exp(data_P$Y_std_P[i+1]))^2
-  }
-
-  c_P <- mean(data_P$phi_2_P, na.rm = T)
-
-  # e(x) = difference between ratios gompit (phi) and phi'
-  data_P$ex <-
-    data_P$phi_P - data_P$phi_1_P
-
-  ### Parameter z(x) - based on observed data
-
-  # asfr - age specific fertility rates (10-49)
-  # Pi - mean number of children ever born from women at age group i
-
-  # cumulate asfr
-  data_P$Px_x5_obs <-
-    NA
-
-  for(i in 1:7){
-    data_P$Px_x5_obs[i] = gomp_data$P[i]/gomp_data$P[i+1]
-  }
-
-  # estimating z(x), gompi from P ratios
-  data_P$zx <-
-    c( NA, (-log(-log(data_P$Px_x5_obs[2:7]))), NA )
-  ####################################################
 
   # 3) Run diagnostic function to find alpha and beta parameters for estimation #------
   diagnostic_outputs <- diagnostic_function(data_F,data_P,graph_check = graph_check,rmse_check = rmse_check,c_F,c_P)
