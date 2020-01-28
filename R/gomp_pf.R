@@ -27,21 +27,27 @@
 
 # 3) Gompertz function for generating estimates #---------------------
 fertGompPF <-
-  function(ages,
-           asfr,
-           P,
-           levelP       = TRUE,
-           madef        = '12m',
-           rmse_check   = TRUE){
+  function( ages,
+            asfr,
+            P,
+            level        = TRUE,
+            madef        = '12m',
+            sel.ages
+            ){
 
 
+    # 1. Adjust the inputs into the correct form for the method
     adjustGompInput <-
-      function(ages, asfr, P){
+      function( ages,
+                asfr,
+                P = rep( NA, 7 ),
+                madef = '12m'
+                ){
 
-        # 1. Check if inputs have the correct dimensions
+        # 1.1 Check if inputs have the correct dimensions
         stopifnot( all.equal( length(ages), length(P), length(asfr)) )
 
-        # 2. Adjust data inputs for Gompertz application if asfr and P vectors are given for ages 15+
+        # 1.2. Adjust data inputs for Gompertz application if asfr and P vectors are given for ages 15+
         if(length(asfr) == 7){
           asfr <-
             c( NA, asfr )
@@ -52,7 +58,7 @@ fertGompPF <-
             c( NA, P )
         }
 
-        # 3. Provide lower bound and upper bound
+        # 1.3. Provide age groups and respective lower bound, upper bound and age.shift
         age.lb <-
           seq( 10, 45, 5)
 
@@ -62,18 +68,40 @@ fertGompPF <-
         age.group <-
           c( "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49" )
 
-        # 4. return adjusted data for gompertz method
-        gomp_data <-
+        if ( madef == '0m'){
+          age.shift <-
+            age.ub
+        } else if ( madef == '12m' ){
+          age.shift <-
+            age.ub - 0.5
+        } else if ( madef == '24m' ){
+          age.shift <-
+            age.ub - 1
+        } else if ( madef == '36m' ){
+          age.shift <-
+            age.ub - 1.5
+        } else {
+          stop( 'Incorrect madef entry! Try either 0m, 12m, 24m or 36m' )
+        }
+
+        # 1.4. return adjusted data for gompertz method
+        gomp.dat <-
           data.frame(
             age.group,
             age.lb,
             age.ub,
+            age.shift,
             asfr,
             P
           )
 
-      return(gomp_data)
+      return(gomp.dat)
       }
+
+    gom.dat <-
+      adjustGompInput( ages, asfr, P, madef )
+
+    # 2.
 
     # 2) Function to select points either from rmse or graphically #-----
     diagnostic_function <- function(data_F,data_P,graph_check=F,rmse_check=T,c_F,c_P){
