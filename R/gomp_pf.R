@@ -27,12 +27,13 @@
 
 # 3) Gompertz function for generating estimates #---------------------
 fertGompPF <-
-  function( ages         = seq( 15, 45, 5 ),
+  function( ages            = seq( 15, 45, 5 ),
             asfr,
-            P            = NULL,
-            level        = FALSE,
-            madef        = '12m',
-            sel.ages
+            P               = NULL,
+            level           = FALSE,
+            madef           = '12m',
+            sel.ages        = c( '20-24', '25-29', '30-34', '35-39' ),
+            plot.diagnostic = TRUE
             ){
 
 
@@ -251,7 +252,7 @@ fertGompPF <-
 
         ## H. Return selected arguments
         fgomp.dat <-
-          fgomp.dat[ , c( 'age.noshift', 'age.shift', 'asfr', 'Fx.std', 'Fx.stdnoshift', 'gx', 'ex', 'zx', 'c.F')]
+          fgomp.dat[ , c( 'age.group', 'age.noshift', 'age.shift', 'asfr', 'Fx.std', 'Fx.stdnoshift', 'gx', 'ex', 'zx', 'c.F')]
 
         return(fgomp.dat)
       }
@@ -367,7 +368,7 @@ fertGompPF <-
 
         ## H. Return selected arguments
         pgomp.dat <-
-          pgomp.dat[ , c( 'age.noshift', 'P', 'P.std', 'gi', 'ei', 'zi', 'c.P')]
+          pgomp.dat[ , c( 'age.group', 'age.noshift', 'P', 'P.std', 'gi', 'ei', 'zi', 'c.P')]
 
         return(pgomp.dat)
       }
@@ -386,7 +387,6 @@ fertGompPF <-
     fitGompPF <-
       function(
         age.group,
-        age.lb,
         gi = NULL,
         ei = NULL,
         zi = NULL,
@@ -394,8 +394,62 @@ fertGompPF <-
         ex,
         zx,
         sel.ages,
-        level = FALSE
+        level = FALSE,
+        plot.diagnostic,
+        c.F,
+        c.P = NULL
       ){
+
+        # 4.1. Set data
+        fitGomp.dat <-
+          data.frame(
+            age.group = rep( age.group, 2 ),
+            g         = c( gx, gi),
+            e         = c( ex, ei),
+            z         = c( zx, zi),
+            point.lab = c( rep( 'F-Points', length(gx) ), rep( 'P-Points', length(gi) ) )
+          )
+
+        fitGomp.dat <-
+          fitGomp.dat[ !fitGomp.dat$age.group %in% c( '10-14', '45-49' ) , ] # filter extreme ages
+
+        fitGomp.dat$y <-
+          fitGomp.dat$z - fitGomp.dat$e
+
+        fitGomp.dat$x <-
+          fitGomp.dat$g
+
+        # 4.2. filter selected ages
+        fitGomp.filtdat <-
+          fitGomp.dat[ fitGomp.dat$age.group %in% sel.ages , ]
+
+        # 4.3. Fit alpha and beta for F points
+
+        ## A. All points first
+        Fall.model <-
+          lm(
+            y ~ x,
+            data = fitGomp.dat[ point.lab == 'F-Points', ]
+            )
+
+        Fall.beta  <-
+          Fall.model$coefficients[2]
+
+        Fall.alpha <-
+          Fall.model$coefficients[1]
+
+        ## B. Selected points
+        Fsel.model <-
+          lm(
+            y ~ x,
+            data = fitGomp.filtdat[ point.lab == 'F-Points', ]
+          )
+
+        Fsel.beta  <-
+          Fsel.model$coefficients[2]
+
+        Fsel.alpha <-
+          Fsel.model$coefficients[1]
 
       }
     # 2) Function to select points either from rmse or graphically #-----
