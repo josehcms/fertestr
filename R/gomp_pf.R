@@ -27,10 +27,10 @@
 
 # 3) Gompertz function for generating estimates #---------------------
 fertGompPF <-
-  function( ages,
+  function( ages         = seq( 15, 45, 5 ),
             asfr,
-            P,
-            level        = TRUE,
+            P            = NULL,
+            level        = FALSE,
             madef        = '12m',
             sel.ages
             ){
@@ -40,25 +40,48 @@ fertGompPF <-
     adjustGompInput <-
       function( ages,
                 asfr,
-                P = rep( NA, 7 ),
-                madef = '12m'
+                P,      # default = null
+                level,  # default = FALSE
+                madef   # default = '12m'
                 ){
 
-        # 1.1 Check if inputs have the correct dimensions
-        stopifnot( all.equal( length(ages), length(P), length(asfr)) )
 
-        # 1.2. Adjust data inputs for Gompertz application if asfr and P vectors are given for ages 15+
-        if(length(asfr) == 7){
-          asfr <-
-            c( NA, asfr )
+        # 1.1 Check if level = TRUE and P is provided
+        if (level & is.null( P )){
+          stop('Please provide vector P for mean number of children ever born by women age group')
         }
 
-        if(length(P) == 7){
+        # 1.2 Check if input lengths match
+        if (level){
+
+          stopifnot( all.equal( length(ages), length(P), length(asfr)) )
+
+          # 1.3. Adjust data inputs for Gompertz application if asfr and P vectors are given for ages 15+
+          if(length(asfr) == 7){
+            asfr <-
+              c( NA, asfr )
+          }
+
+          if(length(P) == 7){
+            P <-
+              c( NA, P )
+          }
+
+        } else{
+
+          stopifnot( all.equal( length(ages), length(asfr)) )
+
+          # 1.3. Adjust data inputs for Gompertz application if asfr vector is given for ages 15+
+          if(length(asfr) == 7){
+            asfr <-
+              c( NA, asfr )
+          }
+
           P <-
-            c( NA, P )
+            rep( NA, 8 )
         }
 
-        # 1.3. Provide age groups and respective lower bound, upper bound and age.shift
+        # 1.4. Provide age groups and respective lower bound, upper bound and age.shift
         age.lb <-
           seq( 10, 45, 5)
 
@@ -84,7 +107,7 @@ fertGompPF <-
           stop( 'Incorrect madef entry! Try either 0m, 12m, 24m or 36m' )
         }
 
-        # 1.4. return adjusted data for gompertz method
+        # 1.5. return adjusted data for gompertz method
         gomp.dat <-
           data.frame(
             age.group,
@@ -95,13 +118,69 @@ fertGompPF <-
             P
           )
 
+        if ( is.null(P) | !level ){
+          gomp.dat <-
+            gomp.dat[ , - 6 ]
+        }
+
       return(gomp.dat)
       }
 
-    gom.dat <-
-      adjustGompInput( ages, asfr, P, madef )
+    inputGomp.dat <-
+      adjustGompInput(
+        ages  = ages,
+        asfr  = asfr,
+        P     = P,
+        level = level,
+        madef = madef
+        )
+    # 2. Compute F gompits for estimation of ex, zx and gx points
 
-    # 2.
+    F.GompitCalc <-
+      function(
+        ages,
+        asfr,
+        madef
+      ){
+
+        # 2.1 Merge ages and asfr data with correspondent zaba std Fx value for age shift defined in madef
+        fgomp.dat <-
+          merge(
+            data.frame(
+              age.shift,
+              asfr
+            ),
+            std.zaba[ , c( 'age', 'Fx' ) ],
+            by.x = 'age.shift',
+            by.y = 'age',
+            all.x = TRUE
+          )
+
+        names(fgomp.dat)[ncol(fgomp.dat)] <-
+          'Fx.std'
+
+        # 2.2 Merge ages and asfr data with correspondent zaba std Fx value for no shift in ages
+        fgomp.dat <-
+          merge(
+            fgomp.dat,
+            std.zaba[ , c( 'age', 'Fx' ) ],
+            by.x = 'age.ub',
+            by.y = 'age',
+            all.x = TRUE
+          )
+
+        names(fgomp.dat)[ncol(fgomp.dat)] <-
+          'Fx.stdnoshift'
+
+        return(fgomp.dat)
+      }
+
+    Gomp.Fdat <-
+      F.GompitCalc(
+        age.shift  = inputGomp.dat$age.shift,
+        age.ub     = inputGomp.dat$age.ub,
+        asfr       = inputGomp.dat$asfr
+        )
 
     # 2) Function to select points either from rmse or graphically #-----
     diagnostic_function <- function(data_F,data_P,graph_check=F,rmse_check=T,c_F,c_P){
@@ -319,33 +398,6 @@ fertGompPF <-
     }
     ######################################################################
 
-    gomp_data <- adjustGompInput(ages, asfr, P)
-
-    if(age_shift){
-      gomp_data$age_shifted <-
-        gomp_data$age.lb + 4.5
-
-      gomp_data <-
-        merge(
-          gomp_data,
-          std.zaba[, c( 'age', 'Fx' )],
-          by.x = 'age_shifted',
-          by.y = 'age',
-          all.x = TRUE
-        )
-    } else{
-      gomp_data <-
-        merge(gomp_data,
-              std.zaba[, c( 'age', 'Fx' )],
-              by.x = 'age.lb',
-              by.y = 'age',
-              all.x = TRUE
-        )
-    }
-
-    # change name of Fx
-    names(gomp_data)[ncol(gomp_data)] <-
-      'Fx_std'
 
   # for P no age shift adjustment is needed
     gomp_data <-
