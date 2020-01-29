@@ -252,7 +252,7 @@ fertGompPF <-
 
         ## H. Return selected arguments
         fgomp.dat <-
-          fgomp.dat[ , c( 'age.group', 'age.noshift', 'age.shift', 'asfr', 'Fx.std', 'Fx.stdnoshift', 'gx', 'ex', 'zx', 'c.F')]
+          fgomp.dat[ , c( 'age.group', 'age.noshift', 'age.shift', 'asfr', 'Fx.std', 'Fx.stdnoshift', 'Yf.std', 'gx', 'ex', 'zx', 'c.F')]
 
         return(fgomp.dat)
       }
@@ -330,7 +330,7 @@ fertGompPF <-
           pgomp.dat$Yp.std[8]
 
         pgomp.dat$gi <-
-          pgomp.dat$phi.1
+          round( pgomp.dat$phi.1, 4 )
 
         ## E. Parameter phi'' - only for 15-30 years old, the mean gives value of parameter c
         ## phi''= (Ys.x-Ys.x+5)?*exp(Ys.x+Ys.x+5)/(exp(Ys.x)-exp(Ys.x+5))?
@@ -345,11 +345,11 @@ fertGompPF <-
         }
 
         pgomp.dat$c.P <-
-          mean( pgomp.dat$phi.2, na.rm = T )
+          round( mean( pgomp.dat$phi.2, na.rm = T ), 4 )
 
         ## F. e(i) = difference between ratios gompit (phi) and phi'
         pgomp.dat$ei <-
-          pgomp.dat$phi -  pgomp.dat$phi.1
+          round( pgomp.dat$phi -  pgomp.dat$phi.1, 4 )
 
         ## G. Parameter z(i) - based on observed data
 
@@ -364,11 +364,11 @@ fertGompPF <-
 
         # estimating z(i), gompi from P ratios
         pgomp.dat$zi <-
-          c( NA, ( - log( -log( pgomp.dat$Px_x5.obs[2:7] ) ) ), NA )
+          round( c( NA, ( - log( -log( pgomp.dat$Px_x5.obs[2:7] ) ) ), NA ), 4 )
 
         ## H. Return selected arguments
         pgomp.dat <-
-          pgomp.dat[ , c( 'age.group', 'age.noshift', 'P', 'P.std', 'gi', 'ei', 'zi', 'c.P')]
+          pgomp.dat[ , c( 'age.group', 'age.noshift', 'P', 'P.std', 'Yp.std', 'gi', 'ei', 'zi', 'c.P')]
 
         return(pgomp.dat)
       }
@@ -773,7 +773,7 @@ fertGompPF <-
           c.F       = unique( Gomp.Fdat$c.F ),
           c.P       = unique( Gomp.Pdat$c.P )
         )
-    } else{
+    } else {
       coeffGomp.dat <-
         fitGompPF(
           age.group = inputGomp.dat$age.group,
@@ -787,8 +787,15 @@ fertGompPF <-
         )
     }
 
+    P.AntiGompitCalc <-
+      function(
+        age.group,
+        age.noshift,
+        P
+      )
 
 
+}
 
 
     ######################################################################
@@ -896,4 +903,4 @@ fertGompPF <-
 
   ###################################
   return(output)
-}
+
