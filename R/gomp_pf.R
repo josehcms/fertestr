@@ -710,7 +710,32 @@ fertGompPF <-
           }
 
         }
+
+        # 4.5 Return parameters
+
+        ## A. If P-level is selected
+        if ( level ){
+          out.fitGomp <-
+            data.frame(
+              F.beta  = Fsel.beta,
+              F.alpha = Fsel.alpha,
+              P.beta  = Psel.beta,
+              P.alpha = Psel.alpha,
+              FP.beta  = FPsel.beta,
+              FP.alpha = FPsel.alpha
+            )
+        } else{
+          out.fitGomp <-
+            data.frame(
+              F.beta  = Fsel.beta,
+              F.alpha = Fsel.alpha
+            )
+        }
+
+        return(out.fitGomp)
       }
+
+
     # 2) Function to select points either from rmse or graphically #-----
     diagnostic_function <- function(data_F,data_P,graph_check=F,rmse_check=T,c_F,c_P){
       require(hydroGOF)
