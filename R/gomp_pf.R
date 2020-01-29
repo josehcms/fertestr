@@ -402,13 +402,21 @@ fertGompPF <-
       ){
 
         # 4.1. Set data
+        if( level ){
+          age.group <-
+            rep( age.group, 2 )
+
+          age.ub <-
+            rep( age.ub, 2 )
+        }
+
         fitGomp.dat <-
           data.frame(
-            age.group = rep( age.group, 2 ),
-            age.ub    = rep( age.ub, 2 ),
-            g         = c( gx, gi),
-            e         = c( ex, ei),
-            z         = c( zx, zi),
+            age.group = age.group,
+            age.ub    = age.ub,
+            g         = round( c( gx, gi), 4 ),
+            e         = round( c( ex, ei), 4 ),
+            z         = round( c( zx, zi), 4 ),
             point.lab = c( rep( 'F-Points', length(gx) ), rep( 'P-Points', length(gi) ) )
           )
 
@@ -711,11 +719,17 @@ fertGompPF <-
 
         }
 
-        # 4.5 Return parameters
+        # 4.5 Create output data.frame for regression and compute RMSE
+        fitGomp.reg <-
+          fitGomp.dat[ fitGomp.dat$age.ub %in% sel.ages, ]
 
-        ## A. If P-level is selected
+        fitGomp.reg$RMSE <-
+         round ( ( ( FPsel.intercept + FPsel.beta * fitGomp.reg$x ) - fitGomp.reg$y ) ^ 2, 4 )
+
+        # 4.6 Create coefficient parameters
+
         if ( level ){
-          out.fitGomp <-
+          coeffs.Gomp <-
             data.frame(
               F.beta  = Fsel.beta,
               F.alpha = Fsel.alpha,
@@ -725,231 +739,58 @@ fertGompPF <-
               FP.alpha = FPsel.alpha
             )
         } else{
-          out.fitGomp <-
+          coeffs.Gomp <-
             data.frame(
               F.beta  = Fsel.beta,
               F.alpha = Fsel.alpha
             )
         }
 
+        # 4.7 Create output list with coefficients and point estimates
+        out.fitGomp <-
+          list(
+            coeffs.Gomp = coeffs.Gomp,
+            fitGomp.reg = fitGomp.reg
+          )
+
         return(out.fitGomp)
       }
 
-
-    # 2) Function to select points either from rmse or graphically #-----
-    diagnostic_function <- function(data_F,data_P,graph_check=F,rmse_check=T,c_F,c_P){
-      require(hydroGOF)
-      require(data.table)
-      require(ggplot2)
-      require(dplyr)
-
-      # Check the values of dummies for correct selection of chosen criteria
-      if((graph_check==F & rmse_check==F)|(graph_check==T & rmse_check==T)){
-        stop('One option only must be chosen between rmse_check and graph_check')
-      }
-
-      # Create data for both points datasets
-      data_PF <- rbind(data_F[2:7,.(AGE_GROUP,gx,ex,zx,points='F-Points')],
-                       data_P[2:7,.(AGE_GROUP,gx,ex,zx,points='P-Points')]) %>%
-        .[,`:=`(y=zx-ex,
-                x=gx)] %>%
-        .[,group:=paste0(AGE_GROUP,"-",points)]%>%
-        .[,.(AGE_GROUP,group,y,x,points)]%>%
-        .[y!=Inf,]
-
-      # First testing RMSE criteria #-----------
-      if(rmse_check==T){
-        # Testing all points first
-        model = lm(y~x,data=data_PF)
-        beta  = model$coefficients[2]
-        alpha = model$coefficients[1]
-        data_PF[,pred := x*beta+alpha]
-        data_PF[,RMSE:=NA]
-
-        for(i in 1: nrow(data_PF)){
-          data_PF$RMSE[i] = round((data_PF$pred[i]-data_PF$y[i])^2,5)
-        }
-
-        RMSE_test = sum(trunc(data_PF$RMSE*100)>0)>0 # test if RMSE results has elements higher than 0.00
-        data_PF_new <- data_PF
-        WITHIN_BOUNDS = (alpha<0.35 & alpha>-0.35) & (beta>0.75 & beta<1.30) # dummy for checking alfa and beta bounds
-
-        # using rmse criteria to update alpha and betas reducing problematic points
-        for(rmv_seq in c("40-44-P-Points","40-44-F-Points","35-39-P-Points","35-39-F-Points")){
-
-          if(RMSE_test==T | WITHIN_BOUNDS==F){
-            data_PF_new <- data_PF_new[group!=rmv_seq,]
-            model = lm(y~x,data=data_PF_new)
-            beta  = model$coefficients[2]
-            alpha = model$coefficients[1]
-            data_PF_new[,pred := x*beta+alpha]
-            data_PF_new[,RMSE:=NA]
-
-            for(i in 1: nrow(data_PF_new)){
-              data_PF_new$RMSE[i] = round((data_PF_new$pred[i]-data_PF_new$y[i])^2,5)
-            }
-
-            # only one element from the list may be higher than 0.05
-            RMSE_test     = sum(trunc(data_PF_new$RMSE*100)>5)>1
-            # test parameters bounds (alpha and beta)
-            WITHIN_BOUNDS = (alpha<0.35 & alpha>-0.35) & (beta>0.75 & beta<1.30)
-
-          } else{
-            break
-          }
-        }
-
-        data_PF <- data_PF_new
-        if(WITHIN_BOUNDS == F){
-          warning("Alpha and Beta out of bounds, try visual diagnostic for better adjustment")
-        }
-        ########################
-
-        # adjust alpha and betas with parameters from selected points
-        model_PF <- model
-        model_F  <- lm(y~x,data_PF_new[points=="F-Points",])
-        model_P  <- lm(y~x,data_PF_new[points=="P-Points",])
-        beta_F   <- model_F$coefficients[2]
-        beta_P   <- model_P$coefficients[2]
-        alpha_F  <- model_F$coefficients[1] - (beta_F-1)^(2)*(c_F)/2
-        alpha_P  <- model_P$coefficients[1] - (beta_P-1)^(2)*(c_P)/2
-        beta_PF  <- model_PF$coefficients[2]
-        alpha_PF <- model_PF$coefficients[1] - (beta_PF-1)^(2)*mean(c_F,c_P)/2
-
-        coefficients <- data.table(alpha_PF,beta_PF,alpha_F,beta_F,alpha_P,beta_P)
-
-        output = list(coefficients=coefficients,data_PF=data_PF[,.(AGE_GROUP,y,x,points,pred,RMSE)])
-
-        return(output)
-      }
-      ##########################################
-
-      # Testing graphical criteria #-----------
-      if(graph_check==T){
-        # Testing all points first
-        model = lm(y~x,data=data_PF)
-        beta  = model$coefficients[2]
-        alpha = model$coefficients[1]
-        data_PF[,pred := x*beta+alpha]
-        data_PF[,RMSE:=NA]
-
-        for(i in 1: nrow(data_PF)){
-          data_PF$RMSE[i] = round((data_PF$pred[i]-data_PF$y[i])^2,5)
-        }
-
-        # print initial parameters and RMSE with all points
-        print(alpha)
-        print(beta)
-        print(data_PF)
-
-        lim_x_F <- c(min(data_PF[points=="F-Points",]$x,na.rm=T) %>% floor,
-                     max(data_PF[points=="F-Points",]$x,na.rm=T) %>% ceiling + 0.3)
-        lim_y_F <- c(min(data_PF[points=="F-Points",]$y,na.rm=T) %>% floor,
-                     max(data_PF[points=="F-Points",]$y,na.rm=T) %>% ceiling + 0.3)
-        lim_x_P <- c(min(data_PF[points=="P-Points",]$x,na.rm=T) %>% floor,
-                     max(data_PF[points=="P-Points",]$x,na.rm=T) %>% ceiling + 0.3)
-        lim_y_P <- c(min(data_PF[points=="P-Points",]$y,na.rm=T) %>% floor,
-                     max(data_PF[points=="P-Points",]$y,na.rm=T) %>% ceiling + 0.3)
-        lim_x_FP <- range(lim_x_F,lim_x_P)
-        lim_y_FP <- range(lim_y_F,lim_y_P)
-
-        # plot all points
-        x11(height = 10,width = 10)
-        plot(x=data_PF[points=="F-Points",]$x,y=data_PF[points=="F-Points",]$y,
-             xlim=lim_x_FP,
-             ylim=lim_y_FP,
-             col='red',pch=19,
-             xlab='g()',ylab = 'z()-e()',
-             cex=2)
-        points(x=data_PF[points=="P-Points",]$x,y=data_PF[points=="P-Points",]$y, col='blue',pch=15,cex=2)
-        abline(a=alpha,b=beta,col="black",lty="dashed")
-        grid(col = "gray70", lty = "dotted", equilogs = TRUE)
-        legend('topleft',c('F-Points', 'P-Points'),col=c('red','blue'),pch=c(19,15),cex=1.5,bty="n",horiz=T)
-
-        point_sel_incomplete <- T
-
-        while(point_sel_incomplete){
-          x11(height = 10,width = 10)
-          plot(x=data_PF[points=="F-Points",]$x,y=data_PF[points=="F-Points",]$y,
-               xlim=lim_x_FP,
-               ylim=lim_y_FP,
-               col='red',pch=19,
-               xlab='g()',ylab = 'z()-e()',
-               cex=2)
-          points(x=data_PF[points=="P-Points",]$x,y=data_PF[points=="P-Points",]$y, col='blue',pch=15,cex=2)
-          #abline(a=alpha,b=beta,col="black",lty="dashed")
-          grid(col = "gray70", lty = "dotted", equilogs = TRUE)
-          legend('topleft',c('F-Points', 'P-Points'),col=c('red','blue'),pch=c(19,15),cex=1.5,bty="n",horiz=T)
-
-          # select points to fitt alpha and beta
-          sel_points <- identify(x=data_PF$x,y=data_PF$y)
-
-          # new data with selected points
-          data_PF_new <- data_PF[sel_points]
-
-          # new model and parameters
-          model_new <- lm(y~x,data=data_PF_new)
-          beta  <- model_new$coefficients[2]
-          alpha <- model_new$coefficients[1]
-          data_PF_new[,pred := x*beta+alpha]
-          beta_PF  <- beta
-          alpha_PF <- alpha - (beta_PF-1)^(2)*mean(c_F,c_P)/2
-
-          # add abline to plot
-          abline(a=alpha,
-                 b=beta,col="black",lty="dashed")
-
-          # compute RMSE
-          data_PF_new[,RMSE:=NA]
-
-          for(i in 1: nrow(data_PF_new)){
-            data_PF_new$RMSE[i] = round((data_PF_new$pred[i]-data_PF_new$y[i])^2,5)
-          }
-
-          # print results of alpha, beta and rmse
-          print(paste0("alpha = ",alpha_PF %>%round(3)))
-          print(paste0("beta  = ",beta_PF %>%round(3)))
-          print(data_PF_new[,.(AGE_GROUP,points,RMSE)])
-
-          point_sel_check = "x"
-          while(point_sel_check!="y"|point_sel_check!="n"){
-            # check if customer is satisfied with point selection
-            point_sel_check <- readline("Are you done with point selection?(y=yes/n=no)----->\n")
-            if(point_sel_check=="y"){
-              point_sel_incomplete = FALSE
-              break
-            }
-            if(point_sel_check=="n"){
-              point_sel_incomplete = TRUE
-              break
-            }
-            if(point_sel_check!="y"|point_sel_check!="n"){
-              cat("Try again! y or n!\n")
-            }
-
-          }
-
-        }
-
-        # adjust alpha and betas with parameters from selected points
-        model_PF <- lm(y~x,data_PF_new)
-        model_F  <- lm(y~x,data_PF_new[points=="F-Points",])
-        model_P  <- lm(y~x,data_PF_new[points=="P-Points",])
-        beta_F   <- model_F$coefficients[2]
-        beta_P   <- model_P$coefficients[2]
-        alpha_F  <- model_F$coefficients[1] - (beta_F-1)^(2)*(c_F)/2
-        alpha_P  <- model_P$coefficients[1] - (beta_P-1)^(2)*(c_P)/2
-        beta_PF  <- model_PF$coefficients[2]
-        alpha_PF <- model_PF$coefficients[1] - (beta_PF-1)^(2)*mean(c_F,c_P)/2
-
-        coefficients <- data.table(alpha_PF,beta_PF,alpha_F,beta_F,alpha_P,beta_P)
-
-        output = list(coefficients=coefficients,data_PF=data_PF[,.(AGE_GROUP,y,x,points,pred,RMSE)])
-
-        return(output)
-      }
-
+    if ( level ){
+      coeffGomp.dat <-
+        fitGompPF(
+          age.group = inputGomp.dat$age.group,
+          age.ub    = inputGomp.dat$age.ub,
+          gi        = Gomp.Pdat$gi,
+          ei        = Gomp.Pdat$ei,
+          zi        = Gomp.Pdat$zi,
+          gx        = Gomp.Fdat$gx,
+          ex        = Gomp.Fdat$ex,
+          zx        = Gomp.Fdat$zx,
+          sel.ages  = sel.ages,
+          level     = level,
+          plot.diagnostic = plot.diagnostic,
+          c.F       = unique( Gomp.Fdat$c.F ),
+          c.P       = unique( Gomp.Pdat$c.P )
+        )
+    } else{
+      coeffGomp.dat <-
+        fitGompPF(
+          age.group = inputGomp.dat$age.group,
+          age.ub    = inputGomp.dat$age.ub,
+          gx        = Gomp.Fdat$gx,
+          ex        = Gomp.Fdat$ex,
+          zx        = Gomp.Fdat$zx,
+          sel.ages  = sel.ages,
+          plot.diagnostic = plot.diagnostic,
+          c.F       = unique( Gomp.Fdat$c.F )
+        )
     }
+
+
+
+
+
     ######################################################################
 
 
