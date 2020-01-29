@@ -32,7 +32,7 @@ fertGompPF <-
             P               = NULL,
             level           = FALSE,
             madef           = '12m',
-            sel.ages        = c( '20-24', '25-29', '30-34', '35-39' ),
+            sel.ages        = c( 20, 25, 30, 35, 40 ),
             plot.diagnostic = TRUE
             ){
 
@@ -209,7 +209,7 @@ fertGompPF <-
         }
 
         fgomp.dat$gx <-
-          fgomp.dat$phi.1
+         round( fgomp.dat$phi.1, 4 )
 
         ## E. Parameter phi''
         ## Parameter phi'' - only for 15-30 years old, the mean gives value of parameter c
@@ -225,11 +225,11 @@ fertGompPF <-
         }
 
         fgomp.dat$c.F <-
-          mean( fgomp.dat$phi.2, na.rm = T )
+         round( mean( fgomp.dat$phi.2, na.rm = T ), 4 )
 
         ## F. e(x) = difference between ratios gompit (phi) and phi'
         fgomp.dat$ex <-
-          fgomp.dat$phi - fgomp.dat$phi.1
+          round( fgomp.dat$phi - fgomp.dat$phi.1, 4 )
 
         ## G. Parameter z(x) - based on observed data
 
@@ -248,7 +248,7 @@ fertGompPF <-
 
         ## estimating z(x), gompi from cumulated ratios
         fgomp.dat$zx <-
-          c( NA, ( -log( -log( fgomp.dat$Fx_x5.obs[2:7] ) ) ), NA )
+          round( c( NA, ( -log( -log( fgomp.dat$Fx_x5.obs[2:7] ) ) ), NA ), 4 )
 
         ## H. Return selected arguments
         fgomp.dat <-
@@ -387,6 +387,7 @@ fertGompPF <-
     fitGompPF <-
       function(
         age.group,
+        age.ub,
         gi = NULL,
         ei = NULL,
         zi = NULL,
@@ -404,6 +405,7 @@ fertGompPF <-
         fitGomp.dat <-
           data.frame(
             age.group = rep( age.group, 2 ),
+            age.ub    = rep( age.ub, 2 ),
             g         = c( gx, gi),
             e         = c( ex, ei),
             z         = c( zx, zi),
@@ -411,7 +413,7 @@ fertGompPF <-
           )
 
         fitGomp.dat <-
-          fitGomp.dat[ !fitGomp.dat$age.group %in% c( '10-14', '45-49' ) , ] # filter extreme ages
+          fitGomp.dat[ !fitGomp.dat$age.ub %in% c( 15, 50 ) , ] # filter extreme ages
 
         fitGomp.dat$y <-
           fitGomp.dat$z - fitGomp.dat$e
@@ -419,38 +421,90 @@ fertGompPF <-
         fitGomp.dat$x <-
           fitGomp.dat$g
 
-        # 4.2. filter selected ages
-        fitGomp.filtdat <-
-          fitGomp.dat[ fitGomp.dat$age.group %in% sel.ages , ]
-
-        # 4.3. Fit alpha and beta for F points
+        # 4.2. Fit alpha and beta for F points
 
         ## A. All points first
         Fall.model <-
           lm(
             y ~ x,
-            data = fitGomp.dat[ point.lab == 'F-Points', ]
+            data = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]
             )
 
         Fall.beta  <-
           Fall.model$coefficients[2]
 
-        Fall.alpha <-
+        Fall.intercept <-
           Fall.model$coefficients[1]
 
         ## B. Selected points
         Fsel.model <-
           lm(
             y ~ x,
-            data = fitGomp.filtdat[ point.lab == 'F-Points', ]
+            data = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]
           )
 
         Fsel.beta  <-
           Fsel.model$coefficients[2]
 
-        Fsel.alpha <-
+        Fsel.intercept <-
           Fsel.model$coefficients[1]
 
+        Fsel.alpha <-
+          Fsel.intercept - 0.5 * ( c.F ) * ( Fsel.beta - 1 ) ^ 2
+
+        # 4.3. Fit alpha and beta for P points and joint F and P points if required
+        if ( level ){
+
+          ## A. All points first
+          Pall.model <-
+            lm(
+              y ~ x,
+              data = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]
+            )
+
+          Pall.beta  <-
+            Fall.model$coefficients[2]
+
+          Pall.intercept <-
+            Pall.model$coefficients[1]
+
+          ## B. Selected points
+          Psel.model <-
+            lm(
+              y ~ x,
+              data = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]
+            )
+
+          Psel.beta  <-
+            Psel.model$coefficients[2]
+
+          Psel.intercept <-
+            Psel.model$coefficients[1]
+
+          Psel.alpha <-
+            Psel.intercept - 0.5 * ( c.P ) * ( Psel.beta - 1 ) ^ 2
+
+          ## C. F and P selected points
+
+          FPsel.model <-
+            lm(
+              y ~ x,
+              data = fitGomp.dat[ fitGomp.dat$age.ub %in% sel.ages, ]
+            )
+
+          FPsel.beta  <-
+            FPsel.model$coefficients[2]
+
+          FPsel.intercept <-
+            FPsel.model$coefficients[1]
+
+          FPsel.alpha <-
+            FPsel.intercept - 0.5 * mean( c( c.F, c.P ) ) * ( FPsel.beta - 1 ) ^ 2
+        }
+
+        if ( plot.diagnostic ){
+
+        }
       }
     # 2) Function to select points either from rmse or graphically #-----
     diagnostic_function <- function(data_F,data_P,graph_check=F,rmse_check=T,c_F,c_P){

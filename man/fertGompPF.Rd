@@ -8,8 +8,9 @@ Brass W, AJ. 1968. Coale Methods  of  analysis  and  estimation.  In:  BRASS,  W
 Brass W. 1975. Methods for Estimating Fertility and Mortality from Limited and Defected Data. North Carolina: Carolina Population Center.
 }
 \usage{
-fertGompPF(ages, asfr, P, age_shift = TRUE, shape = TRUE,
-  level = TRUE, graph_check = FALSE, rmse_check = TRUE)
+fertGompPF(ages = seq(15, 45, 5), asfr, P = NULL, level = FALSE,
+  madef = "12m", sel.ages = c("20-24", "25-29", "30-34", "35-39"),
+  plot.diagnostic = TRUE)
 }
 \arguments{
 \item{ages}{A vector of starting ages of five-year age groups ranging from 15 to 45 (default = c(15,20,25,30,35,40,45))}
@@ -18,8 +19,10 @@ fertGompPF(ages, asfr, P, age_shift = TRUE, shape = TRUE,
 
 \item{P}{A vector of mean parities by five-year age group - same groups as 'ages'}
 
-\item{adjust_group}{A vector of age-groups from 'ages' to be used for selection of PF ratios to adjust asfr data
-(default set to 20 (20-24 five-year age group))}
+\item{level}{TRUE for correction of fertility level using parity data information, false for correction of fertility shape only}
+
+\item{madef}{Mother's age definition: '0m' for age at birth of child, '12m' for age at survey for 12 months data (default),
+'24m' for age at survey for 24 months data, '36m' for age at survey for 36 months data}
 }
 \value{
 A list with 3 elements:
