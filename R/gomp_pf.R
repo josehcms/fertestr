@@ -1016,8 +1016,8 @@ fertGompPF <-
     ## 7.2 total fertility rate
     tfr <-
       data.frame(
-        TFR.obs  = round( sum( adj.asfr$asfr.obs * 5, na.rm = T ), 4 ),
-        TFR.adj  = round( sum( adj.asfr$asfr.adj * 5, na.rm = T  ), 4 )
+        TFR.obs  = round( sum( asfr$asfr.obs * 5, na.rm = T ), 4 ),
+        TFR.adj  = round( sum( asfr$asfr.adj * 5, na.rm = T  ), 4 )
       )
 
     ## 7.3 adjusted parameters alpha and beta
