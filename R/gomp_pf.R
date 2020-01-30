@@ -24,8 +24,6 @@
 #'
 #'
 
-
-# 3) Gompertz function for generating estimates #---------------------
 fertGompPF <-
   function( ages            = seq( 15, 45, 5 ),
             asfr,
@@ -787,120 +785,47 @@ fertGompPF <-
         )
     }
 
-    P.AntiGompitCalc <-
+    AntiGompitCalc <-
       function(
         age.group,
         age.noshift,
-        P
-      )
+        level = FALSE,
+        coeffs.Gomp,
+        Fx.std,
+        Fx.stdnoshift,
+        P.std = NULL,
+        P.obs = NULL,
+        sel.ages
+      ){
 
+        if ( level & !is.null( P.std ) & !is.null( P.obs )){
 
-}
+          Pmodel.dat <-
+            data.frame(
+              age.group,
+              age.noshift,
+              P.obs,
+              P.std,
+              Yp.std = - log( - log( P.std ) )
+            )
 
+          Pmodel.dat$Yp.fit <-
+            Pmodel.dat$Yp.std * coeffs.Gomp$FP.beta + coeffs.Gomp$FP.alpha
 
-    ######################################################################
+          Pmodel.dat$P.fit <-
+            exp( - exp( - Pmodel.dat$Yp.fit ) )
 
+          Pmodel.dat$actual.cumulant <-
+            Pmodel.dat$P.obs / Pmodel.dat$P.fit
 
+          P.level <-
+            mean( Pmodel.dat$actual.cumulant[ Pmodel.dat$age.noshift %in% sel.ages ] )
+        }
+      }
 
-
-  # 3) Run diagnostic function to find alpha and beta parameters for estimation #------
-  diagnostic_outputs <- diagnostic_function(data_F,data_P,graph_check = graph_check,rmse_check = rmse_check,c_F,c_P)
-  alpha_PF <- diagnostic_outputs$coefficients$alpha_PF
-  beta_PF  <- diagnostic_outputs$coefficients$beta_PF
-  alpha_F <- diagnostic_outputs$coefficients$alpha_F
-  beta_F  <- diagnostic_outputs$coefficients$beta_F
-  selected_points <- diagnostic_outputs$data_PF
-  ###############################################################################
-
-  # 4) Reestimating P #-----------
-  # using alpha and beta estimated to compute Y ajusted of P based on standard gompit
-  data_P[,Y_adjust_P:=alpha_PF+beta_PF*Y_std_P]
-
-  # anti-gompit to get the ratio P
-  data_P[,Px_x5_adjust:=exp(-exp(-Y_adjust_P))]
-
-  ## Achar o nivel P atraves do relacionamento de informacao do P-medio do periodo com os Ps proporcionais, estimados pelo alfa e beta, entre as idades 15-44 anos (pode testar outras idades)
-  adjust_level = mean(data_P$Pi[2:7]/data_P$Px_x5_adjust[2:7])
-  data_obs$Pi_adjusted = round(data_P$Px_x5_adjust*adjust_level,3)
-  ################################
-
-  # 5) Reestimating F #-------------
-  data_F[,Y_std_F_noshift:=-log(-log(Fx_std_noshift))] # exact ages
-  data_F[,Y_adjust_F:=alpha_PF+beta_PF*Y_std_F_noshift]
-
-  # anti-gompit
-  data_F[,Fx_x5_adjust:=round(exp(-exp(-Y_adjust_F)),5)]
-
-  # adjust by level given by P
-  data_F[,Fx_adjust:=round(Fx_x5_adjust*adjust_level,5)]
-
-  # get the ASFR new
-  data_obs$ASFR_adjusted=NA
-  data_obs$ASFR_adjusted[1]=data_F$Fx_adjust[1]/5
-
-  ## subtract adjacent groups and divide by exposition time (5 years)
-  for(i in 2:8){data_obs$ASFR_adjusted[i]=(data_F$Fx_adjust[i]-data_F$Fx_adjust[i-1])/5}
-  ##################
-
-  # 6) Generate P/F series #------
-  if(age_shift==F){
-    data_obs[,AGE_GROUP_SHIFT:=AGE5+4.5]
-    data_PF_serie <- merge(data_F[,.(AGE_GROUP_SHIFT)],
-                           zaba[,.(AGE_GROUP_SHIFT=age,Fx_std=Fx)],
-                           all.x = T)
-    data_PF_serie[,Y_std_F:=-log(-log(Fx_std))]
-  } else{
-    data_PF_serie <- data_F[,.(AGE_GROUP_SHIFT,Fx_std,Y_std_F)]
+        return(0)
   }
 
-  data_PF_serie[,Fx_x5_adjust:=exp(-exp(-(alpha_PF+beta_PF*Y_std_F)))]
-  data_PF_serie[,Fx_adjust:=Fx_x5_adjust]
-
-  data_PF_serie[1,ASFR_adjusted:=Fx_adjust/5]
-  for(i in 2:8){
-    data_PF_serie$ASFR_adjusted[i]=(data_PF_serie$Fx_adjust[i]-data_PF_serie$Fx_adjust[i-1])/5
-  }
-
-  # vector of cumulant Fs from observed data
-  data_PF_serie[,Fi:=NA]
-  data_PF_serie$Fi[2:8]=cumsum(data_obs$ASFR[2:8])
-
-  data_PF_serie[,F_cumulant:=NA]
-  for (i in 2:7) {
-    data_PF_serie$F_cumulant[i] <- 5/(data_PF_serie$Fx_x5_adjust[i])*(data_PF_serie$Fi[i])
-  }
-
-  ## correct fertility level defined by F
-  adjust_level_F=mean(na.omit(data_PF_serie$F_cumulant))
-
-  ### Get Fs for PF series construction
-  data_PF_serie[,age_shift:=seq(12.5,47.5,5)]
-  data_PF_serie[,Pi:=data_obs$Pi]
-
-  #Fx*(exp(-exp(-(alfa+beta*Yxp))))
-  data_PF_serie <- merge(data_PF_serie,
-                         zaba[,.(age_shift=age,Y_std_F_shift=Yx_std)],
-                         by="age_shift",
-                         all.x=T)
-
-  data_PF_serie[,Fi := adjust_level_F*(exp(-exp(-(alpha_F+beta_F*Y_std_F_shift))))]
-  data_PF_serie[,PF:=round(Pi/Fi,3)]
 
 
-  ###################################
-
-  # 7) Generate results #--------
-  results = data.table(AGE           = seq(15,45,5),
-                       ASFR          = data_obs$ASFR[2:8],
-                       ASFR_adjusted = data_obs$ASFR_adjusted[2:8]) %>%
-    .[,TFT_obs:=5*sum(ASFR)]%>%
-    .[,TFT_adj:=5*sum(ASFR_adjusted)]
-
-  output <- list(results=results,
-                 selected_points=selected_points,
-                 parameters = data.table(alpha=alpha_PF,beta=beta_PF),
-                 PF_series = data_PF_serie[2:8,.(AGE=seq(15,45,5),age_shift,Fi=round(Fi,3),Pi,PF)])
-
-  ###################################
-  return(output)
 
