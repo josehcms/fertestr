@@ -737,14 +737,16 @@ fertGompPF <-
               P.intercept = Psel.intercept,
               FP.beta  = FPsel.beta,
               FP.alpha = FPsel.alpha,
-              FP.intercept = FPsel.intercept
+              FP.intercept = FPsel.intercept,
+              row.names = NULL
             )
         } else {
           coeffs.Gomp <-
             data.frame(
               F.beta  = Fsel.beta,
               F.alpha = Fsel.alpha,
-              F.intercept = Fsel.intercept
+              F.intercept = Fsel.intercept,
+              row.names = NULL
             )
         }
 
@@ -996,9 +998,50 @@ fertGompPF <-
         coeffs.Gomp = coeffGomp.dat$coeffs.Gomp
       )
 
-        return(0)
+    # 7. Create output data.frames
+
+    ## 7.1 adjusted asfr
+    asfr <-
+      data.frame(
+        age.group    = inputGomp.dat$age.group,
+        asfr.obs     = inputGomp.dat$asfr,
+        asfr.adj     = AntiGompit.dat$fmx.noshift
+      )
+
+    ## 7.2 total fertility rate
+    tfr <-
+      data.frame(
+        TFR.obs  = round( sum( adj.asfr$asfr.obs * 5, na.rm = T ), 4 ),
+        TFR.adj  = round( sum( adj.asfr$asfr.adj * 5, na.rm = T  ), 4 )
+      )
+
+    ## 7.3 adjusted parameters alpha and beta
+    paramsReg <-
+      coeffGomp.dat$coeffs.Gomp
+
+    ## 7.4 regression variables
+    varsReg <-
+      coeffGomp.dat$fitGomp.reg
+
+    fertGompPF.out <-
+      list(
+        asfr      = asfr,
+        tfr       = tfr,
+        paramsReg = paramsReg,
+        varsReg   = varsReg
+        )
+
+        return( fertGompPF.out )
   }
 
 
-
+fertGompPF(
+  ages            = ages_ma,
+  asfr            = asfr_ma,
+  P               = P_ma,
+  level           = TRUE,
+  madef           = '24m',
+  sel.ages        = c( 20, 25, 30, 35, 40, 45 ),
+  plot.diagnostic = FALSE
+)
 
