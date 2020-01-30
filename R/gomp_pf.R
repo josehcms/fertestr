@@ -30,7 +30,7 @@ fertGompPF <-
             P               = NULL,
             level           = FALSE,
             madef           = '12m',
-            sel.ages        = c( 20, 25, 30, 35, 40 ),
+            sel.ages        = c( 20, 25, 30, 35, 40, 45 ),
             plot.diagnostic = TRUE
             ){
 
@@ -250,7 +250,7 @@ fertGompPF <-
 
         ## H. Return selected arguments
         fgomp.dat <-
-          fgomp.dat[ , c( 'age.group', 'age.noshift', 'age.shift', 'asfr', 'Fx.std', 'Fx.stdnoshift', 'Yf.std', 'gx', 'ex', 'zx', 'c.F')]
+          fgomp.dat[ , c( 'age.group', 'age.noshift', 'age.shift', 'asfr', 'Fx.std', 'Fx.stdnoshift', 'Fx.obs', 'Yf.std', 'gx', 'ex', 'zx', 'c.F')]
 
         return(fgomp.dat)
       }
@@ -731,16 +731,20 @@ fertGompPF <-
             data.frame(
               F.beta  = Fsel.beta,
               F.alpha = Fsel.alpha,
+              F.intercept = Fsel.intercept,
               P.beta  = Psel.beta,
               P.alpha = Psel.alpha,
+              P.intercept = Psel.intercept,
               FP.beta  = FPsel.beta,
-              FP.alpha = FPsel.alpha
+              FP.alpha = FPsel.alpha,
+              FP.intercept = FPsel.intercept
             )
-        } else{
+        } else {
           coeffs.Gomp <-
             data.frame(
               F.beta  = Fsel.beta,
-              F.alpha = Fsel.alpha
+              F.alpha = Fsel.alpha,
+              F.intercept = Fsel.intercept
             )
         }
 
@@ -785,20 +789,38 @@ fertGompPF <-
         )
     }
 
+    # 5. Estimate fmx for true ages (no shift) and correction level from beta and alpha
+
     AntiGompitCalc <-
       function(
         age.group,
+        age.shift,
         age.noshift,
         level = FALSE,
         coeffs.Gomp,
         Fx.std,
         Fx.stdnoshift,
+        Fx.obs,
         P.std = NULL,
         P.obs = NULL,
         sel.ages
       ){
 
-        if ( level & !is.null( P.std ) & !is.null( P.obs )){
+        F.alpha <-
+          coeffs.Gomp$F.alpha
+
+        F.beta <-
+          coeffs.Gomp$F.beta
+
+        P.level <-  NULL
+
+        if ( level & !is.null( P.std ) & !is.null( P.obs ) ){
+
+          F.alpha <-
+            coeffs.Gomp$FP.alpha
+
+          F.beta <-
+            coeffs.Gomp$FP.beta
 
           Pmodel.dat <-
             data.frame(
@@ -820,8 +842,159 @@ fertGompPF <-
 
           P.level <-
             mean( Pmodel.dat$actual.cumulant[ Pmodel.dat$age.noshift %in% sel.ages ] )
+
         }
+
+        Fmodel.dat <-
+          data.frame(
+            age.group,
+            age.shift,
+            age.noshift,
+            Fx.obs,
+            Fx.std,
+            Fx.stdnoshift,
+            Yf.std        = - log( - log( Fx.std ) ),
+            Yf.stdnoshift = - log( - log( Fx.stdnoshift ) )
+          )
+
+        # shifted ages
+        Fmodel.dat$Yf.fit <-
+          Fmodel.dat$Yf.std * F.beta + F.alpha
+
+        Fmodel.dat$Fx.fit <-
+          exp( - exp( - Fmodel.dat$Yf.fit ) )
+
+        Fmodel.dat$actual.cumulant <-
+          Fmodel.dat$Fx.obs / Fmodel.dat$Fx.fit
+
+        F.level <-
+          mean( Fmodel.dat$actual.cumulant[ Fmodel.dat$age.noshift %in% sel.ages ] )
+
+        FP.level <-
+          ifelse ( is.null( P.level ),
+                   F.level,
+                   P.level
+                   )
+
+        Fmodel.dat$fmx <-
+          Fmodel.dat$Fx.fit * FP.level / 5
+
+        for( i in 1 : ( nrow( Fmodel.dat ) - 1 ) ){
+          Fmodel.dat$fmx[ i + 1 ] <-
+            ( Fmodel.dat$Fx.fit[ i + 1 ] - Fmodel.dat$Fx.fit[ i ] ) * FP.level / 5
+        }
+
+        Fmodel.dat$fmx <-
+          round( Fmodel.dat$fmx, 4 )
+
+        # conventional ages
+        Fmodel.dat$Yf.fitnoshift <-
+          Fmodel.dat$Yf.stdnoshift * F.beta + F.alpha
+
+        Fmodel.dat$Fx.fitnoshift <-
+          exp( - exp( - Fmodel.dat$Yf.fitnoshift ) )
+
+        Fmodel.dat$fmx.noshift <-
+          Fmodel.dat$Fx.fitnoshift * FP.level / 5
+
+        for( i in 1 : ( nrow( Fmodel.dat ) - 1 ) ){
+          Fmodel.dat$fmx.noshift[ i + 1 ] <-
+            ( Fmodel.dat$Fx.fitnoshift[ i + 1 ] - Fmodel.dat$Fx.fitnoshift[ i ] ) * FP.level / 5
+        }
+
+        Fmodel.dat$fmx.noshift <-
+          round( Fmodel.dat$fmx.noshift, 4 )
+
+        Fmodel.dat$F.level <-
+          F.level
+
+        Fmodel.dat$FP.level <-
+          FP.level
+
+        outmodel.dat <-
+          Fmodel.dat[, c( 'age.group', 'age.shift', 'fmx', 'age.noshift', 'fmx.noshift', 'F.level', 'FP.level' ) ]
+
+        return( outmodel.dat )
+
       }
+
+    if ( level ){
+      AntiGompit.dat <-
+        AntiGompitCalc(
+          age.group = Gomp.Fdat$age.group,
+          age.shift = Gomp.Fdat$age.shift,
+          age.noshift = Gomp.Fdat$age.noshift,
+          level = level,
+          coeffs.Gomp = coeffGomp.dat$coeffs.Gomp,
+          Fx.std = Gomp.Fdat$Fx.std,
+          Fx.stdnoshift = Gomp.Fdat$Fx.stdnoshift,
+          Fx.obs = Gomp.Fdat$Fx.obs,
+          P.std = Gomp.Pdat$P.std,
+          P.obs = Gomp.Pdat$P,
+          sel.ages = sel.ages
+        )
+    } else {
+      AntiGompit.dat <-
+        AntiGompitCalc(
+          age.group = Gomp.Fdat$age.group,
+          age.shift = Gomp.Fdat$age.shift,
+          age.noshift = Gomp.Fdat$age.noshift,
+          coeffs.Gomp = coeffGomp.dat$coeffs.Gomp,
+          Fx.std = Gomp.Fdat$Fx.std,
+          Fx.stdnoshift = Gomp.Fdat$Fx.stdnoshift,
+          Fx.obs = Gomp.Fdat$Fx.obs,
+          sel.ages = sel.ages
+        )
+    }
+
+
+    # 6. Estimate PF series
+    PFseries.Calc <-
+      function(
+        age.group,
+        age.lb,
+        age.ub,
+        P.obs,
+        F.level,
+        coeffs.Gomp
+      ){
+
+        PFseries.dat <-
+          data.frame(
+            age.group,
+            age.mid = (age.ub - age.lb) / 2 + age.lb,
+            P       = P.obs
+          )
+
+        PFseries.dat <-
+          merge(
+            PFseries.dat,
+            std.zaba[, c( 'age', 'Yx_std' ) ],
+            by.x = 'age.mid',
+            by.y = 'age'
+          )
+
+        PFseries.dat$Fx <-
+          round( F.level * exp( - exp( - ( coeffs.Gomp$F.beta * PFseries.dat$Yx_std + coeffs.Gomp$F.intercept ) ) ), 4 )
+
+        PFseries.dat$PF.Ratio <-
+          round( PFseries.dat$P / PFseries.dat$Fx, 4 )
+
+        outpf.dat <-
+          PFseries.dat[, c('age.group', 'age.mid', 'P', 'Fx', 'PF.Ratio')]
+
+        return(outpf.dat)
+      }
+
+    PFseries.dat <-
+      PFseries.Calc(
+        age.group = inputGomp.dat$age.group,
+        age.lb    = inputGomp.dat$age.lb,
+        age.ub    = inputGomp.dat$age.ub,
+        P.obs     = inputGomp.dat$P,
+        F.level   = unique( AntiGompit.dat$F.level ),
+        coeffs.Gomp = coeffGomp.dat$coeffs.Gomp
+      )
 
         return(0)
   }
