@@ -20,8 +20,13 @@
 #' ages_ma = c(15, 20, 25, 30, 35, 40, 45)
 #' asfr_ma = c(0.111, 0.245, 0.230, 0.195, 0.147, 0.072, 0.032)
 #' P_ma    = c(0.283, 1.532, 2.849, 4.185, 5.214, 6.034, 6.453)
-#' fertBrassPF(P = P_ma, asfr = asfr_ma)
-#'
+#' fertGompPF( ages            = ages_ma,
+#'             asfr            = asfr_ma,
+#'             P               = P_ma,
+#'             level           = TRUE,
+#'             madef           = '24m',
+#'             sel.ages        = c( 20, 25, 30, 35, 40, 45 ),
+#'             plot.diagnostic = FALSE)
 #'
 
 fertGompPF <-
@@ -1034,14 +1039,4 @@ fertGompPF <-
         return( fertGompPF.out )
   }
 
-
-fertGompPF(
-  ages            = ages_ma,
-  asfr            = asfr_ma,
-  P               = P_ma,
-  level           = TRUE,
-  madef           = '24m',
-  sel.ages        = c( 20, 25, 30, 35, 40, 45 ),
-  plot.diagnostic = FALSE
-)
 
