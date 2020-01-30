@@ -1,5 +1,7 @@
 #' Gompertz PF Fertility Estimation
 #'
+#' Performs Gompertz PF model for fertility estimation by user's F and P points selection
+#'
 #' @param ages A vector of starting ages of five-year age groups ranging from 15 to 45 (default = c(15,20,25,30,35,40,45))
 #' @param P A vector of mean parities by five-year age group - same groups as 'ages'
 #' @param asfr A vector of age-specific fertility rates by five-year age group - same groups as 'ages'
@@ -34,10 +36,8 @@ fertGompPF <-
             asfr,
             P               = NULL,
             level           = FALSE,
-            madef           = '12m',
-            sel.ages        = c( 20, 25, 30, 35, 40, 45 ),
-            plot.diagnostic = TRUE
-            ){
+            madef           = '12m'
+  ){
 
 
     # 1. Adjust the inputs into the correct form for the method
@@ -47,7 +47,7 @@ fertGompPF <-
                 P,      # default = null
                 level,  # default = FALSE
                 madef   # default = '12m'
-                ){
+      ){
 
 
         # 1.1 Check if level = TRUE and P is provided
@@ -127,7 +127,7 @@ fertGompPF <-
             gomp.dat[ , - 6 ]
         }
 
-      return(gomp.dat)
+        return(gomp.dat)
       }
 
     inputGomp.dat <-
@@ -137,7 +137,7 @@ fertGompPF <-
         P     = P,
         level = level,
         madef = madef
-        )
+      )
 
     # 2. Compute F gompits for estimation of ex, zx and gx points
 
@@ -212,7 +212,7 @@ fertGompPF <-
         }
 
         fgomp.dat$gx <-
-         round( fgomp.dat$phi.1, 4 )
+          round( fgomp.dat$phi.1, 4 )
 
         ## E. Parameter phi''
         ## Parameter phi'' - only for 15-30 years old, the mean gives value of parameter c
@@ -228,7 +228,7 @@ fertGompPF <-
         }
 
         fgomp.dat$c.F <-
-         round( mean( fgomp.dat$phi.2, na.rm = T ), 4 )
+          round( mean( fgomp.dat$phi.2, na.rm = T ), 4 )
 
         ## F. e(x) = difference between ratios gompit (phi) and phi'
         fgomp.dat$ex <-
@@ -266,7 +266,7 @@ fertGompPF <-
         age.shift   = inputGomp.dat$age.shift,
         age.noshift = inputGomp.dat$age.ub,
         asfr        = inputGomp.dat$asfr
-        )
+      )
 
     # 3. Compute P gompits for estimation of ei, zi and gi points
 
@@ -399,7 +399,6 @@ fertGompPF <-
         zx,
         sel.ages,
         level = FALSE,
-        plot.diagnostic,
         c.F,
         c.P = NULL
       ){
@@ -439,7 +438,7 @@ fertGompPF <-
           lm(
             y ~ x,
             data = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]
-            )
+          )
 
         Fall.beta  <-
           Fall.model$coefficients[2]
@@ -513,213 +512,209 @@ fertGompPF <-
             FPsel.intercept - 0.5 * mean( c( c.F, c.P ) ) * ( FPsel.beta - 1 ) ^ 2
         }
 
-        # 4.4 Plot diagnostic graphs if required
-        if ( plot.diagnostic ){
+        # 4.4 Plot diagnostic graphs for points selection
+        if ( level ){
 
-          if ( level ){
+          x11( width = 9, height = 6)
+          par( mfrow = c( 1, 2 ) )
 
-            x11( width = 9, height = 6)
-            par( mfrow = c( 1, 2 ) )
+          ## A.1 All F points
+          plot(
+            x    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' ,]$x,
+            y    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' ,]$y,
+            pch  = 19,
+            col  = 'skyblue',
+            xlab = 'g()',
+            ylab = 'z()-e()'
+          )
+          abline( reg = Fall.model, col = 'skyblue' , lty = 5)
 
-            ## A.1 All F points
-            plot(
-              x    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' ,]$x,
-              y    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' ,]$y,
-              pch  = 19,
-              col  = 'skyblue',
-              xlab = 'g()',
-              ylab = 'z()-e()'
-            )
-            abline( reg = Fall.model, col = 'skyblue' , lty = 5)
+          ## A.2 All P points
+          points(
+            x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' ,]$x,
+            y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' ,]$y,
+            pch = 15,
+            col = 'tomato3'
+          )
+          abline( reg = Pall.model, col = 'tomato3' , lty = 3)
+          legend(
+            'bottomright',
+            legend = c( 'F-points', 'P-points' ),
+            lty    = c(  5,  3 ),
+            pch    = c( 19, 15 ),
+            col    = c( 'skyblue', 'tomato3' ),
+            bty    = 'n'
+          )
+          grid()
+          mtext(
+            side = 3,
+            line = 2.35,
+            adj  = 0,
+            cex  = 1.15,
+            'Figure 1: All F Points and P points'
+          )
+          mtext(
+            side = 3,
+            line = 0.60,
+            adj  = 0,
+            cex  = 0.75,
+            paste0( 'F-points linear: y(x) = ', round( Fall.intercept, 4) , ' + ', round( Fall.beta, 4 ) , ' * x\n',
+                    'P-points linear: y(x) = ', round( Pall.intercept, 4) , ' + ', round( Pall.beta, 4 ) , ' * x' )
+          )
+          text(
+            x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$x,
+            y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$y,
+            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$age.group,
+            cex = 0.75,
+            pos = 4,
+            col = 'skyblue'
+          )
+          text(
+            x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$x,
+            y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$y,
+            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$age.group,
+            cex = 0.75,
+            pos = 4,
+            col = 'tomato3'
+          )
 
-            ## A.2 All P points
-            points(
-              x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' ,]$x,
-              y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' ,]$y,
-              pch = 15,
-              col = 'tomato3'
-            )
-            abline( reg = Pall.model, col = 'tomato3' , lty = 3)
-            legend(
-              'bottomright',
-              legend = c( 'F-points', 'P-points' ),
-              lty    = c(  5,  3 ),
-              pch    = c( 19, 15 ),
-              col    = c( 'skyblue', 'tomato3' ),
-              bty    = 'n'
-            )
-            grid()
-            mtext(
-              side = 3,
-              line = 2.35,
-              adj  = 0,
-              cex  = 1.15,
-              'Figure 1: All F Points and P points'
-              )
-            mtext(
-              side = 3,
-              line = 0.60,
-              adj  = 0,
-              cex  = 0.75,
-              paste0( 'F-points linear: y(x) = ', round( Fall.intercept, 4) , ' + ', round( Fall.beta, 4 ) , ' * x\n',
-                      'P-points linear: y(x) = ', round( Pall.intercept, 4) , ' + ', round( Pall.beta, 4 ) , ' * x' )
-              )
-            text(
-              x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$x,
-              y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$y,
-              labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$age.group,
-              cex = 0.75,
-              pos = 4,
-              col = 'skyblue'
-            )
-            text(
-              x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$x,
-              y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$y,
-              labels = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$age.group,
-              cex = 0.75,
-              pos = 4,
-              col = 'tomato3'
-            )
+          ## B.1 Selected F points
+          plot(
+            x    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
+            y    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
+            pch  = 19,
+            col  = 'skyblue',
+            xlab = 'g()',
+            ylab = 'z()-e()'
+          )
+          abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
 
-            ## B.1 Selected F points
-            plot(
-              x    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-              y    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
-              pch  = 19,
-              col  = 'skyblue',
-              xlab = 'g()',
-              ylab = 'z()-e()'
-            )
-            abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
+          ## B.2 Selected P points
+          points(
+            x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
+            y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
+            pch = 15,
+            col = 'tomato3'
+          )
+          abline( reg = Psel.model, col = 'tomato3' , lty = 3)
 
-            ## B.2 Selected P points
-            points(
-              x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-              y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
-              pch = 15,
-              col = 'tomato3'
-            )
-            abline( reg = Psel.model, col = 'tomato3' , lty = 3)
+          ## B.3 Combined P and F points
+          abline( reg = FPsel.model, col = 'black' , lty = 1, lwd = 0.5)
+          legend(
+            'bottomright',
+            legend = c( 'F-points', 'P-points', 'Combined F and P' ),
+            lty    = c(  5,  3 , 1),
+            pch    = c( 19, 15 , NA),
+            col    = c( 'skyblue', 'tomato3', 'black' ),
+            bty    = 'n'
+          )
+          grid()
+          mtext(
+            side = 3,
+            line = 2.35,
+            adj  = 0,
+            cex  = 1.15,
+            'Figure 2: Selected F Points and P points'
+          )
+          mtext(
+            side = 3,
+            line = 0.10,
+            adj  = 0,
+            cex  = 0.75,
+            paste0( 'F-points linear: y(x) = ', round( Fsel.intercept, 4) , ' + ', round( Fsel.beta, 4 ) , ' * x\n',
+                    'P-points linear: y(x) = ', round( Psel.intercept, 4) , ' + ', round( Psel.beta, 4 ) , ' * x\n',
+                    'Combined F and P linear: y(x) = ', round( FPsel.intercept, 4) , ' + ', round( FPsel.beta, 4 ) , ' * x' )
+          )
+          text(
+            x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
+            y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
+            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$age.group,
+            cex = 0.75,
+            pos = 4,
+            col = 'skyblue'
+          )
+          text(
+            x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
+            y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
+            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$age.group,
+            cex = 0.75,
+            pos = 4,
+            col = 'tomato3'
+          )
 
-            ## B.3 Combined P and F points
-            abline( reg = FPsel.model, col = 'black' , lty = 1, lwd = 0.5)
-            legend(
-              'bottomright',
-              legend = c( 'F-points', 'P-points', 'Combined F and P' ),
-              lty    = c(  5,  3 , 1),
-              pch    = c( 19, 15 , NA),
-              col    = c( 'skyblue', 'tomato3', 'black' ),
-              bty    = 'n'
-            )
-            grid()
-            mtext(
-              side = 3,
-              line = 2.35,
-              adj  = 0,
-              cex  = 1.15,
-              'Figure 2: Selected F Points and P points'
-            )
-            mtext(
-              side = 3,
-              line = 0.10,
-              adj  = 0,
-              cex  = 0.75,
-              paste0( 'F-points linear: y(x) = ', round( Fsel.intercept, 4) , ' + ', round( Fsel.beta, 4 ) , ' * x\n',
-                      'P-points linear: y(x) = ', round( Psel.intercept, 4) , ' + ', round( Psel.beta, 4 ) , ' * x\n',
-                      'Combined F and P linear: y(x) = ', round( FPsel.intercept, 4) , ' + ', round( FPsel.beta, 4 ) , ' * x' )
-            )
-            text(
-              x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-              y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
-              labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$age.group,
-              cex = 0.75,
-              pos = 4,
-              col = 'skyblue'
-            )
-            text(
-              x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-              y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
-              labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$age.group,
-              cex = 0.75,
-              pos = 4,
-              col = 'tomato3'
-            )
+        }
 
-          }
+        else{
+          x11( width = 9, height = 6)
+          par( mfrow = c( 1, 2 ) )
 
-          else{
-            x11( width = 9, height = 6)
-            par( mfrow = c( 1, 2 ) )
+          ## A.1 All F points
+          plot(
+            x    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' ,]$x,
+            y    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' ,]$y,
+            pch  = 19,
+            col  = 'skyblue',
+            xlab = 'g()',
+            ylab = 'z()-e()'
+          )
+          abline( reg = Fall.model, col = 'skyblue' , lty = 5)
+          grid()
+          mtext(
+            side = 3,
+            line = 2,
+            adj  = 0,
+            cex  = 1.25,
+            'Figure 1: All F Points'
+          )
+          mtext(
+            side = 3,
+            line = 0.75,
+            adj  = 0,
+            cex  = 1,
+            paste0( 'F-points linear: y(x) = ', round( Fall.intercept, 4) , ' + ', round( Fall.beta, 4 ) , ' * x')
+          )
+          text(
+            x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$x,
+            y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$y,
+            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$age.group,
+            cex = 0.75,
+            pos = 4,
+            col = 'skyblue'
+          )
 
-            ## A.1 All F points
-            plot(
-              x    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' ,]$x,
-              y    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' ,]$y,
-              pch  = 19,
-              col  = 'skyblue',
-              xlab = 'g()',
-              ylab = 'z()-e()'
-            )
-            abline( reg = Fall.model, col = 'skyblue' , lty = 5)
-            grid()
-            mtext(
-              side = 3,
-              line = 2,
-              adj  = 0,
-              cex  = 1.25,
-              'Figure 1: All F Points'
-            )
-            mtext(
-              side = 3,
-              line = 0.75,
-              adj  = 0,
-              cex  = 1,
-              paste0( 'F-points linear: y(x) = ', round( Fall.intercept, 4) , ' + ', round( Fall.beta, 4 ) , ' * x')
-            )
-            text(
-              x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$x,
-              y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$y,
-              labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$age.group,
-              cex = 0.75,
-              pos = 4,
-              col = 'skyblue'
-            )
-
-            ## B.1 Selected F points
-            plot(
-              x    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-              y    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
-              pch  = 19,
-              col  = 'skyblue',
-              xlab = 'g()',
-              ylab = 'z()-e()'
-            )
-            abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
-            grid()
-            mtext(
-              side = 3,
-              line = 2,
-              adj  = 0,
-              cex  = 1.25,
-              'Figure 2: Selected F Points'
-            )
-            mtext(
-              side = 3,
-              line = 0.75,
-              adj  = 0,
-              cex  = 1,
-              paste0( 'F-points linear: y(x) = ', round( Fsel.intercept, 4) , ' + ', round( Fsel.beta, 4 ) , ' * x')
-            )
-            text(
-              x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-              y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
-              labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$age.group,
-              cex = 0.75,
-              pos = 4,
-              col = 'skyblue'
-            )
-          }
-
+          ## B.1 Selected F points
+          plot(
+            x    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
+            y    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
+            pch  = 19,
+            col  = 'skyblue',
+            xlab = 'g()',
+            ylab = 'z()-e()'
+          )
+          abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
+          grid()
+          mtext(
+            side = 3,
+            line = 2,
+            adj  = 0,
+            cex  = 1.25,
+            'Figure 2: Selected F Points'
+          )
+          mtext(
+            side = 3,
+            line = 0.75,
+            adj  = 0,
+            cex  = 1,
+            paste0( 'F-points linear: y(x) = ', round( Fsel.intercept, 4) , ' + ', round( Fsel.beta, 4 ) , ' * x')
+          )
+          text(
+            x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
+            y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
+            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$age.group,
+            cex = 0.75,
+            pos = 4,
+            col = 'skyblue'
+          )
         }
 
         # 4.5 Create output data.frame for regression and compute RMSE
@@ -727,7 +722,7 @@ fertGompPF <-
           fitGomp.dat[ fitGomp.dat$age.ub %in% sel.ages, ]
 
         fitGomp.reg$RMSE <-
-         round ( ( ( FPsel.intercept + FPsel.beta * fitGomp.reg$x ) - fitGomp.reg$y ) ^ 2, 4 )
+          round ( ( ( FPsel.intercept + FPsel.beta * fitGomp.reg$x ) - fitGomp.reg$y ) ^ 2, 4 )
 
         # 4.6 Create coefficient parameters
 
@@ -881,7 +876,7 @@ fertGompPF <-
           ifelse ( is.null( P.level ),
                    F.level,
                    P.level
-                   )
+          )
 
         Fmodel.dat$fmx <-
           Fmodel.dat$Fx.fit * FP.level / 5
@@ -1034,10 +1029,7 @@ fertGompPF <-
         tfr       = tfr,
         paramsReg = paramsReg,
         varsReg   = varsReg
-        )
+      )
 
-        return( fertGompPF.out )
+    return( fertGompPF.out )
   }
-
-
-
