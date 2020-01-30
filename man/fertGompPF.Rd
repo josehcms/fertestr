@@ -9,7 +9,7 @@ Brass W. 1975. Methods for Estimating Fertility and Mortality from Limited and D
 }
 \usage{
 fertGompPF(ages = seq(15, 45, 5), asfr, P = NULL, level = FALSE,
-  madef = "12m", sel.ages = c(20, 25, 30, 35, 40),
+  madef = "12m", sel.ages = c(20, 25, 30, 35, 40, 45),
   plot.diagnostic = TRUE)
 }
 \arguments{
