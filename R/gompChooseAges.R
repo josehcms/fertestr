@@ -403,8 +403,14 @@ fertGompPF <-
         c.P = NA
       ){
 
+        p.flag <-
+          level & !is.null(gi) & !is.null(ei) & !is.null(zi)
+
+        fitGomp.Pdat <-
+          NULL
+
         # 4.1. Set data
-        if( level ){
+        if( p.flag ){
           age.group <-
             rep( age.group, 2 )
 
@@ -433,69 +439,293 @@ fertGompPF <-
 
         # 4.2. Fit alpha and beta for all F and P points for initial graph
 
-        FPall.model <-
+        Fall.model <-
           lm(
             y ~ x,
-            data = fitGomp.dat
+            data = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]
           )
 
-        FPall.beta  <-
-          FPall.model$coefficients[2]
+        Fall.beta  <-
+          Fall.model$coefficients[2]
 
-        FPall.intercept <-
-          FPall.model$coefficients[1]
+        Fall.intercept <-
+          Fall.model$coefficients[1]
 
+        if ( p.flag ){
+
+          FPall.model <-
+            lm(
+              y ~ x,
+              data = fitGomp.dat
+            )
+
+          FPall.beta  <-
+            FPall.model$coefficients[2]
+
+          FPall.intercept <-
+            FPall.model$coefficients[1]
+
+          Pall.model <-
+            lm(
+              y ~ x,
+              data = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]
+            )
+
+          Pall.beta  <-
+            Pall.model$coefficients[2]
+
+          Pall.intercept <-
+            Pall.model$coefficients[1]
+        }
 
         # 4.4 Plot diagnostic graphs for points selection
 
-        point_sel_incomplete <- T
+        pointsel.incomplete <- T
 
-        x11( width = 10, height = 10 )
-        while(point_sel_incomplete){
-          plot(
-            x    = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$x,
-            y    = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$y,
-            col  = 'red',
-            pch  = 1,
-            xlab ='g()',
-            ylab = 'z()-e()',
-            cex = 2,
-            cex.lab = 1.5
-          )
+        x11( width = 6, height = 6 )
+        plot(
+          x    = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$x,
+          y    = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$y,
+          col  = 'tomato3',
+          pch  = 1,
+          xlab ='g()',
+          ylab = 'z()-e()',
+          cex = 1.5,
+          xlim = range( fitGomp.dat$x ),
+          ylim = range( fitGomp.dat$y ),
+          main = 'Select sequential F points for fertility estimation\nAttention: 0.80 < beta < 1.25 and |alpha| < 0.3'
+        )
+        points(
+          x   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
+          y   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
+          col = 'skyblue',
+          pch = 0,
+          cex = 1.5
+        )
+        abline(
+          a   = FPall.intercept,
+          b   = FPall.beta,
+          col = "gray65",
+          lwd = 0.75
+        )
+        abline(
+          a   = Fall.intercept,
+          b   = Fall.beta,
+          col = "tomato3",
+          lty = "dashed",
+          lwd = 1.5
+        )
+        abline(
+          a   = Pall.intercept,
+          b   = Pall.beta,
+          col = "skyblue",
+          lwd = 1.5
+        )
+        grid( col = "gray70", lty = "dotted", equilogs = TRUE)
+        legend(
+          'bottomright',
+          c( 'F-Points', 'P-Points' ),
+          col = c( 'tomato3', 'skyblue' ),
+          pch = c( 19, 15 ),
+          cex = 1.2,
+          bty = "n",
+          horiz = T
+        )
+
+        while( pointsel.incomplete ){
+
+          # select F-Points
+
+          fitGomp.Fdat <-
+            fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]
+
+          sel.Fpoints <-
+            identify(
+              x = fitGomp.Fdat$x,
+              y = fitGomp.Fdat$y,
+              labels = fitGomp.Fdat$age.group
+            )
+
+          Fsel.model <-
+            lm(
+              y ~ x,
+              data = fitGomp.Fdat[ sel.Fpoints , ]
+            )
+
+          Fsel.beta  <-
+            Fsel.model$coefficients[2]
+
+          Fsel.intercept  <-
+            Fsel.model$coefficients[1]
+
+          Fsel.alpha <-
+            Fsel.intercept - ( Fsel.beta - 1 ) ^ (2) * c.F / 2
+
           points(
-            x   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
-            y   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
-            col = 'blue',
-            pch = 0,
-            cex = 2,
-            cex.lab = 1.5
+            x   = fitGomp.Fdat[ sel.Fpoints, ]$x,
+            y   = fitGomp.Fdat[ sel.Fpoints, ]$y,
+            col = 'tomato3',
+            pch = 19,
+            cex = 1.5
           )
           abline(
-            a   = FPall.intercept,
-            b   = FPall.beta,
-            col = "black",
-            lty = "dashed"
+            a = Fsel.intercept,
+            b = Fsel.beta,
+            col = "tomato3",
+            lty = "dashed",
+            lwd = 1.5
+          )
+          mtext(
+            side = 3,
+            line = -1,
+            text = paste0('   alpha.F = ', round( Fsel.alpha, 3 ),
+                          '; beta.F = ', round( Fsel.beta, 3 ),
+                          '; intercept.F = ', round( Fsel.intercept, 3 ) ),
+            cex = 1.0,
+            adj = 0
           )
           grid( col = "gray70", lty = "dotted", equilogs = TRUE)
           legend(
             'bottomright',
             c( 'F-Points', 'P-Points' ),
-            col = c( 'red', 'blue' ),
+            col = c( 'tomato3', 'skyblue' ),
             pch = c( 19, 15 ),
-            cex = 1.5,
+            cex = 1.2,
             bty = "n",
-            horiz=T
+            horiz = T
           )
 
-          # select points to fitt alpha and beta
-          sel.points <-
-            identify( x = fitGomp.dat$x, y = fitGomp.dat$y )
+          if ( p.flag ){
+          # add selected points to plot
+          plot(
+            x    = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
+            y    = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
+            col = 'skyblue',
+            pch  = 0,
+            xlab ='g()',
+            ylab = 'z()-e()',
+            cex = 1.5,
+            xlim = range( fitGomp.dat$x ),
+            ylim = range( fitGomp.dat$y ),
+            main = 'SELECT P POINTS\n 0.80 < beta < 1.25 and |alpha| < 0.3'
+          )
+          points(
+            x   = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$x,
+            y   = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$y,
+            col = 'tomato3',
+            pch = 1,
+            cex = 1.5
+          )
+          points(
+            x   = fitGomp.Fdat[ sel.Fpoints, ]$x,
+            y   = fitGomp.Fdat[ sel.Fpoints, ]$y,
+            col = 'tomato3',
+            pch = 19,
+            cex = 1.5
+          )
+          abline(
+            a = Fsel.intercept,
+            b = Fsel.beta,
+            col = "tomato3",
+            lty = "dashed",
+            lwd = 1.5
+          )
+          mtext(
+            side = 3,
+            line = -1,
+            text = paste0('   alpha.F = ', round( Fsel.alpha, 3 ),
+                          '; beta.F = ', round( Fsel.beta, 3 ),
+                          '; intercept.F = ', round( Fsel.intercept, 3 ) ),
+            cex = 1.0,
+            adj = 0
+          )
+          grid( col = "gray70", lty = "dotted", equilogs = TRUE)
+          legend(
+            'bottomright',
+            c( 'F-Points', 'P-Points' ),
+            col = c( 'tomato3', 'skyblue' ),
+            pch = c( 19, 15 ),
+            cex = 1.2,
+            bty = "n",
+            horiz = T
+          )
+
+
+            # select P-Points
+            fitGomp.Pdat <-
+              fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]
+
+            sel.Ppoints <-
+              identify(
+                x = fitGomp.Pdat$x,
+                y = fitGomp.Pdat$y,
+                labels = fitGomp.Pdat$age.group
+              )
+
+            Psel.model <-
+              lm(
+                y ~ x,
+                data = fitGomp.Pdat[ sel.Ppoints , ]
+              )
+
+            Psel.beta  <-
+              Psel.model$coefficients[2]
+
+            Psel.intercept  <-
+              Psel.model$coefficients[1]
+
+            Psel.alpha <-
+              Psel.intercept - ( Psel.beta - 1 ) ^ (2) * c.P / 2
+
+            # add selected points to plot
+            points(
+              x   = fitGomp.Pdat[ sel.Ppoints, ]$x,
+              y   = fitGomp.Pdat[ sel.Ppoints, ]$y,
+              col = 'skyblue',
+              pch = 15,
+              cex = 1.5
+            )
+            abline(
+              a = Psel.intercept,
+              b = Psel.beta,
+              col = "skyblue",
+              lty = 1,
+              lwd = 1.5
+            )
+            mtext(
+              side = 3,
+              line = -2,
+              text = paste0('   alpha.P = ', round( Psel.alpha, 3 ),
+                            '; beta.P = ', round( Psel.beta, 3 ),
+                            '; intercept.P = ', round( Psel.intercept, 3 ) ),
+              cex = 1.0,
+              adj = 0
+            )
+            grid( col = "gray70", lty = "dotted", equilogs = TRUE)
+            legend(
+              'bottomright',
+              c( 'F-Points', 'P-Points' ),
+              col = c( 'tomato3', 'skyblue' ),
+              pch = c( 19, 15 ),
+              cex = 1.2,
+              bty = "n",
+              horiz = T
+            )
+
+          }
+
+          # combined p and f data selection
+          fitGomp.FPdat <-
+            rbind(
+              fitGomp.Fdat[ sel.Fpoints, ],
+              fitGomp.Pdat[ sel.Ppoints, ]
+            )
 
           # new model and parameters
           FPsel.model <-
             lm(
               y ~ x,
-              data = fitGomp.dat[ sel.points , ]
+              data = fitGomp.FPdat
               )
 
           FPsel.beta  <-
@@ -507,50 +737,50 @@ fertGompPF <-
           FPsel.alpha <-
             FPsel.intercept - ( FPsel.beta - 1 ) ^ (2) * mean( c.F, c.P, na.rm = TRUE ) / 2
 
-          # add selected points to plot
-          points(
-            x   = fitGomp.dat[ sel.points[sel.points %in% which(fitGomp.dat$point.lab == "F-Points")], ]$x,
-            y   = fitGomp.dat[ sel.points[sel.points %in% which(fitGomp.dat$point.lab == "F-Points")], ]$y,
-            col = 'red',
-            pch = 19,
-            cex = 2
-          )
-          points(
-            x   = fitGomp.dat[ sel.points[sel.points %in% which(fitGomp.dat$point.lab == "P-Points")], ]$x,
-            y   = fitGomp.dat[ sel.points[sel.points %in% which(fitGomp.dat$point.lab == "P-Points")], ]$y,
-            col = 'blue',
-            pch = 15,
-            cex = 2
-          )
           abline(
             a = FPsel.intercept,
             b = FPsel.beta,
-            col = "tomato3",
-            lty = 1
+            col = "black",
+            lty = 3,
+            lwd = 1.5
             )
           mtext(
             side = 3,
             line = -3,
-            text = paste0('   alpha = ', round( FPsel.alpha, 3 ), '; beta   = ', round( FPsel.beta, 3 ) ),
-            cex = 1.5,
+            text = paste0('   alpha = ', round( FPsel.alpha, 3 ), '; beta = ', round( FPsel.beta, 3 ) ),
+            cex = 1,
             adj = 0
           )
 
 
-          point_sel_check = "x"
-          while(point_sel_check!="y"|point_sel_check!="n"){
+          if ( abs( FPsel.alpha ) > 0.3 ){
+            warning('Caution! Absolute alpha estimate value greater than 0.3!')
+          }
+
+          if ( FPsel.beta > 1.25 | FPsel.beta < 0.80  ){
+            warning('Caution! Beta estimate value must be within the interval (0.80, 1.25)!')
+          }
+
+          pointsel.check <-  "x"
+
+          while ( pointsel.check != "y" | pointsel.check != "n"){
+
             # check if customer is satisfied with point selection
-            point_sel_check <- readline("Are you done with point selection?(y=yes/n=no)----->\n")
-            if(point_sel_check=="y"){
-              point_sel_incomplete = FALSE
+            pointsel.check <-
+              readline( "Are you done with point selection?(y=yes/n=no): \n" )
+
+            if ( pointsel.check == "y" ){
+              pointsel.incomplete = FALSE
               break
             }
-            if(point_sel_check=="n"){
-              point_sel_incomplete = TRUE
+
+            if ( pointsel.check == "n" ){
+              pointsel.incomplete = TRUE
               break
             }
-            if(point_sel_check!="y"|point_sel_check!="n"){
-              cat("Try again! y or n!\n")
+
+            if ( pointsel.check != "y" | pointsel.check != "n" ){
+              cat( "Try again! y for yes or n for no!\n" )
             }
 
           }
