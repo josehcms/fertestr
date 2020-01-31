@@ -463,6 +463,15 @@ fertGompPF <-
         Fsel.alpha <-
           Fsel.intercept - 0.5 * ( c.F ) * ( Fsel.beta - 1 ) ^ 2
 
+        FPsel.intercept <-
+          Fsel.intercept
+
+        FPsel.alpha <-
+          Fsel.alpha
+
+        FPsel.beta <-
+          Fsel.beta
+
         # 4.3. Fit alpha and beta for P points and joint F and P points if required
         if ( level ){
 
