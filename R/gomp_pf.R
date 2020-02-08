@@ -67,7 +67,7 @@ fertGompPF <-
           }
 
           if(length(P) == 7){
-            P <-
+            Pvec <-
               c( NA, P )
           }
 
@@ -81,8 +81,18 @@ fertGompPF <-
               c( NA, asfr )
           }
 
-          P <-
-            rep( NA, 8 )
+          if ( is.null( P ) ){
+
+            Pvec <-
+              rep( NA, 8 )
+
+          } else {
+
+            Pvec <-
+              c( NA, P)
+
+          }
+
         }
 
         # 1.4. Provide age groups and respective lower bound, upper bound and age.shift
@@ -119,10 +129,10 @@ fertGompPF <-
             age.ub,
             age.shift,
             asfr,
-            P
+            P = Pvec
           )
 
-        if ( is.null(P) | !level ){
+        if ( is.null(P) ){
           gomp.dat <-
             gomp.dat[ , - 6 ]
         }
@@ -1002,15 +1012,19 @@ fertGompPF <-
         return(outpf.dat)
       }
 
-    PFseries.dat <-
-      PFseries.Calc(
-        age.group = inputGomp.dat$age.group,
-        age.lb    = inputGomp.dat$age.lb,
-        age.ub    = inputGomp.dat$age.ub,
-        P.obs     = inputGomp.dat$P,
-        F.level   = unique( AntiGompit.dat$F.level ),
-        coeffs.Gomp = coeffGomp.dat$coeffs.Gomp
-      )
+    if ( !is.null( P ) ){
+      PFseries.dat <-
+        PFseries.Calc(
+          age.group = inputGomp.dat$age.group,
+          age.lb    = inputGomp.dat$age.lb,
+          age.ub    = inputGomp.dat$age.ub,
+          P.obs     = inputGomp.dat$P,
+          F.level   = unique( AntiGompit.dat$F.level ),
+          coeffs.Gomp = coeffGomp.dat$coeffs.Gomp
+        )
+    } else {
+      PFseries.dat <- NULL
+    }
 
     # 7. Create output data.frames
 
@@ -1037,12 +1051,17 @@ fertGompPF <-
     varsReg <-
       coeffGomp.dat$fitGomp.reg
 
+    ## 7.5 PF series
+    pfSeries <-
+      PFseries.dat
+
     fertGompPF.out <-
       list(
         asfr      = asfr,
         tfr       = tfr,
         paramsReg = paramsReg,
-        varsReg   = varsReg
+        varsReg   = varsReg,
+        pfSeries  = pfSeries
         )
 
         return( fertGompPF.out )

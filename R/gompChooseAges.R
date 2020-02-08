@@ -67,7 +67,7 @@ fertGompPF <-
           }
 
           if(length(P) == 7){
-            P <-
+            Pvec <-
               c( NA, P )
           }
 
@@ -81,8 +81,18 @@ fertGompPF <-
               c( NA, asfr )
           }
 
-          P <-
-            rep( NA, 8 )
+          if ( is.null( P ) ){
+
+            Pvec <-
+              rep( NA, 8 )
+
+          } else {
+
+            Pvec <-
+              c( NA, P)
+
+          }
+
         }
 
         # 1.4. Provide age groups and respective lower bound, upper bound and age.shift
@@ -119,10 +129,10 @@ fertGompPF <-
             age.ub,
             age.shift,
             asfr,
-            P
+            P = Pvec
           )
 
-        if ( is.null(P) | !level ){
+        if ( is.null(P) ){
           gomp.dat <-
             gomp.dat[ , - 6 ]
         }
@@ -397,7 +407,6 @@ fertGompPF <-
         gx,
         ex,
         zx,
-        sel.ages,
         level = FALSE,
         c.F,
         c.P = NA
@@ -478,7 +487,7 @@ fertGompPF <-
             Pall.model$coefficients[1]
         }
 
-        # 4.4 Plot diagnostic graphs for points selection
+        # 4.3 Plot diagnostic graphs for points selection
 
         pointsel.incomplete <- T
 
@@ -561,6 +570,7 @@ fertGompPF <-
           Fsel.alpha <-
             Fsel.intercept - ( Fsel.beta - 1 ) ^ (2) * c.F / 2
 
+          # add selected points to plot
           points(
             x   = fitGomp.Fdat[ sel.Fpoints, ]$x,
             y   = fitGomp.Fdat[ sel.Fpoints, ]$y,
@@ -596,7 +606,7 @@ fertGompPF <-
           )
 
           if ( p.flag ){
-          # add selected points to plot
+          # add P points to plot if there are any
           plot(
             x    = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
             y    = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
@@ -677,7 +687,7 @@ fertGompPF <-
             Psel.alpha <-
               Psel.intercept - ( Psel.beta - 1 ) ^ (2) * c.P / 2
 
-            # add selected points to plot
+            # add selected P points to plot
             points(
               x   = fitGomp.Pdat[ sel.Ppoints, ]$x,
               y   = fitGomp.Pdat[ sel.Ppoints, ]$y,
@@ -720,6 +730,10 @@ fertGompPF <-
               fitGomp.Fdat[ sel.Fpoints, ],
               fitGomp.Pdat[ sel.Ppoints, ]
             )
+
+          # selected ages
+          sel.ages <-
+            fitGomp.FPdat$age.ub
 
           # new model and parameters
           FPsel.model <-
@@ -770,12 +784,66 @@ fertGompPF <-
               readline( "Are you done with point selection?(y=yes/n=no): \n" )
 
             if ( pointsel.check == "y" ){
-              pointsel.incomplete = FALSE
+              pointsel.incomplete <-  FALSE
               break
             }
 
             if ( pointsel.check == "n" ){
-              pointsel.incomplete = TRUE
+
+              pointsel.incomplete <- TRUE
+
+              cat( 'New F and P points selection\n' )
+              # new plot for point selection
+              graphics.off()
+              x11( width = 6, height = 6 )
+              plot(
+                x    = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$x,
+                y    = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$y,
+                col  = 'tomato3',
+                pch  = 1,
+                xlab ='g()',
+                ylab = 'z()-e()',
+                cex = 1.5,
+                xlim = range( fitGomp.dat$x ),
+                ylim = range( fitGomp.dat$y ),
+                main = 'Select sequential F points for fertility estimation\nAttention: 0.80 < beta < 1.25 and |alpha| < 0.3'
+              )
+              points(
+                x   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
+                y   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
+                col = 'skyblue',
+                pch = 0,
+                cex = 1.5
+              )
+              abline(
+                a   = FPall.intercept,
+                b   = FPall.beta,
+                col = "gray65",
+                lwd = 0.75
+              )
+              abline(
+                a   = Fall.intercept,
+                b   = Fall.beta,
+                col = "tomato3",
+                lty = "dashed",
+                lwd = 1.5
+              )
+              abline(
+                a   = Pall.intercept,
+                b   = Pall.beta,
+                col = "skyblue",
+                lwd = 1.5
+              )
+              grid( col = "gray70", lty = "dotted", equilogs = TRUE)
+              legend(
+                'bottomright',
+                c( 'F-Points', 'P-Points' ),
+                col = c( 'tomato3', 'skyblue' ),
+                pch = c( 19, 15 ),
+                cex = 1.2,
+                bty = "n",
+                horiz = T
+              )
               break
             }
 
@@ -786,6 +854,11 @@ fertGompPF <-
           }
         }
 
+        rangeAll.x <-
+          range( fitGomp.dat$x )
+
+        rangeAll.y <-
+          range( fitGomp.dat$y )
 
         if ( level ){
 
@@ -799,7 +872,9 @@ fertGompPF <-
             pch  = 19,
             col  = 'skyblue',
             xlab = 'g()',
-            ylab = 'z()-e()'
+            ylab = 'z()-e()',
+            xlim = rangeAll.x,
+            ylim = rangeAll.y
           )
           abline( reg = Fall.model, col = 'skyblue' , lty = 5)
 
@@ -854,19 +929,21 @@ fertGompPF <-
 
           ## B.1 Selected F points
           plot(
-            x    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-            y    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
+            x    = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$x,
+            y    = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$y,
             pch  = 19,
             col  = 'skyblue',
             xlab = 'g()',
-            ylab = 'z()-e()'
+            ylab = 'z()-e()',
+            xlim = rangeAll.x,
+            ylim = rangeAll.y
           )
           abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
 
           ## B.2 Selected P points
           points(
-            x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-            y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
+            x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$x,
+            y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$y,
             pch = 15,
             col = 'tomato3'
           )
@@ -900,17 +977,17 @@ fertGompPF <-
                     'Combined F and P linear: y(x) = ', round( FPsel.intercept, 4) , ' + ', round( FPsel.beta, 4 ) , ' * x' )
           )
           text(
-            x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-            y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
-            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$age.group,
+            x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$x,
+            y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$y,
+            labels = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$age.group,
             cex = 0.75,
             pos = 4,
             col = 'skyblue'
           )
           text(
-            x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-            y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
-            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$age.group,
+            x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$x,
+            y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$y,
+            labels = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$age.group,
             cex = 0.75,
             pos = 4,
             col = 'tomato3'
@@ -919,6 +996,7 @@ fertGompPF <-
         }
 
         else{
+
           x11( width = 9, height = 6)
           par( mfrow = c( 1, 2 ) )
 
@@ -929,7 +1007,9 @@ fertGompPF <-
             pch  = 19,
             col  = 'skyblue',
             xlab = 'g()',
-            ylab = 'z()-e()'
+            ylab = 'z()-e()',
+            xlim = rangeAll.x,
+            ylim = rangeAll.y
           )
           abline( reg = Fall.model, col = 'skyblue' , lty = 5)
           grid()
@@ -958,12 +1038,14 @@ fertGompPF <-
 
           ## B.1 Selected F points
           plot(
-            x    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-            y    = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
+            x    = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$x,
+            y    = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$y,
             pch  = 19,
             col  = 'skyblue',
             xlab = 'g()',
-            ylab = 'z()-e()'
+            ylab = 'z()-e()',
+            xlim = rangeAll.x,
+            ylim = rangeAll.y
           )
           abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
           grid()
@@ -982,9 +1064,9 @@ fertGompPF <-
             paste0( 'F-points linear: y(x) = ', round( Fsel.intercept, 4) , ' + ', round( Fsel.beta, 4 ) , ' * x')
           )
           text(
-            x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$x,
-            y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$y,
-            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]$age.group,
+            x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$x,
+            y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$y,
+            labels = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$age.group,
             cex = 0.75,
             pos = 4,
             col = 'skyblue'
@@ -993,7 +1075,7 @@ fertGompPF <-
 
         # 4.5 Create output data.frame for regression and compute RMSE
         fitGomp.reg <-
-          fitGomp.dat[ fitGomp.dat$age.ub %in% sel.ages, ]
+          fitGomp.FPdat
 
         fitGomp.reg$RMSE <-
           round ( ( ( FPsel.intercept + FPsel.beta * fitGomp.reg$x ) - fitGomp.reg$y ) ^ 2, 4 )
@@ -1045,9 +1127,7 @@ fertGompPF <-
           gx        = Gomp.Fdat$gx,
           ex        = Gomp.Fdat$ex,
           zx        = Gomp.Fdat$zx,
-          sel.ages  = sel.ages,
           level     = level,
-          plot.diagnostic = plot.diagnostic,
           c.F       = unique( Gomp.Fdat$c.F ),
           c.P       = unique( Gomp.Pdat$c.P )
         )
@@ -1059,8 +1139,6 @@ fertGompPF <-
           gx        = Gomp.Fdat$gx,
           ex        = Gomp.Fdat$ex,
           zx        = Gomp.Fdat$zx,
-          sel.ages  = sel.ages,
-          plot.diagnostic = plot.diagnostic,
           c.F       = unique( Gomp.Fdat$c.F )
         )
     }
@@ -1219,7 +1297,7 @@ fertGompPF <-
           Fx.std = Gomp.Fdat$Fx.std,
           Fx.stdnoshift = Gomp.Fdat$Fx.stdnoshift,
           Fx.obs = Gomp.Fdat$Fx.obs,
-          sel.ages = sel.ages
+          sel.ages = Gomp.Fdat$age.ub
         )
     }
 
@@ -1262,15 +1340,19 @@ fertGompPF <-
         return(outpf.dat)
       }
 
-    PFseries.dat <-
-      PFseries.Calc(
-        age.group = inputGomp.dat$age.group,
-        age.lb    = inputGomp.dat$age.lb,
-        age.ub    = inputGomp.dat$age.ub,
-        P.obs     = inputGomp.dat$P,
-        F.level   = unique( AntiGompit.dat$F.level ),
-        coeffs.Gomp = coeffGomp.dat$coeffs.Gomp
-      )
+    if ( !is.null( P ) ){
+      PFseries.dat <-
+        PFseries.Calc(
+          age.group = inputGomp.dat$age.group,
+          age.lb    = inputGomp.dat$age.lb,
+          age.ub    = inputGomp.dat$age.ub,
+          P.obs     = inputGomp.dat$P,
+          F.level   = unique( AntiGompit.dat$F.level ),
+          coeffs.Gomp = coeffGomp.dat$coeffs.Gomp
+        )
+    } else {
+      PFseries.dat <- NULL
+    }
 
     # 7. Create output data.frames
 
@@ -1297,13 +1379,17 @@ fertGompPF <-
     varsReg <-
       coeffGomp.dat$fitGomp.reg
 
+    ## 7.5 PF series
+    pfSeries <-
+      PFseries.dat
+
     fertGompPF.out <-
       list(
         asfr      = asfr,
         tfr       = tfr,
         paramsReg = paramsReg,
-        varsReg   = varsReg
+        varsReg   = varsReg,
+        pfSeries  = pfSeries
       )
 
-    return( fertGompPF.out )
-  }
+    return( fertGompPF.out )  }
