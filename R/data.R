@@ -130,3 +130,23 @@
 #'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
 #'   Population. demographicestimation.iussp.org
 "std.zaba"
+
+
+#' Model Life Tables United Nations
+#'
+#' Model Life Tables United Nations for one year age interval
+#'
+#' @format
+#'     A data frame with 15 columns:
+#'     Type_MLT (model life table type: 'CD' for Coale-Demeny or 'UN' for Uniter Nations)
+#'     Family (model life table family: 'Chilean', 'Far_East_Asian', 'General, 'Latin', 'South_Asian',
+#'     'East', 'West', 'North', 'South')
+#'     Sex ('Female' or 'Male')
+#'     E0 (life expectancy level)
+#'     and other life table functions for one year age interval
+#'     age, mx1, qx1, lx1, dx1, Lx1, Tx1, sx1, ex1, ax1
+#' @source
+#'   Extended Model Life Tables - United Nations 2011
+#'   https://www.un.org/en/development/desa/population/publications/mortality/model-life-tables.asp
+"modelLTx1"
+
