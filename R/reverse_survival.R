@@ -42,10 +42,21 @@ getpop_wpp2019 <- function( country_code = NULL, country_name = NULL, year ){
   return(output)
 }
 
-getpop_wpp2019(country_name = 'Brazil', year = 2017)
 
-getpop_wpp2019(country_name = 'South Africa', year = 2009)
+pop_child <- getpop_wpp2019(country_name = 'Brazil', year = 2006)
 
+pop_child <-
+  data.frame( age = 0 : 14,
+              pop =  c( 281260, 261320, 268410, 286810, 278990, 293760,
+                        293490, 302060, 315970, 267190, 326980, 280260,
+                        354120, 356920, 354830 )
+              )
+
+pop_fem <-
+  data.frame( age = seq( 10, 65, 5 ),
+              pop =  c(  815930, 780320, 697160, 626430, 361650, 435880,
+                         393760, 352520, 294280, 230200, 160590, NA )
+              )
 
 interpolate <- function( y1, y2, x1, x2, x ){
   y_new <- round( ( ( x - x1 ) / ( x2 - x1 ) ) * ( y2 - y1 ) + y1, 5 )
@@ -137,18 +148,18 @@ get_q_wpp2019 <- function( country_code = NULL, country_name = NULL, year_survey
 }
 
 
-interp_data <- get_q_wpp2019( country_name = 'Brazil', year_survey = 2006 )$interp_data
+interp_data <- get_q_wpp2019( country_name = 'Cambodia', year_survey = 2008 )$interp_data
 
-family = 'North'
-e0 = 67.13
+family = 'South_Asian'
+e0 = 62.61
 
-find_MLT <- function( family, e0 ){
+find_MLT <- function( family, e0, ages, sex ){
 
   if( !( family %in% unique( modelLTx1$Family ) ) ){
     stop( 'Enter a family name within the options: Chilean, Far_East_Asian, Latin, General, South_Asian, North, South, East, West' )
   }
 
-  MLT       <- modelLTx1[ modelLTx1$Family == family & modelLTx1$Sex == 'Male', ]
+  MLT       <- modelLTx1[ modelLTx1$Family == family & modelLTx1$Sex == sex & modelLTx1$age %in% ages, ]
   e0_levels <- unique( MLT$E0 )
   e0_inf    <- e0_levels[ findInterval( e0, e0_levels ) ]
   e0_sup    <- e0_levels[ findInterval( e0, e0_levels ) + 1]
@@ -160,8 +171,8 @@ find_MLT <- function( family, e0 ){
 
   lx_std <-
     data.frame(
-      age    = age[1:16],
-      lx_std = lx_interp[1:16]
+      age    = age,
+      lx_std = lx_interp
     )
 
   return( lx_std )
@@ -183,22 +194,39 @@ logit <- function( lx = NULL, qx = NULL ){
 
 }
 
-estimate_alpha <- function( lx_std, qx ){
+estimate_alpha <- function( lx_std, qx, type ){
 
-  Yx_std = logit( lx = lx_std )
+  Yx_std = logit( lx = lx_std$lx_std )
 
-  alpha = round( logit( qx = qx ) - Yx_std, 5 )
+  if ( type == 'child' ){
+    alpha = round( logit( qx = qx ) - Yx_std, 5 )
+  }
+
+  if ( type == 'women'){
+    Y15_std = logit( lx = lx_std[lx_std$age == 15,]$lx_std )
+    Y60_std = logit( lx = lx_std[lx_std$age == 60,]$lx_std )
+
+    alpha = round( ( log( qx ) / 2 ) - ( log( ( 1 - qx ) * exp( 2 * Y60_std ) - exp( 2 * Y15_std ) ) / 2 ) , 4 )
+  }
 
   return( alpha )
 
 }
 
-interp_data$alpha <- estimate_alpha(lx_std = lx_std[lx_std$age==5,]$lx_std, qx = interp_data$q0_5_est)
+lx_std_child <- find_MLT( family, e0, ages = seq(0,15), sex = 'Male' )
+lx_std_women <- find_MLT( family, e0, ages = seq(10,65,5), sex = 'Female' )
 
-age    = lx_std$age
-lx_std = lx_std$lx_std
-alpha  = interp_data$alpha
+interp_data$alphaC <- estimate_alpha( lx_std = lx_std_child[lx_std_child$age==5,],
+                                      qx = interp_data$q0_5_est,
+                                      type = 'child' )
 
+interp_data$alphaW <- estimate_alpha( lx_std = lx_std_women,
+                                      qx = interp_data$q15_45_est,
+                                      type = 'women' )
+
+lx_std_women
+age = lx_std_women$age
+lx_std = lx_std_women$lx_std
 child_cohort_sr <- function( age, lx_std, interp_data ){
 
   cohsr_dat <-
@@ -208,9 +236,9 @@ child_cohort_sr <- function( age, lx_std, interp_data ){
       Yx_std  = logit( lx = lx_std )
     )
 
-  cohsr_dat$Yx0_4   = interp_data[ interp_data$years_prior == '0-4', ]$alpha   + cohsr_dat$Yx_std
-  cohsr_dat$Yx5_9   = interp_data[ interp_data$years_prior == '5-9', ]$alpha   + cohsr_dat$Yx_std
-  cohsr_dat$Yx10_14 = interp_data[ interp_data$years_prior == '10-14', ]$alpha + cohsr_dat$Yx_std
+  cohsr_dat$Yx0_4   = interp_data[ interp_data$years_prior == '0-4', ]$alphaC   + cohsr_dat$Yx_std
+  cohsr_dat$Yx5_9   = interp_data[ interp_data$years_prior == '5-9', ]$alphaC   + cohsr_dat$Yx_std
+  cohsr_dat$Yx10_14 = interp_data[ interp_data$years_prior == '10-14', ]$alphaC + cohsr_dat$Yx_std
 
   cohsr_dat$Lx0_4   = NA
   cohsr_dat$Lx5_9   = NA
@@ -278,12 +306,139 @@ child_cohort_sr <- function( age, lx_std, interp_data ){
 
   }
 
-  return( Lc )
+  return( Lc[1:15] )
 
 }
 
 
-require(MortalityLaws)
+women_sr <- function( age, lx_std, women, interp_data ){
+
+  cohsr_dat <-
+    data.frame(
+      age,
+      lx_std,
+      Yx_std  = logit( lx = lx_std ),
+      pop     = women
+    )
+
+  cohsr_dat$Px0_4   <- NA
+  cohsr_dat$Px5_9   <- NA
+  cohsr_dat$Px10_14 <- NA
+  for( x in age[1:10]  ){
+    cohsr_dat[cohsr_dat$age == x,]$Px0_4 <-
+      ( 1 + exp( 2 * interp_data[ interp_data$years_prior == '0-4', ]$alphaW + cohsr_dat[cohsr_dat$age == x,]$Yx_std
+                 + cohsr_dat[cohsr_dat$age == x + 5,] $Yx_std) ) /
+      ( 1 + exp( 2 * interp_data[ interp_data$years_prior == '0-4', ]$alphaW + cohsr_dat[cohsr_dat$age == x + 5,]$Yx_std
+                 + cohsr_dat[cohsr_dat$age == x + 10,] $Yx_std) )
+
+    cohsr_dat[cohsr_dat$age == x,]$Px5_9 <-
+      ( 1 + exp( 2 * interp_data[ interp_data$years_prior == '5-9', ]$alphaW + cohsr_dat[cohsr_dat$age == x,]$Yx_std
+                 + cohsr_dat[cohsr_dat$age == x + 5,] $Yx_std) ) /
+      ( 1 + exp( 2 * interp_data[ interp_data$years_prior == '5-9', ]$alphaW + cohsr_dat[cohsr_dat$age == x + 5,]$Yx_std
+                 + cohsr_dat[cohsr_dat$age == x + 10,] $Yx_std) )
+
+    cohsr_dat[cohsr_dat$age == x,]$Px10_14 <-
+      ( 1 + exp( 2 * interp_data[ interp_data$years_prior == '10-14', ]$alphaW + cohsr_dat[cohsr_dat$age == x,]$Yx_std
+                 + cohsr_dat[cohsr_dat$age == x + 5,] $Yx_std) ) /
+      ( 1 + exp( 2 * interp_data[ interp_data$years_prior == '10-14', ]$alphaW + cohsr_dat[cohsr_dat$age == x + 5,]$Yx_std
+                 + cohsr_dat[cohsr_dat$age == x + 10,] $Yx_std) )
+
+    }
+
+  cohsr_dat[cohsr_dat$age == 55,]$Px5_9 <- NA
+  cohsr_dat[cohsr_dat$age %in% c( 55, 50 ),]$Px10_14 <- NA
+
+  cohsr_dat$pop0_4   <- NA
+  cohsr_dat$pop5_9   <- NA
+  cohsr_dat$pop10_14 <- NA
+  for( x in age[1:11] ){
+    cohsr_dat[cohsr_dat$age == x,]$pop0_4   <- cohsr_dat[cohsr_dat$age == x + 5,]$pop / cohsr_dat[cohsr_dat$age == x,]$Px0_4
+  }
+  for( x in age[1:10] ){
+    cohsr_dat[cohsr_dat$age == x,]$pop5_9   <- cohsr_dat[cohsr_dat$age == x + 5,]$pop0_4 / cohsr_dat[cohsr_dat$age == x,]$Px5_9
+  }
+  for( x in age[1:9] ){
+    cohsr_dat[cohsr_dat$age == x,]$pop10_14   <- cohsr_dat[cohsr_dat$age == x + 5,]$pop5_9 / cohsr_dat[cohsr_dat$age == x,]$Px10_14
+  }
+
+
+
+  for ( i in 2 : ( nrow( cohsr_dat ) - 1 ) ){
+    cohsr_dat$Lx0_4[ i ] = 1 / ( 1 + exp( cohsr_dat$Yx0_4[ i ] + cohsr_dat$Yx0_4[ i + 1 ] ) )
+    cohsr_dat$Lx5_9[ i ] = 1 / ( 1 + exp( cohsr_dat$Yx5_9[ i ] + cohsr_dat$Yx5_9[ i + 1 ] ) )
+    cohsr_dat$Lx10_14[ i ] = 1 / ( 1 + exp( cohsr_dat$Yx10_14[ i ] + cohsr_dat$Yx10_14[ i + 1 ] ) )
+  }
+
+  cohsr_dat$Px0_4   = NA
+  cohsr_dat$Px5_9   = NA
+  cohsr_dat$Px10_14 = NA
+
+  cohsr_dat$Px0_4[1]   = cohsr_dat[ 1, ]$Lx0_4
+  cohsr_dat$Px5_9[1]   = cohsr_dat[ 1, ]$Lx5_9
+  cohsr_dat$Px10_14[1] = cohsr_dat[ 1, ]$Lx10_14
+
+
+  for ( i in 2 : ( nrow( cohsr_dat ) - 1 ) ){
+    cohsr_dat$Px0_4[ i ]   = cohsr_dat$Lx0_4[ i ] / cohsr_dat$Lx0_4[ i - 1 ]
+    cohsr_dat$Px5_9[ i ]   = cohsr_dat$Lx5_9[ i ] / cohsr_dat$Lx5_9[ i - 1 ]
+    cohsr_dat$Px10_14[ i ] = cohsr_dat$Lx10_14[ i ] / cohsr_dat$Lx10_14[ i - 1 ]
+  }
+
+
+  Lc = NULL
+  P1 = cohsr_dat$Px0_4
+  P2 = cohsr_dat$Px5_9
+  P3 = cohsr_dat$Px10_14
+
+  for( i in 1 : ( nrow( cohsr_dat ) ) ){
+    t = i - 1
+    j = i
+    S = rep( NA, i )
+
+    while( t >= 0 ){
+
+      if( t %in% 0:2 ){
+        S[j] = P1[i - t]
+      }
+
+      if ( t %in% 3 : 7 ){
+        S[j] = P1[i - t] * ( 1 - ( t - 2 ) / 5 ) + P2[i - t] * ( ( t - 2 ) / 5 )
+      }
+
+      if ( t %in% 8 : 12 ){
+        S[j] = P2[i - t] * ( 1 - ( t - 5 - 2 ) / 5 ) + P3[i - t] * ( ( t - 5 - 2 ) / 5 )
+      }
+
+      if ( t %in% 13 : 14 ){
+        S[j] = P3[i - t]
+      }
+
+      t = t - 1
+      j = j - 1
+    }
+
+    Lc = c( Lc, round( prod( S ), 5) )
+
+  }
+
+  return( Lc[1:15] )
+
+}
+
+
+pop_child$Lc <- child_cohort_sr( age = lx_std_child$age, lx_std = lx_std_child$lx_std, interp_data )
+
+pop_child$year_ref = NA
+for( i in 1:15 ){
+  pop_child$year_ref[i] = 2008 - i*1
+}
+
+pop_child$pop_surv <- pop_child$pop / pop_child$Lc
+
+lx_std_w <- find_MLT( family, e0, ages = seq(10,65,5), sex = 'Female' )
+
+
+female_cohort_sr <-
 
 data("mxF")
 data("mxM")
