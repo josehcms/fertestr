@@ -1,9 +1,27 @@
 require(wpp2019)
 require(data.table)
+require(dplyr)
 
+pop_child <-
+  data.frame( age = 0 : 14,
+              pop =  c( 281260, 261320, 268410, 286810, 278990, 293760,
+                        293490, 302060, 315970, 267190, 326980, 280260,
+                        354120, 356920, 354830 )
+  )
+
+pop_fem <-
+  data.frame( age = seq( 10, 65, 5 ),
+              pop =  c(  815930, 780320, 697160, 626430, 361650, 435880,
+                         393760, 352520, 294280, 230200, 160590, NA )
+  )
+
+
+year = 2010
 getpop_wpp2019 <- function( country_code = NULL, country_name = NULL, year ){
 
   require( wpp2019 )
+  data("popF")
+  data("popM")
   year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
 
   year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
@@ -19,20 +37,20 @@ getpop_wpp2019 <- function( country_code = NULL, country_name = NULL, year ){
   pop0_14 <- data.frame( age      = popF0_14$age,
                          pop_year_inf = popF0_14[,c( paste0( year_inf ) ) ] + popM0_14[,c( paste0( year_inf ) ) ],
                          pop_year_sup = popF0_14[,c( paste0( year_sup ) ) ] + popM0_14[,c( paste0( year_sup ) ) ]
-                         )
+  )
   pop0_14$exp_rate <- log( pop0_14$pop_year_sup / pop0_14$pop_year_inf ) / ( year_sup - year_inf )
   pop0_14$pop_year <- pop0_14$pop_year_inf * exp( ( year - year_inf ) * pop0_14$exp_rate )
 
   # female population 10-64
   popF10_64 <- popF[ popF$age %in% c( '10-14', '15-19', '20-24', '25-29', '30-34', '35-39', '40-44',
-                                      '45-49', '50-54', '55-59', '60-64' ) &
+                                      '45-49', '50-54', '55-59', '60-64', '65-69' ) &
                        popM$name == country_name,
                      c( 'age', paste0(year_inf), paste0(year_sup) ) ]
 
   popF10_64 <- data.frame( age      = popF10_64$age,
                            pop_year_inf = popF10_64[,c( paste0( year_inf ) ) ],
                            pop_year_sup = popF10_64[,c( paste0( year_sup ) ) ]
-                           )
+  )
   popF10_64$exp_rate <- log( popF10_64$pop_year_sup / popF10_64$pop_year_inf ) / ( year_sup - year_inf )
   popF10_64$pop_year <- popF10_64$pop_year_inf * exp( ( year - year_inf ) * popF10_64$exp_rate )
 
@@ -42,21 +60,45 @@ getpop_wpp2019 <- function( country_code = NULL, country_name = NULL, year ){
   return(output)
 }
 
+getfert_wpp2019 <- function( country_code = NULL, country_name = NULL, year ){
 
-pop_child <- getpop_wpp2019(country_name = 'Brazil', year = 2006)
+  require( wpp2019 )
+  data('percentASFR')
+  year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
+
+  year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
+  year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
+
+  # standardized fertility distribution of selected country
+  std_asfr <- data.frame( age      = seq( 10, 45, 5 ),
+                          asfr_std_ref     = c( 0, percentASFR[ percentASFR$name == country_name,
+                                                                c( paste0( year_inf, '-', year_sup) ) ] / ( 5 * 100 ) ),
+                          asfr_std_15prior = c( 0, percentASFR[ percentASFR$name == country_name,
+                                                                c( paste0( year_inf - 15, '-', year_sup - 15) ) ] / ( 5 * 100 ) )
+  )
+
+  return(std_asfr)
+}
+
+pop_child <- getpop_wpp2019(country_name = 'Brazil', year = 2015)$pop_child
+pop_fem <- getpop_wpp2019(country_name = 'Brazil', year = 2015)$pop_fem
 
 pop_child <-
   data.frame( age = 0 : 14,
-              pop =  c( 281260, 261320, 268410, 286810, 278990, 293760,
-                        293490, 302060, 315970, 267190, 326980, 280260,
-                        354120, 356920, 354830 )
+              pop =  c( 2713244, 2694909, 2726957, 2790782, 2870266,
+                        2931988, 2894419, 2959192, 2995612, 3188164,
+                        3505216, 3352844, 3402242, 3412748, 3493711 )
               )
 
 pop_fem <-
   data.frame( age = seq( 10, 65, 5 ),
-              pop =  c(  815930, 780320, 697160, 626430, 361650, 435880,
-                         393760, 352520, 294280, 230200, 160590, NA )
-              )
+              pop =  c(  8441348, 8432004, 8614963, 8643419, 8026854, 7121915,
+                         6688796, 6141338, 5305407, 4373877, 3468085, 2616745 )
+  )
+
+
+std_asfr <- getfert_wpp2019(country_name = 'Brazil', year = 2015)
+
 
 interpolate <- function( y1, y2, x1, x2, x ){
   y_new <- round( ( ( x - x1 ) / ( x2 - x1 ) ) * ( y2 - y1 ) + y1, 5 )
@@ -131,8 +173,8 @@ get_q_wpp2019 <- function( country_code = NULL, country_name = NULL, year_survey
           name     = country_name,
           years_prior = paste0( year_survey - (year_est) - 2.5, '-', year_survey - (year_est) + 1.5),
           year_est    = year_est,
-          q0_5_est    = interpolate_lx( q0_5.1, q0_5.2, year1, year2, year_est),
-          q15_45_est    = interpolate_lx( q15_45.1, q15_45.2, year1, year2, year_est)
+          q0_5_est    = interpolate( q0_5.1, q0_5.2, year1, year2, year_est),
+          q15_45_est    = interpolate( q15_45.1, q15_45.2, year1, year2, year_est)
           )
         )
   }
@@ -148,10 +190,10 @@ get_q_wpp2019 <- function( country_code = NULL, country_name = NULL, year_survey
 }
 
 
-interp_data <- get_q_wpp2019( country_name = 'Cambodia', year_survey = 2008 )$interp_data
+interp_data <- get_q_wpp2019( country_name = 'Brazil', year_survey = year )$interp_data
 
-family = 'South_Asian'
-e0 = 62.61
+family = 'Latin'
+e0 = get_q_wpp2019( country_name = 'Brazil', year_survey = 2010 )$lt_data_wpp2019$e0M[1]
 
 find_MLT <- function( family, e0, ages, sex ){
 
@@ -224,9 +266,6 @@ interp_data$alphaW <- estimate_alpha( lx_std = lx_std_women,
                                       qx = interp_data$q15_45_est,
                                       type = 'women' )
 
-lx_std_women
-age = lx_std_women$age
-lx_std = lx_std_women$lx_std
 child_cohort_sr <- function( age, lx_std, interp_data ){
 
   cohsr_dat <-
@@ -310,7 +349,6 @@ child_cohort_sr <- function( age, lx_std, interp_data ){
 
 }
 
-
 women_sr <- function( age, lx_std, women, interp_data ){
 
   cohsr_dat <-
@@ -348,140 +386,169 @@ women_sr <- function( age, lx_std, women, interp_data ){
   cohsr_dat[cohsr_dat$age == 55,]$Px5_9 <- NA
   cohsr_dat[cohsr_dat$age %in% c( 55, 50 ),]$Px10_14 <- NA
 
-  cohsr_dat$pop0_4   <- NA
-  cohsr_dat$pop5_9   <- NA
-  cohsr_dat$pop10_14 <- NA
+  cohsr_dat$pop5  <- NA
+  cohsr_dat$pop10 <- NA
+  cohsr_dat$pop15 <- NA
+
   for( x in age[1:11] ){
-    cohsr_dat[cohsr_dat$age == x,]$pop0_4   <- cohsr_dat[cohsr_dat$age == x + 5,]$pop / cohsr_dat[cohsr_dat$age == x,]$Px0_4
+    cohsr_dat[cohsr_dat$age == x,]$pop5   <- cohsr_dat[cohsr_dat$age == x + 5,]$pop / cohsr_dat[cohsr_dat$age == x,]$Px0_4
   }
+
   for( x in age[1:10] ){
-    cohsr_dat[cohsr_dat$age == x,]$pop5_9   <- cohsr_dat[cohsr_dat$age == x + 5,]$pop0_4 / cohsr_dat[cohsr_dat$age == x,]$Px5_9
+    cohsr_dat[cohsr_dat$age == x,]$pop10   <- cohsr_dat[cohsr_dat$age == x + 5,]$pop5 / cohsr_dat[cohsr_dat$age == x,]$Px5_9
   }
   for( x in age[1:9] ){
-    cohsr_dat[cohsr_dat$age == x,]$pop10_14   <- cohsr_dat[cohsr_dat$age == x + 5,]$pop5_9 / cohsr_dat[cohsr_dat$age == x,]$Px10_14
+    cohsr_dat[cohsr_dat$age == x,]$pop15   <- cohsr_dat[cohsr_dat$age == x + 5,]$pop10 / cohsr_dat[cohsr_dat$age == x,]$Px10_14
   }
 
 
+  return( cohsr_dat[ , c( 'age', 'pop', 'pop5', 'pop10', 'pop15')] )
 
-  for ( i in 2 : ( nrow( cohsr_dat ) - 1 ) ){
-    cohsr_dat$Lx0_4[ i ] = 1 / ( 1 + exp( cohsr_dat$Yx0_4[ i ] + cohsr_dat$Yx0_4[ i + 1 ] ) )
-    cohsr_dat$Lx5_9[ i ] = 1 / ( 1 + exp( cohsr_dat$Yx5_9[ i ] + cohsr_dat$Yx5_9[ i + 1 ] ) )
-    cohsr_dat$Lx10_14[ i ] = 1 / ( 1 + exp( cohsr_dat$Yx10_14[ i ] + cohsr_dat$Yx10_14[ i + 1 ] ) )
+}
+
+pop_fem_new <- women_sr( age = lx_std_women$age, lx_std = lx_std_women$lx_std, women = pop_fem$pop, interp_data )
+
+year_list <- seq( year - 0.5 , year - 0.5 - 14, -1 )
+
+pop_fem_rs <- data.frame( year = year, age = pop_fem_new$age[pop_fem_new$age %in% seq( 10, 45, 5 )],
+                          pop = pop_fem_new[pop_fem_new$age %in% seq( 10, 45, 5 ),]$pop,
+                          asfr_std = std_asfr$asfr_std_ref )
+
+pop_fem_rs <- data.frame()
+for( t in year_list ){
+
+  if( t <= year & t > year - 5 ){
+    pop1 = pop_fem_new$pop[pop_fem_new$age %in% seq( 10, 45, 5 )]
+    pop2 = pop_fem_new$pop5[pop_fem_new$age %in% seq( 10, 45, 5 )]
+    t1   = year
+    t2   = year - 5
+    pop_t = interpolate( pop1, pop2, t1, t2, t )
   }
 
-  cohsr_dat$Px0_4   = NA
-  cohsr_dat$Px5_9   = NA
-  cohsr_dat$Px10_14 = NA
-
-  cohsr_dat$Px0_4[1]   = cohsr_dat[ 1, ]$Lx0_4
-  cohsr_dat$Px5_9[1]   = cohsr_dat[ 1, ]$Lx5_9
-  cohsr_dat$Px10_14[1] = cohsr_dat[ 1, ]$Lx10_14
-
-
-  for ( i in 2 : ( nrow( cohsr_dat ) - 1 ) ){
-    cohsr_dat$Px0_4[ i ]   = cohsr_dat$Lx0_4[ i ] / cohsr_dat$Lx0_4[ i - 1 ]
-    cohsr_dat$Px5_9[ i ]   = cohsr_dat$Lx5_9[ i ] / cohsr_dat$Lx5_9[ i - 1 ]
-    cohsr_dat$Px10_14[ i ] = cohsr_dat$Lx10_14[ i ] / cohsr_dat$Lx10_14[ i - 1 ]
+  if( t <= year - 5 & t > year - 10 ){
+    pop1 = pop_fem_new$pop5[pop_fem_new$age %in% seq( 10, 45, 5 )]
+    pop2 = pop_fem_new$pop10[pop_fem_new$age %in% seq( 10, 45, 5 )]
+    t1   = year - 5
+    t2   = year - 10
+    pop_t = interpolate( pop1, pop2, t1, t2, t )
   }
 
-
-  Lc = NULL
-  P1 = cohsr_dat$Px0_4
-  P2 = cohsr_dat$Px5_9
-  P3 = cohsr_dat$Px10_14
-
-  for( i in 1 : ( nrow( cohsr_dat ) ) ){
-    t = i - 1
-    j = i
-    S = rep( NA, i )
-
-    while( t >= 0 ){
-
-      if( t %in% 0:2 ){
-        S[j] = P1[i - t]
-      }
-
-      if ( t %in% 3 : 7 ){
-        S[j] = P1[i - t] * ( 1 - ( t - 2 ) / 5 ) + P2[i - t] * ( ( t - 2 ) / 5 )
-      }
-
-      if ( t %in% 8 : 12 ){
-        S[j] = P2[i - t] * ( 1 - ( t - 5 - 2 ) / 5 ) + P3[i - t] * ( ( t - 5 - 2 ) / 5 )
-      }
-
-      if ( t %in% 13 : 14 ){
-        S[j] = P3[i - t]
-      }
-
-      t = t - 1
-      j = j - 1
-    }
-
-    Lc = c( Lc, round( prod( S ), 5) )
-
+  if( t <= year - 10 & t > year - 15 ){
+    pop1 = pop_fem_new$pop10[pop_fem_new$age %in% seq( 10, 45, 5 )]
+    pop2 = pop_fem_new$pop15[pop_fem_new$age %in% seq( 10, 45, 5 )]
+    t1   = year - 10
+    t2   = year - 15
+    pop_t = interpolate( pop1, pop2, t1, t2, t )
   }
 
-  return( Lc[1:15] )
-
+  pop_fem_rs <-
+    rbind(
+      pop_fem_rs,
+      data.frame(
+        year = t,
+        age  = pop_fem_new$age[pop_fem_new$age %in% seq( 10, 45, 5 )],
+        pop  = pop_t,
+        asfr_std = interpolate( std_asfr$asfr_std_ref, std_asfr$asfr_std_15prior, year - 0.5, year - 14 - 0.5, t )
+      )
+    )
 }
 
 
 pop_child$Lc <- child_cohort_sr( age = lx_std_child$age, lx_std = lx_std_child$lx_std, interp_data )
+pop_child$births <-  pop_child$pop / pop_child$Lc
 
 pop_child$year_ref = NA
-for( i in 1:15 ){
-  pop_child$year_ref[i] = 2008 - i*1
+for( i in 0:14 ){
+  pop_child$year_ref[i+1] = year - 0.5 - i*1
 }
 
-pop_child$pop_surv <- pop_child$pop / pop_child$Lc
+TFT_RS <- data.frame()
 
-lx_std_w <- find_MLT( family, e0, ages = seq(10,65,5), sex = 'Female' )
+for( t in unique( pop_fem_rs$year ) ){
+  den <- sum( pop_fem_rs[ pop_fem_rs$year == t, ]$pop * pop_fem_rs[ pop_fem_rs$year == t, ]$asfr_std )
+  num <- pop_child[ pop_child$year_ref == t, ]$births
 
+  TFT_RS <- rbind(
+    TFT_RS,
+    data.frame(
+      year = t,
+      TFT  = num / den
+      )
+  )
+}
 
-female_cohort_sr <-
-
-data("mxF")
-data("mxM")
-mx_dat <- as.data.table(mxM)
-
-
-
-
-lt$lt
-
-setDT(mxF)
-data("popF")
-
-Ages = mxF[name=='Brazil']$age
-pop5m_pasex = mxF[name=='Brazil']$`2015-2020`
-
-require(DemoTools)
-arr <- smooth_age_5(Value = pop5m_pasex,
-                    Age = Ages,
-                    method = "Arriaga",
-                    OAG = TRUE)
-require(beers)
-install.packages('demography')
-require(demography)
-dat = mxF[name %in% c('Brazil', 'Argentina', 'Chile', 'Germany', 'Sweden', 'Uruguay', 'Canada', 'Australia') & age < 15,
-          .(name, age, mx = `2010-2015`)]
 require(ggplot2)
+cols <- c("LINE1"="navyblue","LINE2"="tomato3")
+lines <- c("LINE1"="solid","LINE2"="dashed")
+ggplot() +
+#  geom_line( aes( x = TFT_RS$year, y = tft, col = 'LINE1', linetype = 'LINE1' ), size = 1.5 ) +
+  geom_line( aes( x = TFT_RS$year, y = TFT_RS$TFT, col = 'LINE2', linetype = 'LINE2'  ), size = 1.5 ) +
+  scale_color_manual( values = cols,
+                      labels = c( 'Tools for DemEst', 'fertestr' ),
+                      name = '') +
+  scale_linetype_manual( values = lines,
+                         labels = c( 'Tools for DemEst', 'fertestr' ),
+                         name = '') +
+  theme_classic() +
+  theme(
+    legend.position = 'top'
+  )
+ggsave('reverse_surv.png', width = 6, height = 6)
 
-ggplot( data = dat ) +
-  geom_point( aes( x = age, y = log( mx ), color = name ), size = 3 ) +
-  geom_line( aes( x = age, y = log( mx ), color = name ), size = 1.25 ) +
-  theme_classic()
+getwd()
 
-data("pop")
+devtools::install_github("mpascariu/MortalityEstimate")
+require(MortalityEstimate)
+HMD719f <- HMD719[HMD719$sex == "female", ]
 
-x = seq(0,100,0.01)
-f1 = 1/(x)
-f2 = 1/(x + 2)
-f3 = 1/(x + 5)
-plot(x,f,xlim = c(0,1))
-lines(x,f2,col = 'red')
-lines(x,f3,col='blue')
+x <- c(0,1, seq(5, 110, by = 5))
 
-setDT(pop)
+a = (0:110)
+wilmoth(a, LT = HMD719f)
 
-popFT
+W <- wilmoth(x, LT = HMD719f)
+L2 <- wilmothLT(W, q0_5 = 0.05, e0 = 65)
+
+lthat.logquad(coefs, a, q = 0.05, k = 0, radix = 1)
+?lthat.logquad
+?wilmothLT
+tmp1 <- read.csv("/home/jose/Downloads/DataProgramsExamples/DataProgramsExamples/Data/coefs.logquad.HMD719.csv")
+tmp2 <- array(c(as.matrix(tmp1[, 3:6])), dim=c(24, 3, 4), dimnames=list(ages.5x1, sexes, c("ax", "bx", "cx", "vx")))
+coefs <- aperm (tmp2, c(1,3,2))
+
+lthat.any2.logquad(coefs, "Female",  Q5 =0.05, QQa = 0.12 )
+
+?wilmothLT
+W$fitted.values
+W$coefficients
+
+data('popF')
+popF
+popS <- rbind(
+  fread('/home/jose/Downloads/WPP2019_PopulationBySingleAgeSex_1950-2019.csv'),
+  fread('/home/jose/Downloads/WPP2019_PopulationBySingleAgeSex_2020-2100.csv'))
+
+
+pop_child <- data.frame( age = popS[AgeGrp %in% 0:14 & Location == 'Brazil' & Time == 2015 ]$AgeGrp,
+                         pop = popS[AgeGrp %in% 0:14 & Location == 'Brazil' & Time == 2015 ]$PopTotal*1000 )
+
+require(data.table)
+dat <- as.data.table(modelLTx1) %>% .[ Sex == 'Male', .(Family,age,lx1,qx1,ex1,mx1,E0)]
+
+dat[,q0_5:=(1-lx1[age==5]/lx1[age==0]),.(Family,E0)]
+
+ggplot(data=dat[age %in% 0:4])+
+  aes(y = log(qx1), x = log(q0_5), col = as.factor(age)) +
+  geom_line()+
+  facet_wrap(~Family)+
+  theme_bw()
+
+aux <- dat[Family=='North' & age == 1,]
+
+summary(lm(data=aux,log(qx1)~log(q0_5)))
+
+plot(y=unique(dat$q0_5),x=dat[dat$age==0,]$qx1,xlim = c(0,0.65),ylim=c(0,0.65))
+lines(y=unique(dat$q0_5),x=dat[dat$age==1,]$qx1,col='red')
+lines(y=unique(dat$q0_5),x=dat[dat$age==2,]$qx1,col='blue')
+lines(y=unique(dat$q0_5),x=dat[dat$age==3,]$qx1,col='violet')
+abline(a = 0, b = 1)
