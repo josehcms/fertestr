@@ -150,3 +150,23 @@
 #'   https://www.un.org/en/development/desa/population/publications/mortality/model-life-tables.asp
 "modelLTx1"
 
+#' 2019 World Population Prospects
+#'
+#' Single-age WPP 2019 country population estimates for 1950-2100
+#'
+#' @format
+#'     A data frame with 10 columns:
+#'     LocID (location ID)
+#'     Location (Location name)
+#'     Time (year of estimates)
+#'     MidPeriod (mid period of estimates)
+#'     AgeGrp (age group)
+#'     AgeGrpStart (starting age of age group)
+#'     AgeGrpSpan (age group span - 1 year)
+#'     PopMale (male population counts)
+#'     PopFemale (female population counts)
+#'     PopTotal (both sexes population counts)
+#' @source
+#'   Worl Population Prospects - United Nations 2019
+#'   https://population.un.org/wpp/Download/Standard/CSV/
+"popWpp2019x1"
