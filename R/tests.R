@@ -11,7 +11,10 @@ dat <-
 data('tfr')
 
 dic_year <-
-  c( '1980-1985' = '1982.5',
+  c( '1965-1970' = '1967.5',
+     '1970-1975' = '1972.5',
+     '1975-1980' = '1977.5',
+     '1980-1985' = '1982.5',
      '1985-1990' = '1987.5',
      '1990-1995' = '1992.5',
      '1995-2000' = '1997.5',
@@ -61,14 +64,20 @@ ggplot( data = datplot ) +
 ggsave( 'comparison_SouthAmerica.png', width = 8, height = 5 )
 
 
+data("mxF")
+data("mxM")
 # error analysis
 listSample <- mxF[ mxF$country_code > 900, ]$country_code %>% unique
 
+sel_list = NULL
 # dados de mortalidade com repeticoes
 for( i in mxF$country_code %>% unique ){
   lenF = length(mxF[ mxF$country_code == i, ]$age)
   lenM = length(mxM[ mxM$country_code == i, ]$age)
 
+  if(lenM == 22){
+    sel_list = c(sel_list,i)
+  }
   if(lenM != 22){
     cat( paste0('Duplicates in mxM: ', i ,' (',mxM[ mxM$country_code == i,]$name %>% unique,')\n') )
     cat( paste0( 'age vector:','\n' ) )
@@ -84,20 +93,36 @@ for( i in mxF$country_code %>% unique ){
   }
 }
 
-mxM[ mxM$country_code == 921, 1:5]
 
 dat <-
-  revSurvWpp( country_list = listSample , year = 2010, family = 'General' )
+  rbind(
+    revSurvWpp( country_list = sel_list , year = 2010, family = 'General' ) %>%
+      as.data.table %>%
+      .[, year_est := 2010],
+    revSurvWpp( country_list = sel_list , year = 2000, family = 'General' ) %>%
+      as.data.table %>%
+      .[, year_est := 2000],
+    revSurvWpp( country_list = sel_list , year = 1990, family = 'General' ) %>%
+      as.data.table %>%
+      .[, year_est := 1990],
+    revSurvWpp( country_list = sel_list , year = 1980, family = 'General' ) %>%
+      as.data.table %>%
+      .[, year_est := 1980]
+  )
+
+# Issue - countries with mortality level e0 lower than 20 (Rwanda 1990), solved by letting e0<20 = 20
 
 baselinedat <-
-  tfr[tfr$name %in% listSample,
-      c('name', '1990-1995', '1995-2000','2000-2005','2005-2010','2010-2015')] %>%
+  tfr[tfr$country_code %in% sel_list,
+      c('country_code', '1965-1970', '1970-1975', '1975-1980', '1980-1985', '1985-1990',
+        '1990-1995', '1995-2000', '2000-2005', '2005-2010', '2010-2015')] %>%
   as.data.table %>%
-  melt( id.vars = c('name'),
-        measure.vars = c('1990-1995', '1995-2000','2000-2005','2005-2010','2010-2015'),
+  melt( id.vars = c('country_code'),
+        measure.vars = c( '1965-1970', '1970-1975', '1975-1980', '1980-1985', '1985-1990',
+                          '1990-1995', '1995-2000', '2000-2005', '2005-2010','2010-2015'),
         variable.name = 'year',
         value.name = 'TFR') %>%
-  .[,.( Country = name, year = as.numeric( dic_year[as.character(year)] ), TFR.wpp = round(TFR,4) ) ]
+  .[,.( Country = country_code, year = as.numeric( dic_year[as.character(year)] ), TFR.wpp = round(TFR,4) ) ]
 
 
 datError <-
@@ -107,8 +132,71 @@ datError <-
     by = c('Country', 'year')
     )
 
-datError$relative_diff = round( ( datError$TFR.wpp - datError$TFR )/ datError$TFR.wpp, 4 )
-plot(y = datError$relative_diff, x = datError$year )
+
+require(ggplot2)
+ggplot( data = datError ) +
+  geom_abline( slope = 1, intercept = 0, color = 'tomato3', size = 0.75 ) +
+  geom_point( aes( x = TFR, y = TFR.wpp, color = as.factor(year) ), size = 2 ) +
+  scale_x_continuous( breaks = seq( 0, 15, 1 ), limits = c( 0, 10 ), name = 'TFR - Reverse Survival' ) +
+  scale_y_continuous( breaks = seq( 0, 15, 1 ), limits = c( 0, 10 ), name = 'TFR - WPP 2019\n(mid period)' )  +
+  facet_wrap( ~year_est, ncol = 2 ) +
+  theme_classic() +
+  theme(
+    legend.position = 'top',
+    axis.text = element_text( color = 'black', size = 12 ),
+    panel.grid.major = element_line( color = 'gray80', linetype = 'dashed', size = 0.25 ),
+    strip.text = element_text( size = 12 ),
+    legend.text = element_text( size = 12 )
+  )
+
+datError[, diff := round( 100*abs(TFR.wpp - TFR)/TFR.wpp, 5 )]
+
+require(sf)
+require(countrycode)
+
+
+codes <-
+  codelist %>%
+  as.data.table %>%
+  .[,.( country_name = country.name.en,
+        country_code_char = iso3c,
+        country_code_num = iso3n)
+    ]
+
+library(sf)
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+
+world$Country = world$un_a3 %>% as.numeric()
+
+
+
+
+datWorld <-
+  merge(
+    world,
+    datError[year_est == 2010,.(maxdiff_country = max(diff) ), Country] %>%
+      .[,.(Country, maxdiff_country, diff_class = cut( maxdiff_country,
+                                                       breaks = c( 0, 2.5, 5, 7.5, 10, 100 ),
+                                                       labels = c('<2.5%', '[ 2.5; 5.0)','[ 5.0; 7.5)','[ 7.5;10.0)', '>10.0'),
+                                                       right = F ) )],
+    by = 'Country'
+  )
+
+
+x11()
+ggplot(data = datWorld) +
+  geom_sf(aes(fill = diff_class)) +
+  labs(title = 'Maximum relative difference for TFR estimated by fertestr from TFR of WPP2019',
+       subtitle = 'Years of estimation: 1980, 1990, 2000, 2010') +
+  scale_fill_viridis_d(option = "plasma", 'Max relative difference (%)\n |TRF_est - TFR_wpp| / TFR_wpp')+
+  theme_classic()
+
+
+
+plot(y = datError$TFR.wpp, x = datError$TFR )
+abline(a = 0, b = 1)
 
 dat <-
   rbind(

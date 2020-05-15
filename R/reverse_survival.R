@@ -151,6 +151,7 @@ revSurvWpp <- function( country_list = 'all', year, family = 'West' ){
       stop( 'Enter a family name within the options: Chilean, Far_East_Asian, Latin, General, South_Asian, North, South, East, West' )
     }
 
+    e0 <- ifelse( e0 < 20, 20, e0 )
     MLT       <- modelLTx1[ modelLTx1$Family == family & modelLTx1$Sex == sex & modelLTx1$age %in% ages, ]
     e0_levels <- unique( MLT$E0 )
     e0_inf    <- e0_levels[ findInterval( e0, e0_levels ) ]
@@ -392,7 +393,7 @@ revSurvWpp <- function( country_list = 'all', year, family = 'West' ){
 
   revSurvTFR <- data.frame()
 
-  print( paste0( 'Reverse Survival - WPP2019 Country Data' ) )
+  print( paste0( 'Reverse Survival - WPP2019 Country Data - Reference Year: ', year ) )
   len <- length( country_list )
   i = 1
   for ( country in country_list ){
