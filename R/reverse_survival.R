@@ -6,9 +6,9 @@ family = 'Latin'
 
 revSurvWpp <- function( country_list = 'all', year, family = 'West' ){
 
-  if ( country_list == 'all' ){
-    country_list = unique( popWpp2019x1$Location )
-  }
+  # if ( country_list == 'all' ){
+  #   country_list = unique( popWpp2019x1$Location )
+  # }
 
   if ( ! ( year %in% 1950:2100 ) ){
     stop( 'year value out of bounds, please insert year value within 1950-2100')
@@ -17,26 +17,26 @@ revSurvWpp <- function( country_list = 'all', year, family = 'West' ){
   # 1. Set data inputs
   # 1.1 child 0-14 data
   datChildren <-
-    popWpp2019x1[ popWpp2019x1$Location %in% country_list & popWpp2019x1$Time == year & popWpp2019x1$AgeGrp %in% 0:14,
-                  c( 'AgeGrp', 'Location', 'PopTotal' ) ]
+    popWpp2019x1[ popWpp2019x1$LocID %in% country_list & popWpp2019x1$Time == year & popWpp2019x1$AgeGrp %in% 0:14,
+                  c( 'AgeGrp', 'LocID', 'PopTotal' ) ]
   names(datChildren) <- c( 'AgesChildren', 'Country', 'popChildren' )
 
   # 1.2 adult women data
   popWomen.x1  <-
-    popWpp2019x1[ popWpp2019x1$Location %in% country_list & popWpp2019x1$Time == year & popWpp2019x1$AgeGrp %in% 10:69,
-                  c( 'Location', 'AgeGrp', 'PopFemale' ) ]
+    popWpp2019x1[ popWpp2019x1$LocID %in% country_list & popWpp2019x1$Time == year & popWpp2019x1$AgeGrp %in% 10:69,
+                  c( 'LocID', 'AgeGrp', 'PopFemale' ) ]
   popWomen.x1$age.x5 <-
     cut( popWomen.x1$AgeGrp, breaks = seq( 10, 70, 5 ), labels = seq( 10, 65, 5 ), right = FALSE )
 
   datWomen <-
     aggregate( popWomen.x1$PopFemale,
-               by = list( popWomen.x1$age.x5, popWomen.x1$Location ),
+               by = list( popWomen.x1$age.x5, popWomen.x1$LocID ),
                FUN = 'sum' )
   names(datWomen) <- c( 'AgesWomen', 'Country', 'popWomen' )
 
   # 1.3 Fertility pattern data and mortality data
 
-  fetch_FertPattern_Wpp2019 <- function( country_name = NULL, year ){
+  fetch_FertPattern_Wpp2019 <- function( country_code = NULL, year ){
 
     require( wpp2019 )
     data('percentASFR')
@@ -49,9 +49,9 @@ revSurvWpp <- function( country_list = 'all', year, family = 'West' ){
     std_asfr <-
       data.frame(
         age = seq( 10, 45, 5 ),
-        asfr_std_ref     = c( 0, percentASFR[ percentASFR$name %in% country_name,
+        asfr_std_ref     = c( 0, percentASFR[ percentASFR$country_code %in% country_code,
                                               c( paste0( year_inf, '-', year_sup) ) ] / ( 5 * 100 ) ),
-        asfr_std_15prior = c( 0, percentASFR[ percentASFR$name %in% country_name,
+        asfr_std_15prior = c( 0, percentASFR[ percentASFR$country_code %in% country_code,
                                               c( paste0( year_inf - 15, '-', year_sup - 15) ) ] / ( 5 * 100 ) )
     )
 
@@ -63,7 +63,7 @@ revSurvWpp <- function( country_list = 'all', year, family = 'West' ){
     return( y )
   }
 
-  fetch_MortProb_Wpp2019 <- function( country_name = NULL, year ){
+  fetch_MortProb_Wpp2019 <- function( country_code = NULL, year ){
 
     require( wpp2019 )
     require(MortalityLaws)
@@ -81,12 +81,12 @@ revSurvWpp <- function( country_list = 'all', year, family = 'West' ){
 
     for( year_sel in ( year_inf - seq( 0, 20, 5 ) ) ){
 
-      ltM   <- LifeTable( x   = mxM[ mxM$name == country_name, ]$age,
-                          mx  = mxM[ mxM$name == country_name, c( paste0( year_sel, '-', year_sel + 5 ) ) ],
+      ltM   <- LifeTable( x   = mxM[ mxM$country_code == country_code, ]$age ,
+                          mx  = mxM[ mxM$country_code == country_code, c( paste0( year_sel, '-', year_sel + 5 ) ) ] ,
                           lx0 = 1,
                           sex = 'male' )$lt
-      ltF   <- LifeTable( x   = mxF[ mxF$name == country_name, ]$age,
-                          mx  = mxF[ mxF$name == country_name, c( paste0( year_sel, '-', year_sel + 5 ) ) ],
+      ltF   <- LifeTable( x   = mxF[ mxF$country_code == country_code, ]$age ,
+                          mx  = mxF[ mxF$country_code == country_code, c( paste0( year_sel, '-', year_sel + 5 ) ) ] ,
                           lx0 = 1,
                           sex = 'female' )$lt
 
@@ -390,9 +390,15 @@ revSurvWpp <- function( country_list = 'all', year, family = 'West' ){
 
   }
 
-  revSurvTFT <- data.frame()
+  revSurvTFR <- data.frame()
 
+  print( paste0( 'Reverse Survival - WPP2019 Country Data' ) )
+  len <- length( country_list )
+  i = 1
   for ( country in country_list ){
+
+    print( paste0( country,' - Country number ', i, ' out of ', len  ) )
+    i = i + 1
 
     fertPattern <- data.frame()
     LT.dat <- data.frame()
@@ -446,26 +452,23 @@ revSurvWpp <- function( country_list = 'all', year, family = 'West' ){
       den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
       num <- revSurvBirths[ revSurvBirths$year == t, ]$births
 
-      revSurvTFT <- rbind(
-        revSurvTFT,
+      revSurvTFR <- rbind(
+        revSurvTFR,
         data.frame(
           Country = country,
           year = t,
-          TFT  = num / den
+          TFR  = num / den
         )
       )
     }
 
   }
 
-  return( revSurvTFT )
+  return( revSurvTFR )
 
 }
 
 
-revSurvWpp( country_list = c('Argentina','Brazil','Chile','Uruguay','Colombia','Ecuador'), year = 2010, family = 'Latin' )
-
-require(wpp2019)
 
 popWpp2019x1$Location %>% unique
 
