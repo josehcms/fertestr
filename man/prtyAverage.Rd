@@ -12,9 +12,17 @@ Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
   Asian and Pacific Population Forum 5(2-3):51-55, 76-87. http://hdl.handle.net/10125/3600.
 }
 \usage{
-prtyAverage(ages, parity, women, na_code = NA, prtyElBadry.set = FALSE,
-  prtyImp.set = FALSE, prtyElBadry.graph = FALSE,
-  prtyAssess.graph = FALSE, age_group = "q")
+prtyAverage(
+  ages,
+  parity,
+  women,
+  na_code = NA,
+  prtyElBadry.set = FALSE,
+  prtyImp.set = FALSE,
+  prtyElBadry.graph = FALSE,
+  prtyAssess.graph = FALSE,
+  age_group = "q"
+)
 }
 \arguments{
 \item{ages}{A vector of ages or starting ages of age group intervals}

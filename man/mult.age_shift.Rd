@@ -4,7 +4,9 @@
 \name{mult.age_shift}
 \alias{mult.age_shift}
 \title{Coefficients to estimate age-specific fertility rates for conventional age groups}
-\format{A data frame with age coefficients x, y and z}
+\format{
+A data frame with age coefficients x, y and z
+}
 \source{
 United Nations. 1983. Manual X: Indirect techniques for demographic estimation
 (United Nations publication, Sales No. E.83.XIII.2).

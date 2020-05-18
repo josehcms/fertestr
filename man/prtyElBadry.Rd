@@ -18,8 +18,7 @@ el-Badry MA. 1961.
  http://www.un.org/esa/population/techcoop/DemEst/manual10/manual10.html
 }
 \usage{
-prtyElBadry(ages, parity, women, prtyElBadry.graph = FALSE,
-  na_code = NA)
+prtyElBadry(ages, parity, women, prtyElBadry.graph = FALSE, na_code = NA)
 }
 \arguments{
 \item{ages}{A vector of ages or starting ages of age group intervals}

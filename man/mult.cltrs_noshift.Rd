@@ -5,8 +5,10 @@
 \alias{mult.cltrs_noshift}
 \title{Coale and Trussel variant for Brass PF multipliers for fertility rates computed
 from births by age of mother at delivery}
-\format{A data frame with age coefficients (a, b and c) for linear interpolation of cumulate fertility
-  schedules}
+\format{
+A data frame with age coefficients (a, b and c) for linear interpolation of cumulate fertility
+  schedules
+}
 \source{
 United Nations. 1983. Manual X: Indirect techniques for demographic estimation
 (United Nations publication, Sales No. E.83.XIII.2).

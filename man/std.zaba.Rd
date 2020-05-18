@@ -4,7 +4,9 @@
 \name{std.zaba}
 \alias{std.zaba}
 \title{Zaba standard table for Gompertz model fertility estimation}
-\format{}
+\format{
+
+}
 \source{
 Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of

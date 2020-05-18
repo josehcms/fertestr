@@ -8,8 +8,13 @@ United Nations. 1983. Manual X: Indirect techniques for demographic estimation
 (United Nations publication, Sales No. E.83.XIII.2).
 }
 \usage{
-fertBrassPF.cltrss(ages = seq(15, 45, 5), P, asfr,
-  adjust_group = c(20), age_shift = TRUE)
+fertBrassPF.cltrss(
+  ages = seq(15, 45, 5),
+  P,
+  asfr,
+  adjust_group = c(20),
+  age_shift = TRUE
+)
 }
 \arguments{
 \item{ages}{A vector of starting ages of five-year age groups ranging from 15 to 45 (default = c(15,20,25,30,35,40,45))}

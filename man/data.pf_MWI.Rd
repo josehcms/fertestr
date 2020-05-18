@@ -4,10 +4,12 @@
 \name{data.pf_MWI}
 \alias{data.pf_MWI}
 \title{Measures of fertility from the Malawi 2008 Census}
-\format{A data frame with 3 variables:
+\format{
+A data frame with 3 variables:
   ages (starting age of five-year age group),
   P (average parity of women) and
-  asfr (age-specific period fertility rates)}
+  asfr (age-specific period fertility rates)
+}
 \source{
 Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of

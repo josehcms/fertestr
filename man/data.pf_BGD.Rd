@@ -4,10 +4,12 @@
 \name{data.pf_BGD}
 \alias{data.pf_BGD}
 \title{Measures of fertility from Bangladesh 1974 demographic survey}
-\format{A data frame with 3 variables:
+\format{
+A data frame with 3 variables:
   ages (starting age of five-year age group),
   P (average parity of women) and
-  asfr (age-specific period fertility rates)}
+  asfr (age-specific period fertility rates)
+}
 \source{
 United Nations. 1983. Manual X: Indirect techniques for demographic estimation
 (United Nations publication, Sales No. E.83.XIII.2).

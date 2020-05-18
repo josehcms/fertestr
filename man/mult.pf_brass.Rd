@@ -4,9 +4,11 @@
 \name{mult.pf_brass}
 \alias{mult.pf_brass}
 \title{Original Brass PF multipliers for linear interpolation}
-\format{A data frame with age coefficients for linear interpolation of cumulate fertility schedules based
+\format{
+A data frame with age coefficients for linear interpolation of cumulate fertility schedules based
   on mean age at childbearing (m), parity ratio (P1/P2) and age-specific fertility rates
-  ratio (f1/f2).}
+  ratio (f1/f2).
+}
 \source{
 Brass W. 1975. Methods for Estimating Fertility and Mortality from Limited and Defected Data.
 North Carolina: Carolina Population Center.
