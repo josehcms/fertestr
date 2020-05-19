@@ -510,12 +510,15 @@ revSurvWpp <- function( country_list = 'all', year, lt_family = 'West' ){
 FertRevSurv <- function( ages_c = 0:14, pop_c,
                          ages_w = seq( 10, 65, 5 ), pop_women,
                          lx_c, lx_w,
-                         asfr_std         = c( 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
-                         asfr_std_15prior = c( 0.020, 0.060, 0.056, 0.037, 0.019, 0.007, 0.002 ),
+                         asfr_std         = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
+                         asfr_std_15prior = NULL,
                          MLT = FALSE, lt_family = 'West',
                          q0_5 = NULL, q15_45 = NULL,
                          e0_level = NULL
                          ){
+
+  # if asfr_std_15prior is null - use asfr_std as unique fertility pattern
+  # inputs: 3 elements fpr qx5 and 3 for qx15
 
   # 1. Set data inputs
   # 1.1 child 0-14 data
@@ -535,40 +538,31 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
 
   fertPattern <-
     data.frame(
-      ages_w = seq( 15, 45, 5 ),
-      asfr_std,
-      asfr_std_15prior
+      age = seq( 10, 45, 5 ),
+      asfr_std_ref = c( asfr_std ),
+      asfr_std_15prior = c( asfr_std )
     )
+
+  if( !is.null( asfr_std_15prior) ){
+    fertPattern$asfr_std_15prior <-  c( asfr_std_15prior )
+  }
+
+  lxChildren_std <-
+    data.frame(
+      age = c( ages_c, 15 ),
+      lx_std = lx_c
+    )
+
+  lxWomen_std <-
+    data.frame(
+      age = ages_w,
+      lx_std = lx_w
+    )
+
 
   interpolate <- function( y1, y2, x1, x2, x ){
     y <- round( ( ( x - x1 ) / ( x2 - x1 ) ) * ( y2 - y1 ) + y1, 5 )
     return( y )
-  }
-
-  find_MLT <- function( lt_family, e0, ages, sex ){
-
-    if( !( lt_family %in% unique( modelLTx1$Family ) ) ){
-      stop( 'Enter a model life table family name within the options: Chilean, Far_East_Asian, Latin, General, South_Asian, North, South, East, West' )
-    }
-
-    e0 <- ifelse( e0 < 20, 20, e0 )
-    MLT       <- modelLTx1[ modelLTx1$Family == lt_family & modelLTx1$Sex == sex & modelLTx1$age %in% ages, ]
-    e0_levels <- unique( MLT$E0 )
-    e0_inf    <- e0_levels[ findInterval( e0, e0_levels ) ]
-    e0_sup    <- e0_levels[ findInterval( e0, e0_levels ) + 1]
-    age       <- unique( MLT$age )
-
-    lx_inf    <- MLT[ MLT$E0 == e0_inf, ]$lx / 100000
-    lx_sup    <- MLT[ MLT$E0 == e0_sup, ]$lx / 100000
-    lx_interp <- interpolate( lx_inf, lx_sup, e0_inf, e0_sup, e0 )
-
-    lx_std <-
-      data.frame(
-        age    = age,
-        lx_std = lx_interp
-      )
-
-    return( lx_std )
   }
 
   logit <- function( lx = NULL, qx = NULL ){
@@ -795,41 +789,22 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
 
   print( paste0( 'Reverse Survival Fertility Estimation - Reference Year: ', year ) )
 
-    fertPattern <- data.frame()
-    LT.dat <- data.frame()
-    q.dat <- data.frame()
-    lxChildren_std <- data.frame()
-    lxWomen_std    <- data.frame()
-    alphaChildren <- NULL
-    alphaWomen <- NULL
-    Lc <- NULL
-
-
-    LT.dat <- fetch_q_dat$lt_data_wpp2019
-    q.dat <- fetch_q_dat$interp_data
-
-
-    lxChildren_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Male' )
-
-    lxWomen_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(10,65,5), sex = 'Female' )
-
     alphaChildren <- estimate_alpha(  lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
-                                      qx =  q.dat$q0_5_est,
+                                      qx = q0_5,
                                       type = 'child' )
 
     alphaWomen <- estimate_alpha( lx_std = lxWomen_std,
-                                  qx =  q.dat$q15_45_est,
+                                  qx =  q15_45,
                                   type = 'women' )
 
     Lc <- estimate_Lc( age = lxChildren_std$age,
                        lx_std = lxChildren_std$lx_std,
                        alphaChildren )
 
-
     revSurvWomen <-
       women_Surv( age = lxWomen_std$age,
                   lx_std = lxWomen_std$lx_std,
-                  women = datWomen[ datWomen$Country == country, ]$popWomen,
+                  women = datWomen$pop_w,
                   alphaWomen,
                   year,
                   fertPattern )
@@ -837,7 +812,7 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
     revSurvBirths <-
       data.frame(
         year = year - seq( 0.5, 14.5, 1 ),
-        births = datChildren[ datChildren$Country == country, ]$popChildren / Lc
+        births = datChildren$pop_c / Lc
       )
 
     for( t in unique( revSurvWomen$year ) ){
@@ -847,7 +822,6 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
       revSurvTFR <- rbind(
         revSurvTFR,
         data.frame(
-          Country = country,
           year = t,
           TFR  = num / den
         )
@@ -860,17 +834,27 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
 }
 
 
-pop_child <-
-  data.frame( age = 0 : 14,
-              pop =  c( 281260, 261320, 268410, 286810, 278990, 293760,
+pop_c <-  c( 281260, 261320, 268410, 286810, 278990, 293760,
                         293490, 302060, 315970, 267190, 326980, 280260,
                         354120, 356920, 354830 )
-  )
 
-pop_fem <-
-  data.frame( age = seq( 10, 65, 5 ),
-              pop =  c(  815930, 780320, 697160, 626430, 361650, 435880,
+
+pop_w <- c(  815930, 780320, 697160, 626430, 361650, 435880,
                          393760, 352520, 294280, 230200, 160590, NA )
-  )
 
 
+lx_c <- c( 1.0000, 0.9320, 0.9275, 0.9228, 0.9165, 0.9125, 0.9110, 0.9094,
+           0.9079, 0.9063, 0.9048, 0.9032, 0.9017, 0.9001, 0.8986, 0.8970 )
+
+lx_w <- c( 0.91381, 0.90989, 0.90492, 0.89798, 0.88893, 0.87596, 0.86029,
+           0.84188, 0.81791, 0.78472, 0.73735, 0.67316 )
+
+
+q0_5 = c( 0.0683, 0.1008, 0.1189)
+q15_45 = c( 0.1946, 0.2290, 0.2674)
+
+
+asfr_std <- c( 0.0000, 0.0418,0.1535, 0.1482, 0.1118, 0.0708, 0.0301, 0.0032 )
+asfr_std <- asfr_std/(5 * sum(asfr_std) )
+asfr_std_15prior <- c( 0.0000, 0.0533, 0.1974, 0.2144, 0.1836, 0.1332, 0.0676, 0.0134 )
+asfr_std_15prior <- asfr_std_15prior/(5 * sum(asfr_std_15prior) )
