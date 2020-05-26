@@ -3,14 +3,6 @@ require(wpp2019)
 require(dplyr)
 require(data.table)
 library(fertestr)
-lista =  c('Argentina', 'Brazil', 'Chile')
-
-dat <-
-  revSurvWpp( country_list = lista, year = 2010, family = 'General' )
-
-
-?revSurvWpp
-data('tfr')
 
 dic_year <-
   c( '1965-1970' = '1967.5',
@@ -24,46 +16,6 @@ dic_year <-
      '2005-2010' = '2007.5',
      '2010-2015' = '2012.5',
      '2015-2020' = '2017.5' )
-
-
-baselinedat <-
-  tfr[tfr$name %in% lista,
-      c('name', '1990-1995', '1995-2000','2000-2005','2005-2010','2010-2015')] %>%
-  as.data.table %>%
-  melt( id.vars = c('name'),
-        measure.vars = c('1990-1995', '1995-2000','2000-2005','2005-2010','2010-2015'),
-        variable.name = 'year',
-        value.name = 'TFR') %>%
-  .[,.( Country = name, year = as.numeric( dic_year[as.character(year)] ), TFR ) ]
-
-
-dat$Type <- 'fertestr'
-baselinedat$Type <- 'wpp2019'
-
-datplot <- rbind(dat,baselinedat)
-
-require(ggplot2)
-
-ggplot( data = datplot ) +
-  geom_line( aes( x = year, y = TFR, linetype = Type, color = Type ), size = 1.25 ) +
-  geom_point( aes( x = year, y = TFR, shape = Type, color = Type ), size = 3 ) +
-  scale_x_continuous( breaks = seq(1985,2020,2.5), limits = c( 1990, 2020 ), name = '' ) +
-  scale_y_continuous( breaks = seq( 1, 9, 0.25 ), name = 'TFR' )  +
-  scale_color_manual( values = c( 'fertestr' = 'black', 'wpp2019' = 'tomato3' ), name = ''  ) +
-  scale_shape_manual( values = c( 'fertestr' = 16, 'wpp2019' = 19 ), name = ''  ) +
-  scale_linetype_manual( values = c( 'fertestr' = 'solid', 'wpp2019' = 'dashed' ), name = '' ) +
-  facet_wrap( ~Country, ncol = 3, scales = 'free_y' ) +
-  theme_classic() +
-  theme(
-    legend.position = 'top',
-    axis.text.x = element_text( color = 'black', angle = 90, vjust = 0.5, size = 12 ),
-    axis.text.y = element_text( color = 'black', size = 12 ),
-    panel.grid.major = element_line( color = 'gray90', linetype = 'dashed', size = 0.25 ),
-    strip.text = element_text( size = 12 ),
-    legend.text = element_text( size = 12 )
-  )
-
-ggsave( 'comparison_SouthAmerica.png', width = 8, height = 5 )
 
 
 data("mxF")
