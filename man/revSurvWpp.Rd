@@ -7,14 +7,8 @@
 Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
   Population. demographicestimation.iussp.org
-
-Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
-  Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
-  Population. demographicestimation.iussp.org
 }
 \usage{
-revSurvWpp(country_list = "all", year, lt_family = "West")
-
 revSurvWpp(country_list = "all", year, lt_family = "West")
 }
 \arguments{
@@ -23,26 +17,16 @@ revSurvWpp(country_list = "all", year, lt_family = "West")
 \item{year}{base year for retrospective fertility estimation (1950-2100)}
 
 \item{lt_family}{family model life table to be used for reverse survival of children and women (Chilean, Far_East_Asian, Latin,
-General, South_Asian, North, South, East, West)}
+General (default), South_Asian, North, South, East, West)}
 }
 \value{
-data.frame with 3 elements: Country (country code), year (reference period of fertility estimation) and
-TFR (indirect estimated total fertility rate)
-
 data.frame with 3 elements: Country (country code), year (reference period of fertility estimation) and
 TFR (indirect estimated total fertility rate)
 }
 \description{
 Reverse Survival Fertility Estimation for countries listed in the World Population Prospects 2019
-
-Reverse Survival Fertility Estimation
 }
 \examples{
-## reverse survival for 5 selected countries in 2010 using UN General mortality profile
-
-countries <- c( 32, 76, 380, 508, 752 ) # Argentina, Brazil, Italy, Mozambique, Sweden
-revSurvWpp( country_list = countries, year = 2010, lt_family = 'General' )
-
 ## reverse survival for 5 selected countries in 2010 using UN General mortality profile
 
 countries <- c( 32, 76, 380, 508, 752 ) # Argentina, Brazil, Italy, Mozambique, Sweden

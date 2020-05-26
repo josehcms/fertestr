@@ -491,30 +491,50 @@ revSurvWpp <- function( country_list = 'all', year, lt_family = 'West' ){
 #'
 #' Reverse Survival Fertility Estimation
 #'
-#' @param lt_family family model life table to be used for reverse survival of children and women (Chilean, Far_East_Asian, Latin,
-#' General, South_Asian, North, South, East, West)
+#' @param ages_c children ages (default 0:14)
+#' @param pop_c children population matching ages_c vector
+#' @param lx_c children survival function vector matching ages_c vector
+#' @param ages_w women ages (default c( 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65 ))
+#' @param pop_women women population matching ages_w vector
+#' @param lx_w women survival function matching ages_w vector
+#' @param asfr_std standardized age specific fertility rates for five-year age groups from 10-45 for current period
+#' of estimation (default set to world 2015-2020 pattern - c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ))
+#' @param asfr_std_15_prior standardized age specific fertility rates for five-year age groups from 10-45 for the
+#' period of 15 years before the current inquiry period
+#' @param q0_5 3 element vector for mortality probability between ages 0-4 for the period of estimation,
+#' period 5 years prior to estimation period, and period 10 years prior to estimation period
+#' @param q15_45 female adult mortality probability for the period of estimation,
+#' period 5 years prior to estimation period, and period 10 years prior to estimation period
 #'
-#' @return data.frame with 3 elements: Country (country code), year (reference period of fertility estimation) and
+#' @return data.frame with 2 elements: year (reference period of fertility estimation) and
 #' TFR (indirect estimated total fertility rate)
+#'
 #' @export
 #' @source
 #'   Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
 #'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
 #'   Population. demographicestimation.iussp.org
 #' @examples
-#' ## reverse survival for 5 selected countries in 2010 using UN General mortality profile
+#' ## reverse survival for 2008 Cambodia data (Moultrie et al, 2013)
+#' pop_c <-  c( 281260, 261320, 268410, 286810, 278990, 293760, 293490, 302060, 315970, 267190, 326980, 280260, 354120, 356920, 354830 )
+#' pop_w <- c(  815930, 780320, 697160, 626430, 361650, 435880, 393760, 352520, 294280, 230200, 160590, NA )
+#' lx_c <- c( 1.0000, 0.9320, 0.9275, 0.9228, 0.9165, 0.9125, 0.9110, 0.9094, 0.9079, 0.9063, 0.9048, 0.9032, 0.9017, 0.9001, 0.8986, 0.8970 )
+#' lx_w <- c( 0.91381, 0.90989, 0.90492, 0.89798, 0.88893, 0.87596, 0.86029, 0.84188, 0.81791, 0.78472, 0.73735, 0.67316 )
+#' q0_5 <-  c( 0.0683, 0.1008, 0.1189)
+#' q15_45 <- c( 0.1946, 0.2290, 0.2674)
+#' asfr <- c( 0.0000, 0.0418,0.1535, 0.1482, 0.1118, 0.0708, 0.0301, 0.0032 )
+#' asfr_std <- asfr/(5 * sum(asfr) )
+#' asfr_15prior <- c( 0.0000, 0.0533, 0.1974, 0.2144, 0.1836, 0.1332, 0.0676, 0.0134 )
+#' asfr_std_15prior <- asfr_15prior/(5 * sum(asfr_15prior) )
 #'
-#' countries <- c( 32, 76, 380, 508, 752 ) # Argentina, Brazil, Italy, Mozambique, Sweden
-#' revSurvWpp( country_list = countries, year = 2010, lt_family = 'General' )
+#' FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5), pop_w,  lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45 )
 #'
 FertRevSurv <- function( ages_c = 0:14, pop_c,
                          ages_w = seq( 10, 65, 5 ), pop_women,
                          lx_c, lx_w,
                          asfr_std         = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
                          asfr_std_15prior = NULL,
-                         MLT = FALSE, lt_family = 'West',
-                         q0_5 = NULL, q15_45 = NULL,
-                         e0_level = NULL
+                         q0_5 = NULL, q15_45 = NULL
                          ){
 
   # if asfr_std_15prior is null - use asfr_std as unique fertility pattern
@@ -789,72 +809,46 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
 
   print( paste0( 'Reverse Survival Fertility Estimation - Reference Year: ', year ) )
 
-    alphaChildren <- estimate_alpha(  lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
-                                      qx = q0_5,
-                                      type = 'child' )
+  alphaChildren <- estimate_alpha(  lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
+                                    qx = q0_5,
+                                    type = 'child' )
 
-    alphaWomen <- estimate_alpha( lx_std = lxWomen_std,
-                                  qx =  q15_45,
-                                  type = 'women' )
+  alphaWomen <- estimate_alpha( lx_std = lxWomen_std,
+                                qx =  q15_45,
+                                type = 'women' )
 
-    Lc <- estimate_Lc( age = lxChildren_std$age,
-                       lx_std = lxChildren_std$lx_std,
-                       alphaChildren )
+  Lc <- estimate_Lc( age = lxChildren_std$age,
+                     lx_std = lxChildren_std$lx_std,
+                     alphaChildren )
 
-    revSurvWomen <-
-      women_Surv( age = lxWomen_std$age,
-                  lx_std = lxWomen_std$lx_std,
-                  women = datWomen$pop_w,
-                  alphaWomen,
-                  year,
-                  fertPattern )
+  revSurvWomen <-
+    women_Surv( age = lxWomen_std$age,
+                lx_std = lxWomen_std$lx_std,
+                women = datWomen$pop_w,
+                alphaWomen,
+                year,
+                fertPattern )
 
-    revSurvBirths <-
-      data.frame(
-        year = year - seq( 0.5, 14.5, 1 ),
-        births = datChildren$pop_c / Lc
+  revSurvBirths <-
+    data.frame(
+      year = year - seq( 0.5, 14.5, 1 ),
+      births = datChildren$pop_c / Lc
       )
 
-    for( t in unique( revSurvWomen$year ) ){
-      den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
-      num <- revSurvBirths[ revSurvBirths$year == t, ]$births
+  for( t in unique( revSurvWomen$year ) ){
+    den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
+    num <- revSurvBirths[ revSurvBirths$year == t, ]$births
 
-      revSurvTFR <- rbind(
-        revSurvTFR,
-        data.frame(
-          year = t,
-          TFR  = num / den
+    revSurvTFR <- rbind(
+      revSurvTFR,
+      data.frame(
+        year = t,
+        TFR  = num / den
         )
       )
     }
-
 
   return( revSurvTFR )
 
 }
 
-
-pop_c <-  c( 281260, 261320, 268410, 286810, 278990, 293760,
-                        293490, 302060, 315970, 267190, 326980, 280260,
-                        354120, 356920, 354830 )
-
-
-pop_w <- c(  815930, 780320, 697160, 626430, 361650, 435880,
-                         393760, 352520, 294280, 230200, 160590, NA )
-
-
-lx_c <- c( 1.0000, 0.9320, 0.9275, 0.9228, 0.9165, 0.9125, 0.9110, 0.9094,
-           0.9079, 0.9063, 0.9048, 0.9032, 0.9017, 0.9001, 0.8986, 0.8970 )
-
-lx_w <- c( 0.91381, 0.90989, 0.90492, 0.89798, 0.88893, 0.87596, 0.86029,
-           0.84188, 0.81791, 0.78472, 0.73735, 0.67316 )
-
-
-q0_5 = c( 0.0683, 0.1008, 0.1189)
-q15_45 = c( 0.1946, 0.2290, 0.2674)
-
-
-asfr_std <- c( 0.0000, 0.0418,0.1535, 0.1482, 0.1118, 0.0708, 0.0301, 0.0032 )
-asfr_std <- asfr_std/(5 * sum(asfr_std) )
-asfr_std_15prior <- c( 0.0000, 0.0533, 0.1974, 0.2144, 0.1836, 0.1332, 0.0676, 0.0134 )
-asfr_std_15prior <- asfr_std_15prior/(5 * sum(asfr_std_15prior) )
