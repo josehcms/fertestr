@@ -20,7 +20,7 @@ FertRevSurv(
   asfr_std_15prior = NULL,
   q0_5 = NULL,
   q15_45 = NULL,
-  year
+  date_ref
 )
 }
 \arguments{
@@ -45,7 +45,8 @@ period 5 years prior to estimation period, and period 10 years prior to estimati
 \item{q15_45}{female adult mortality probability for the period of estimation,
 period 5 years prior to estimation period, and period 10 years prior to estimation period}
 
-\item{year}{reference year of inquiry}
+\item{date_ref}{reference date of inquiry given in the following formats:
+%Y-%m-%d (4 digit year - 2 digit month - 2 digit day), %Y-%m (4 digit year - 2 digit month), %Y (4 digit year)}
 
 \item{asfr_std_15_prior}{standardized age specific fertility rates for five-year age groups from 10-45 for the
 period of 15 years before the current inquiry period}
@@ -70,6 +71,6 @@ asfr_std <- asfr/(5 * sum(asfr) )
 asfr_15prior <- c( 0.0000, 0.0533, 0.1974, 0.2144, 0.1836, 0.1332, 0.0676, 0.0134 )
 asfr_std_15prior <- asfr_15prior/(5 * sum(asfr_15prior) )
 
-FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5), pop_w,  lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45, year = 2008)
+FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5), pop_w,  lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45, date_ref = 2008)
 
 }
