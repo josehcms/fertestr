@@ -108,7 +108,12 @@ revSurvWpp <- function( country_list = 'all', year, lt_family = 'West' ){
 
       e0M <- ltM[ ltM$x == 0, ]$ex
       e0F <- ltF[ ltF$x == 0, ]$ex
-      q0_5   <- ( ltM[ ltM$x == 0, ]$lx - ltM[ ltM$x == 5, ]$lx ) / ltM[ ltM$x == 0, ]$lx
+
+      # compute infant mortality for both sex using fraction of females at birth 0.4886
+      lt_both <- data.frame( x = ltM$x , lx = rep( NA, nrow( ltM ) ) )
+      lt_both$lx <- ltF$lx * 0.4886 + ( 1 - 0.4886 )*ltM$lx
+
+      q0_5   <- ( lt_both[ lt_both$x == 0, ]$lx - lt_both[ lt_both$x == 5, ]$lx ) / lt_both[ lt_both$x == 0, ]$lx
       q15_45 <- ( ltF[ ltF$x == 15, ]$lx - ltF[ ltF$x == 60, ]$lx ) / ltF[ ltF$x == 15, ]$lx
 
       q_dat <-
@@ -434,7 +439,11 @@ revSurvWpp <- function( country_list = 'all', year, lt_family = 'West' ){
     q.dat <- fetch_q_dat$interp_data
 
 
-    lxChildren_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Male' )
+    lxChildrenM_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Male' )
+    lxChildrenF_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Female' )
+    # compute lx for both sexes using female at birth factor (pg 69 Watcher - Essential Demographic Methods)
+    lxChildren_std <- data.frame( age = lxChildrenM_std$age, lx_std = rep( NA, nrow( lxChildrenM_std ) ) )
+    lxChildren_std$lx_std <- lx_ChildrenF_std$lx_std * 0.4886 + ( 1 - 0.4886 ) * lx_ChildrenM_std$lx_std
 
     lxWomen_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(10,65,5), sex = 'Female' )
 
