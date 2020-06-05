@@ -425,6 +425,8 @@ revSurvWpp <- function( country_list = 'all', year, lt_family = 'West' ){
     fertPattern <- data.frame()
     LT.dat <- data.frame()
     q.dat <- data.frame()
+    lxChildrenF_std <- data.frame()
+    lxChildrenM_std <- data.frame()
     lxChildren_std <- data.frame()
     lxWomen_std    <- data.frame()
     alphaChildren <- NULL
@@ -443,7 +445,7 @@ revSurvWpp <- function( country_list = 'all', year, lt_family = 'West' ){
     lxChildrenF_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Female' )
     # compute lx for both sexes using female at birth factor (pg 69 Watcher - Essential Demographic Methods)
     lxChildren_std <- data.frame( age = lxChildrenM_std$age, lx_std = rep( NA, nrow( lxChildrenM_std ) ) )
-    lxChildren_std$lx_std <- lx_ChildrenF_std$lx_std * 0.4886 + ( 1 - 0.4886 ) * lx_ChildrenM_std$lx_std
+    lxChildren_std$lx_std <- lxChildrenF_std$lx_std * 0.4886 + ( 1 - 0.4886 ) * lxChildrenM_std$lx_std
 
     lxWomen_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(10,65,5), sex = 'Female' )
 

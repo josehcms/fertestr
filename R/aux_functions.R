@@ -67,3 +67,47 @@ decimal_anydate <-
 
     return(datedec)
   }
+
+#' Get WPP 2019 country codes from country names
+#'
+#' Provides the list of countries and respective codes available in WPP 2019 or
+#' fetch the country code for given country name
+#'
+#' @param country_name country name or vector of country names
+#' @return data.frame with two columns country_name and country_code
+#' @export
+
+#' @examples
+#' # provides all country codes
+#' get_country_code()
+#'
+#' # provides country codes for a given list of countries
+#' names <- c('Brazil','Argentina','Uruguay','Paraguay')
+#' get_country_code( names )
+#'
+
+get_country_code <- function( country_name ){
+  require(wpp2019)
+
+  data("UNlocations")
+
+  country_code_list <- NULL
+  invalid_names <- NULL
+  for( name in country_name ){
+    if( !( name %in% UNlocations$name ) ){
+      invalid_names <- c( invalid_names, name )
+    }
+    else{
+      country_code_list <-
+        c( country_code_list,
+           UNlocations[UNlocations$name == name,]$country_code )
+    }
+  }
+
+  if( !is.null( invalid_names ) ){
+    stop( paste0( invalid_names,
+                 ' is not a valid name among wpp 2019 location names.\n' ) )
+  }
+
+  return( country_code_list )
+}
