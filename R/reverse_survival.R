@@ -548,7 +548,8 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
                          asfr_std         = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
                          asfr_std_15prior = NULL,
                          q0_5 = NULL, q15_45 = NULL,
-                         date_ref
+                         date_ref,
+                         country_list = NULL
                          ){
 
   # if asfr_std_15prior is null - use asfr_std as unique fertility pattern
@@ -556,44 +557,46 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
 
   year <- decimal_anydate( date_ref )
   # 1. Set data inputs
-  # 1.1 child 0-14 data
-  datChildren <-
-    data.frame(
-      ages_c,
-      pop_c
-    )
 
-  # 1.2 adult women data
-  datWomen <-
-    data.frame(
-      ages_w,
-      pop_w
-    )
-  # 1.3 Fertility pattern data and mortality data
+  if( is.null( country_list ) ){
+    # 1.1 child 0-14 data
+    datChildren <-
+      data.frame(
+        ages_c,
+        pop_c
+      )
 
-  fertPattern <-
-    data.frame(
-      age = seq( 10, 45, 5 ),
-      asfr_std_ref = c( asfr_std ),
-      asfr_std_15prior = c( asfr_std )
-    )
+    # 1.2 adult women data
+    datWomen <-
+      data.frame(
+        ages_w,
+        pop_w
+      )
+    # 1.3 Fertility pattern data and mortality data
 
-  if( !is.null( asfr_std_15prior) ){
-    fertPattern$asfr_std_15prior <-  c( asfr_std_15prior )
+    fertPattern <-
+      data.frame(
+        age = seq( 10, 45, 5 ),
+        asfr_std_ref = c( asfr_std ),
+        asfr_std_15prior = c( asfr_std )
+      )
+
+    if( !is.null( asfr_std_15prior) ){
+      fertPattern$asfr_std_15prior <-  c( asfr_std_15prior )
+    }
+
+    lxChildren_std <-
+      data.frame(
+        age = c( ages_c, 15 ),
+        lx_std = lx_c
+      )
+
+    lxWomen_std <-
+      data.frame(
+        age = ages_w,
+        lx_std = lx_w
+      )
   }
-
-  lxChildren_std <-
-    data.frame(
-      age = c( ages_c, 15 ),
-      lx_std = lx_c
-    )
-
-  lxWomen_std <-
-    data.frame(
-      age = ages_w,
-      lx_std = lx_w
-    )
-
 
   interpolate <- function( y1, y2, x1, x2, x ){
     y <- round( ( ( x - x1 ) / ( x2 - x1 ) ) * ( y2 - y1 ) + y1, 5 )
