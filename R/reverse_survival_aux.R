@@ -129,6 +129,20 @@ get_location_code <- function( country_name ){
 }
 
 
+#' Get WPP 2019 location name from codes
+#'
+#' @param country_code country code
+#' @return country_name
+#' @export
+
+#' @keywords internal
+
+get_location_name <- function( country_code ){
+  locs_list <- locs_avail()
+  country_name <- as.character( locs_list[ locs_list$country_code == country_code, ]$name )
+  return( country_name )
+}
+
 #' Function to get fertility pattern from Wpp 2019 data
 #'
 #' @param country_code list of country codes to retrieve fertility pattern data from

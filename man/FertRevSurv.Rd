@@ -21,7 +21,8 @@ FertRevSurv(
   q0_5 = NULL,
   q15_45 = NULL,
   date_ref,
-  location_list = NULL
+  location_list = NULL,
+  lt_family = "West"
 )
 }
 \arguments{
@@ -49,12 +50,17 @@ period 5 years prior to estimation period, and period 10 years prior to estimati
 \item{date_ref}{reference date of inquiry given in the following formats:
 %Y-%m-%d (4 digit year - 2 digit month - 2 digit day), %Y-%m (4 digit year - 2 digit month), %Y (4 digit year)}
 
+\item{location_list}{list of either country names or location IDs from wpp 2019}
+
+\item{lt_family}{family model life table to be used for reverse survival of children and women (Chilean, Far_East_Asian, Latin,
+General (default), South_Asian, North, South, East, West)}
+
 \item{asfr_std_15_prior}{standardized age specific fertility rates for five-year age groups from 10-45 for the
 period of 15 years before the current inquiry period}
 }
 \value{
 data.frame with 2 elements: year (reference period of fertility estimation) and
-TFR (indirect estimated total fertility rate)
+TFR (indirect estimated total fertility rate) plus location name and ID if using wpp 2019 country data
 }
 \description{
 Reverse Survival Fertility Estimation
