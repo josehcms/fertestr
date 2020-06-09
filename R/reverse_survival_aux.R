@@ -101,10 +101,10 @@ locs_avail <- function( ){
 #'
 #' # provides country codes for a given list of countries
 #' names <- c('Brazil','Argentina','Uruguay','Paraguay')
-#' get_country_code( names )
+#' get_location_code( names )
 #'
 
-get_country_code <- function( country_name ){
+get_location_code <- function( country_name ){
 
   locs_list <- locs_avail()
   country_code_list <- NULL
@@ -286,7 +286,7 @@ interpolate <- function( y1, y2, x1, x2, x ){
 #' @keywords internal
 #'
 #'
-find_MLT <- function( lt_family, e0, ages, sex ){
+get_mlt <- function( lt_family, e0, ages, sex ){
 
   if( !( lt_family %in% unique( modelLTx1$Family ) ) ){
     stop( 'Enter a model life table family name within the options: Chilean, Far_East_Asian, Latin, General, South_Asian, North, South, East, West' )
@@ -346,7 +346,21 @@ logit <- function( lx = NULL, qx = NULL ){
 }
 
 
-estimate_alpha <- function( lx_std, qx, type ){
+#' Estimate alpha parameter for mortality
+#'
+#' Estimate alpha parameter for mortality of past years basedon provided qx and
+#' lx_standard parameters for women and children
+#'
+#' @param lx_std standard values for mortality estimation
+#' @param qx 3 element vector of child mortality (q0_5) or women adult mortality (q15_45) data
+#' @param type 'child' if estimating values for children or 'women' for adult women
+#'
+#' @return alpha, vector of three coefficient elements for 0-4, 5-9 and 10-14 years prior reference date
+#'
+#' @keywords internal
+#'
+#'
+alphaRevSurv <- function( lx_std, qx, type ){
 
   Yx_std = logit( lx = lx_std$lx_std )
 
@@ -365,7 +379,20 @@ estimate_alpha <- function( lx_std, qx, type ){
 
 }
 
-estimate_Lc <- function( age, lx_std, alphaChildren ){
+#' Estimate children cohort survival probabilities Lc
+#'
+#' Estimate cohort survival probabilities for children aged 0-14 in the reference date
+#'
+#' @param lx_std standard survival values for children
+#' @param age age vector related to standard survival values
+#' @param alphaChildren alpha values estimated from alphaRevSurv function
+#'
+#' @return Lc vector with cohort survival probabilities
+#'
+#' @keywords internal
+#'
+#'
+childSurvProb <- function( age, lx_std, alphaChildren ){
 
   cohsr_dat <-
     data.frame(
@@ -448,7 +475,26 @@ estimate_Lc <- function( age, lx_std, alphaChildren ){
 
 }
 
-women_Surv <- function( age, lx_std, women, alphaWomen, year, std_asfr ){
+#' Estimate children cohort survival probabilities Lc
+#'
+#' Estimate cohort survival probabilities for children aged 0-14 in the reference date
+#'
+#' @param age age vector related to standard survival values and women population
+#' @param lx_std standard survival function for selected women
+#' @param women women population for selected ages
+#' @param alphaWomen alpha parameters estimated from alphaRevSurv function
+#' @param year reference period of estimation
+#' @param std_asfr fertility pattern - standardized age-fertility rates
+#'
+#' @return data.frame with parameters:
+#' year: year of reverse survived population
+#' AgesWomen: women reproductive period ages
+#' popWomen: women population
+#' asfr_std: standardized age-specific fetrtility rates for estimation period
+#'
+#' @keywords internal
+#'
+womenRevSurv <- function( age, lx_std, women, alphaWomen, year, std_asfr ){
 
   cohsr_dat <-
     data.frame(

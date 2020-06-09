@@ -21,7 +21,7 @@ FertRevSurv(
   q0_5 = NULL,
   q15_45 = NULL,
   date_ref,
-  country_list = NULL
+  location_list = NULL
 )
 }
 \arguments{

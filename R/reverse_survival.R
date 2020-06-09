@@ -166,7 +166,7 @@ revSurvWpp <- function( country_list = 'all', year, lt_family = 'West' ){
 
   }
 
-  find_MLT <- function( lt_family, e0, ages, sex ){
+  get_mlt <- function( lt_family, e0, ages, sex ){
 
     if( !( lt_family %in% unique( modelLTx1$Family ) ) ){
       stop( 'Enter a model life table family name within the options: Chilean, Far_East_Asian, Latin, General, South_Asian, North, South, East, West' )
@@ -441,13 +441,13 @@ revSurvWpp <- function( country_list = 'all', year, lt_family = 'West' ){
     q.dat <- fetch_q_dat$interp_data
 
 
-    lxChildrenM_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Male' )
-    lxChildrenF_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Female' )
+    lxChildrenM_std <- get_mlt( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Male' )
+    lxChildrenF_std <- get_mlt( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Female' )
     # compute lx for both sexes using female at birth factor (pg 69 Watcher - Essential Demographic Methods)
     lxChildren_std <- data.frame( age = lxChildrenM_std$age, lx_std = rep( NA, nrow( lxChildrenM_std ) ) )
     lxChildren_std$lx_std <- lxChildrenF_std$lx_std * 0.4886 + ( 1 - 0.4886 ) * lxChildrenM_std$lx_std
 
-    lxWomen_std <- find_MLT( lt_family, e0 = LT.dat$e0M[1], ages = seq(10,65,5), sex = 'Female' )
+    lxWomen_std <- get_mlt( lt_family, e0 = LT.dat$e0M[1], ages = seq(10,65,5), sex = 'Female' )
 
     alphaChildren <- estimate_alpha(  lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
                                       qx =  q.dat$q0_5_est,
@@ -549,16 +549,19 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
                          asfr_std_15prior = NULL,
                          q0_5 = NULL, q15_45 = NULL,
                          date_ref,
-                         country_list = NULL
+                         location_list = NULL
                          ){
 
-  # if asfr_std_15prior is null - use asfr_std as unique fertility pattern
-  # inputs: 3 elements fpr qx5 and 3 for qx15
+  if ( !is.null( location_list ) & !is.numeric( location_list ) ){
+    location_codes <- get_country_code( location_list )
+  } else {
+    location_codes <- location_list
+  }
 
   year <- decimal_anydate( date_ref )
   # 1. Set data inputs
 
-  if( is.null( country_list ) ){
+  if( is.null( location_list ) ){
     # 1.1 child 0-14 data
     datChildren <-
       data.frame(
@@ -598,255 +601,30 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
       )
   }
 
-  interpolate <- function( y1, y2, x1, x2, x ){
-    y <- round( ( ( x - x1 ) / ( x2 - x1 ) ) * ( y2 - y1 ) + y1, 5 )
-    return( y )
-  }
-
-  logit <- function( lx = NULL, qx = NULL ){
-
-    if( is.null( qx ) & is.null( lx ) ){
-      stop( 'Enter either qx or lx value' )
-    }
-
-    if( !is.null( qx ) & is.null( lx ) ){
-      lx = 1 - qx
-    }
-
-    Yx = ( 1 / 2 ) * log( ( 1 - lx ) / lx )
-
-    return( Yx )
-
-  }
-
-  estimate_alpha <- function( lx_std, qx, type ){
-
-    Yx_std = logit( lx = lx_std$lx_std )
-
-    if ( type == 'child' ){
-      alpha = round( logit( qx = qx ) - Yx_std, 5 )
-    }
-
-    if ( type == 'women'){
-      Y15_std = logit( lx = lx_std[lx_std$age == 15,]$lx_std )
-      Y60_std = logit( lx = lx_std[lx_std$age == 60,]$lx_std )
-
-      alpha = round( ( log( qx ) / 2 ) - ( log( ( 1 - qx ) * exp( 2 * Y60_std ) - exp( 2 * Y15_std ) ) / 2 ) , 4 )
-    }
-
-    return( alpha )
-
-  }
-
-  estimate_Lc <- function( age, lx_std, alphaChildren ){
-
-    cohsr_dat <-
-      data.frame(
-        age,
-        lx_std,
-        Yx_std  = logit( lx = lx_std )
-      )
-
-    cohsr_dat$Yx0_4   = alphaChildren[1] + cohsr_dat$Yx_std
-    cohsr_dat$Yx5_9   = alphaChildren[2] + cohsr_dat$Yx_std
-    cohsr_dat$Yx10_14 = alphaChildren[3] + cohsr_dat$Yx_std
-
-    cohsr_dat$Lx0_4   = NA
-    cohsr_dat$Lx5_9   = NA
-    cohsr_dat$Lx10_14 = NA
-
-    cohsr_dat$Lx0_4[1]   = 0.3 + 0.7 / ( 1 + exp( 2 * cohsr_dat[ cohsr_dat$age == 1, ]$Yx0_4 ) )
-    cohsr_dat$Lx5_9[1]   = 0.3 + 0.7 / ( 1 + exp( 2 * cohsr_dat[ cohsr_dat$age == 1, ]$Yx5_9 ) )
-    cohsr_dat$Lx10_14[1] = 0.3 + 0.7 / ( 1 + exp( 2 * cohsr_dat[ cohsr_dat$age == 1, ]$Yx10_14 ) )
-
-    for ( i in 2 : ( nrow( cohsr_dat ) - 1 ) ){
-      cohsr_dat$Lx0_4[ i ] = 1 / ( 1 + exp( cohsr_dat$Yx0_4[ i ] + cohsr_dat$Yx0_4[ i + 1 ] ) )
-      cohsr_dat$Lx5_9[ i ] = 1 / ( 1 + exp( cohsr_dat$Yx5_9[ i ] + cohsr_dat$Yx5_9[ i + 1 ] ) )
-      cohsr_dat$Lx10_14[ i ] = 1 / ( 1 + exp( cohsr_dat$Yx10_14[ i ] + cohsr_dat$Yx10_14[ i + 1 ] ) )
-    }
-
-    cohsr_dat$Px0_4   = NA
-    cohsr_dat$Px5_9   = NA
-    cohsr_dat$Px10_14 = NA
-
-    cohsr_dat$Px0_4[1]   = cohsr_dat[ 1, ]$Lx0_4
-    cohsr_dat$Px5_9[1]   = cohsr_dat[ 1, ]$Lx5_9
-    cohsr_dat$Px10_14[1] = cohsr_dat[ 1, ]$Lx10_14
-
-
-    for ( i in 2 : ( nrow( cohsr_dat ) - 1 ) ){
-      cohsr_dat$Px0_4[ i ]   = cohsr_dat$Lx0_4[ i ] / cohsr_dat$Lx0_4[ i - 1 ]
-      cohsr_dat$Px5_9[ i ]   = cohsr_dat$Lx5_9[ i ] / cohsr_dat$Lx5_9[ i - 1 ]
-      cohsr_dat$Px10_14[ i ] = cohsr_dat$Lx10_14[ i ] / cohsr_dat$Lx10_14[ i - 1 ]
-    }
-
-
-    Lc = NULL
-    P1 = cohsr_dat$Px0_4
-    P2 = cohsr_dat$Px5_9
-    P3 = cohsr_dat$Px10_14
-
-    for( i in 1 : ( nrow( cohsr_dat ) ) ){
-      t = i - 1
-      j = i
-      S = rep( NA, i )
-
-      while( t >= 0 ){
-
-        if( t %in% 0:2 ){
-          S[j] = P1[i - t]
-        }
-
-        if ( t %in% 3 : 7 ){
-          S[j] = P1[i - t] * ( 1 - ( t - 2 ) / 5 ) + P2[i - t] * ( ( t - 2 ) / 5 )
-        }
-
-        if ( t %in% 8 : 12 ){
-          S[j] = P2[i - t] * ( 1 - ( t - 5 - 2 ) / 5 ) + P3[i - t] * ( ( t - 5 - 2 ) / 5 )
-        }
-
-        if ( t %in% 13 : 14 ){
-          S[j] = P3[i - t]
-        }
-
-        t = t - 1
-        j = j - 1
-      }
-
-      Lc = c( Lc, round( prod( S ), 5) )
-
-    }
-
-    return( Lc[1:15] )
-
-  }
-
-  women_Surv <- function( age, lx_std, women, alphaWomen, year, std_asfr ){
-
-    cohsr_dat <-
-      data.frame(
-        age,
-        lx_std,
-        Yx_std  = logit( lx = lx_std ),
-        popWomen     = women
-      )
-
-    cohsr_dat$Px0_4   <- NA
-    cohsr_dat$Px5_9   <- NA
-    cohsr_dat$Px10_14 <- NA
-    for( x in age[1:10]  ){
-      cohsr_dat[cohsr_dat$age == x,]$Px0_4 <-
-        ( 1 + exp( 2 * alphaWomen[1] + cohsr_dat[cohsr_dat$age == x,]$Yx_std
-                   + cohsr_dat[cohsr_dat$age == x + 5,] $Yx_std) ) /
-        ( 1 + exp( 2 * alphaWomen[1] + cohsr_dat[cohsr_dat$age == x + 5,]$Yx_std
-                   + cohsr_dat[cohsr_dat$age == x + 10,] $Yx_std) )
-
-      cohsr_dat[cohsr_dat$age == x,]$Px5_9 <-
-        ( 1 + exp( 2 * alphaWomen[2] + cohsr_dat[cohsr_dat$age == x,]$Yx_std
-                   + cohsr_dat[cohsr_dat$age == x + 5,] $Yx_std) ) /
-        ( 1 + exp( 2 * alphaWomen[2] + cohsr_dat[cohsr_dat$age == x + 5,]$Yx_std
-                   + cohsr_dat[cohsr_dat$age == x + 10,] $Yx_std) )
-
-      cohsr_dat[cohsr_dat$age == x,]$Px10_14 <-
-        ( 1 + exp( 2 * alphaWomen[3] + cohsr_dat[cohsr_dat$age == x,]$Yx_std
-                   + cohsr_dat[cohsr_dat$age == x + 5,] $Yx_std) ) /
-        ( 1 + exp( 2 * alphaWomen[3] + cohsr_dat[cohsr_dat$age == x + 5,]$Yx_std
-                   + cohsr_dat[cohsr_dat$age == x + 10,] $Yx_std) )
-
-    }
-
-    cohsr_dat[cohsr_dat$age == 55,]$Px5_9 <- NA
-    cohsr_dat[cohsr_dat$age %in% c( 55, 50 ),]$Px10_14 <- NA
-
-    cohsr_dat$popWomen5  <- NA
-    cohsr_dat$popWomen10 <- NA
-    cohsr_dat$popWomen15 <- NA
-
-    for( x in age[1:11] ){
-      cohsr_dat[cohsr_dat$age == x,]$popWomen5   <-
-        cohsr_dat[cohsr_dat$age == x + 5,]$popWomen / cohsr_dat[cohsr_dat$age == x,]$Px0_4
-    }
-
-    for( x in age[1:10] ){
-      cohsr_dat[cohsr_dat$age == x,]$popWomen10   <-
-        cohsr_dat[cohsr_dat$age == x + 5,]$popWomen5 / cohsr_dat[cohsr_dat$age == x,]$Px5_9
-    }
-    for( x in age[1:9] ){
-      cohsr_dat[cohsr_dat$age == x,]$popWomen15   <-
-        cohsr_dat[cohsr_dat$age == x + 5,]$popWomen10 / cohsr_dat[cohsr_dat$age == x,]$Px10_14
-    }
-
-    pop_fem_new <- cohsr_dat[ , c( 'age', 'popWomen', 'popWomen5', 'popWomen10', 'popWomen15' ) ]
-
-    year_list <- seq( year - 0.5 , year - 0.5 - 14, -1 )
-
-    pop_fem_rs <- data.frame()
-    for( t in year_list ){
-
-      if( t <= year & t > year - 5 ){
-        pop1 = pop_fem_new$popWomen[pop_fem_new$age %in% seq( 10, 45, 5 )]
-        pop2 = pop_fem_new$popWomen5[pop_fem_new$age %in% seq( 10, 45, 5 )]
-        t1   = year
-        t2   = year - 5
-        pop_t = interpolate( pop1, pop2, t1, t2, t )
-      }
-
-      if( t <= year - 5 & t > year - 10 ){
-        pop1 = pop_fem_new$popWomen5[pop_fem_new$age %in% seq( 10, 45, 5 )]
-        pop2 = pop_fem_new$popWomen10[pop_fem_new$age %in% seq( 10, 45, 5 )]
-        t1   = year - 5
-        t2   = year - 10
-        pop_t = interpolate( pop1, pop2, t1, t2, t )
-      }
-
-      if( t <= year - 10 & t > year - 15 ){
-        pop1 = pop_fem_new$popWomen10[pop_fem_new$age %in% seq( 10, 45, 5 )]
-        pop2 = pop_fem_new$popWomen15[pop_fem_new$age %in% seq( 10, 45, 5 )]
-        t1   = year - 10
-        t2   = year - 15
-        pop_t = interpolate( pop1, pop2, t1, t2, t )
-      }
-
-      pop_fem_rs <-
-        rbind(
-          pop_fem_rs,
-          data.frame(
-            year = t,
-            AgesWomen  = pop_fem_new$age[pop_fem_new$age %in% seq( 10, 45, 5 )],
-            popWomen   = pop_t,
-            asfr_std   = interpolate( std_asfr$asfr_std_ref, std_asfr$asfr_std_15prior, year - 0.5, year - 14 - 0.5, t )
-          )
-        )
-    }
-
-    return( pop_fem_rs )
-
-  }
-
   revSurvTFR <- data.frame()
 
   print( paste0( 'Reverse Survival Fertility Estimation - Reference date: ',
                  substr( lubridate::date_decimal( year ), 1, 10 ) ) )
 
-  alphaChildren <- estimate_alpha(  lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
-                                    qx = q0_5,
-                                    type = 'child' )
+  alphaChildren <- alphaRevSurv( lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
+                                 qx = q0_5,
+                                 type = 'child' )
 
-  alphaWomen <- estimate_alpha( lx_std = lxWomen_std,
-                                qx =  q15_45,
-                                type = 'women' )
+  alphaWomen <- alphaRevSurv( lx_std = lxWomen_std,
+                              qx =  q15_45,
+                              type = 'women' )
 
-  Lc <- estimate_Lc( age = lxChildren_std$age,
-                     lx_std = lxChildren_std$lx_std,
-                     alphaChildren )
+  Lc <- childSurvProb( age = lxChildren_std$age,
+                       lx_std = lxChildren_std$lx_std,
+                       alphaChildren )
 
   revSurvWomen <-
-    women_Surv( age = lxWomen_std$age,
-                lx_std = lxWomen_std$lx_std,
-                women = datWomen$pop_w,
-                alphaWomen,
-                year,
-                fertPattern )
+    womenRevSurv( age = lxWomen_std$age,
+                  lx_std = lxWomen_std$lx_std,
+                  women = datWomen$pop_w,
+                  alphaWomen,
+                  year,
+                  fertPattern )
 
   revSurvBirths <-
     data.frame(
