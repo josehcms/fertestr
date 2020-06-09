@@ -66,7 +66,7 @@ TFR (indirect estimated total fertility rate) plus location name and ID if using
 Reverse Survival Fertility Estimation
 }
 \examples{
-## reverse survival for 2008 Cambodia data (Moultrie et al, 2013)
+## reverse survival for 2008 Cambodia census data (Moultrie et al, 2013)
 pop_c <-  c( 281260, 261320, 268410, 286810, 278990, 293760, 293490, 302060, 315970, 267190, 326980, 280260, 354120, 356920, 354830 )
 pop_w <- c(  815930, 780320, 697160, 626430, 361650, 435880, 393760, 352520, 294280, 230200, 160590, NA )
 lx_c <- c( 1.0000, 0.9320, 0.9275, 0.9228, 0.9165, 0.9125, 0.9110, 0.9094, 0.9079, 0.9063, 0.9048, 0.9032, 0.9017, 0.9001, 0.8986, 0.8970 )
@@ -78,6 +78,12 @@ asfr_std <- asfr/(5 * sum(asfr) )
 asfr_15prior <- c( 0.0000, 0.0533, 0.1974, 0.2144, 0.1836, 0.1332, 0.0676, 0.0134 )
 asfr_std_15prior <- asfr_15prior/(5 * sum(asfr_15prior) )
 
-FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5), pop_w,  lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45, date_ref = 2008)
+FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5),
+pop_w,  lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45,
+date_ref = '2008-03-03')
 
+## reverse survival for 5 selected countries in 2010 using UN General mortality profile
+
+countries <- c( 32, 76, 380, 508, 752 ) # Argentina, Brazil, Italy, Mozambique, Sweden
+FertRevSurv( location_list = countries, date_ref = 2010, lt_family = 'General' )
 }
