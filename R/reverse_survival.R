@@ -95,6 +95,7 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
       fertPattern$asfr_std_15prior <-  c( asfr_std_15prior )
     }
 
+    # This is the point to insert log-quadratic mortality estimation function
     lxChildren_std <-
       data.frame(
         age = c( ages_c, 15 ),
