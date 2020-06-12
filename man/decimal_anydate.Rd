@@ -7,7 +7,7 @@
 decimal_anydate(date)
 }
 \arguments{
-\item{date}{date in the format %Y-%m-%d or string in the formats %Y, %Y-%m, %Y-%m-%d}
+\item{date}{date in the format Y-m-d or string in the formats Y, Y-m, Y-m-d}
 }
 \value{
 decimal of date's year

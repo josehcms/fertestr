@@ -2,7 +2,7 @@
 #'
 #' Converts a date of multiple formats (year, year-month, year-month-day) to decimal
 #'
-#' @param date date in the format %Y-%m-%d or string in the formats %Y, %Y-%m, %Y-%m-%d
+#' @param date date in the format Y-m-d or string in the formats Y, Y-m, Y-m-d
 #' @return decimal of date's year
 #' @export
 
@@ -611,58 +611,58 @@ womenRevSurv <- function( age, lx_std, women, alphaWomen, year, std_asfr ){
 }
 
 
-
-# Log quadratic estimation function to single ages to be added here
-library(ungroup)
-x <- c(0, seq(5, 85, by = 5))
-## test dataset: Lambda Chile 1920 males
-
-# y: Death counts in the age group (e.g. Dx from abridged life table)
-
-y <- c(30763 + 13590, 2852, 2920, 3222, 3531, 3920, 4194, 4271, 4304, 4352, 4349, 4291, 4203, 3826, 2910, 1702, 662, 138)
-
-# offset: Population exposed to risk in the age group (e.g., Lx from abridged life table)
-
-offset <- c(79389 + 240959, 270388, 256964, 241639, 224789, 206200, 185942, 164788, 143354, 121719, 99966, 78362, 57117, 37005, 20074, 8254, 2345, 306)
-
-nlast <- 26
-
-M5 <- pclm(x, y, nlast, offset)
-
-plot(M5, type = "s")
-
-## fitted
-
-mx5 <- cbind(fitted(M5))
-
-print(mx5, digits=8)
-## testing on Wilmoth model
-
-library(devtools)
-
-install_github("mpascariu/MortalityEstimate")
-
-library(MortalityEstimate)
-
-# DATA
-
-HMD719f <- HMD719[HMD719$sex == "female", ]
-
-# Fit Log-quadratic model
-
-x <- c(0,1, seq(5, 110, by = 5))
-
-W <- wilmoth(x = x, LT = HMD719f)
-
-# case 4: Using 5q0 and 35q15
-
-L4 <- wilmothLT(W, q0_5 = 0.05, q15_35 = 0.125)
-
-
-
-M5 <- pclm(x= L4$lt$x, y= L4$lt$dx, nlast=24, offset= L4$lt$Lx)
-
-plot(M5, type = "s")
+#
+# # Log quadratic estimation function to single ages to be added here
+# library(ungroup)
+# x <- c(0, seq(5, 85, by = 5))
+# ## test dataset: Lambda Chile 1920 males
+#
+# # y: Death counts in the age group (e.g. Dx from abridged life table)
+#
+# y <- c(30763 + 13590, 2852, 2920, 3222, 3531, 3920, 4194, 4271, 4304, 4352, 4349, 4291, 4203, 3826, 2910, 1702, 662, 138)
+#
+# # offset: Population exposed to risk in the age group (e.g., Lx from abridged life table)
+#
+# offset <- c(79389 + 240959, 270388, 256964, 241639, 224789, 206200, 185942, 164788, 143354, 121719, 99966, 78362, 57117, 37005, 20074, 8254, 2345, 306)
+#
+# nlast <- 26
+#
+# M5 <- pclm(x, y, nlast, offset)
+#
+# plot(M5, type = "s")
+#
+# ## fitted
+#
+# mx5 <- cbind(fitted(M5))
+#
+# print(mx5, digits=8)
+# ## testing on Wilmoth model
+#
+# library(devtools)
+#
+# install_github("mpascariu/MortalityEstimate")
+#
+# library(MortalityEstimate)
+#
+# # DATA
+#
+# HMD719f <- HMD719[HMD719$sex == "female", ]
+#
+# # Fit Log-quadratic model
+#
+# x <- c(0,1, seq(5, 110, by = 5))
+#
+# W <- wilmoth(x = x, LT = HMD719f)
+#
+# # case 4: Using 5q0 and 35q15
+#
+# L4 <- wilmothLT(W, q0_5 = 0.05, q15_35 = 0.125)
+#
+#
+#
+# M5 <- pclm(x= L4$lt$x, y= L4$lt$dx, nlast=24, offset= L4$lt$Lx)
+#
+# plot(M5, type = "s")
 
 
 

@@ -48,7 +48,7 @@ period 5 years prior to estimation period, and period 10 years prior to estimati
 period 5 years prior to estimation period, and period 10 years prior to estimation period}
 
 \item{date_ref}{reference date of inquiry given in the following formats:
-%Y-%m-%d (4 digit year - 2 digit month - 2 digit day), %Y-%m (4 digit year - 2 digit month), %Y (4 digit year)}
+Y-m-d (4 digit year - 2 digit month - 2 digit day), Y-m (4 digit year - 2 digit month), Y (4 digit year)}
 
 \item{location_list}{list of either country names or location IDs from wpp 2019}
 

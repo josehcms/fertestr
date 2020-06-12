@@ -17,7 +17,7 @@
 #' @param q15_45 female adult mortality probability for the period of estimation,
 #' period 5 years prior to estimation period, and period 10 years prior to estimation period
 #' @param date_ref reference date of inquiry given in the following formats:
-#' %Y-%m-%d (4 digit year - 2 digit month - 2 digit day), %Y-%m (4 digit year - 2 digit month), %Y (4 digit year)
+#' Y-m-d (4 digit year - 2 digit month - 2 digit day), Y-m (4 digit year - 2 digit month), Y (4 digit year)
 #' @param location_list list of either country names or location IDs from wpp 2019
 #' @param lt_family family model life table to be used for reverse survival of children and women (Chilean, Far_East_Asian, Latin,
 #' General (default), South_Asian, North, South, East, West)
