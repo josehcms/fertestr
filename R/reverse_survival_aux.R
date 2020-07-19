@@ -611,58 +611,66 @@ womenRevSurv <- function( age, lx_std, women, alphaWomen, year, std_asfr ){
 }
 
 
+#' Estimate single-age survival functions using Log-Quadratic Model
+#'
+#' Estimate single-age survival functions using Log-Quadratic Model for children 0-14 and
+#' women 10-64
+#'
+#' @param q0_1 log-quad parameter 0q1
+#' @param q0_5 log-quad parameter 0q5
+#' @param q15_35 log-quad parameter 15q35
+#' @param q15_45 log-quad parameter 15q45
+#' @param e0 log-quad parameter e0
+#' @param k log-quad parameter k
+#' @param lt reference life table for modeling log quad parametes, defaul = HMD
+#' @param sex sex to retrieve HMD sex and life table ('female','male','total' - default)
+#'
+#' @return single age life table estimated by ungrouping log-quad model estimation
+#'
+#' @keywords internal
+#'
 #
-# # Log quadratic estimation function to single ages to be added here
-# library(ungroup)
-# x <- c(0, seq(5, 85, by = 5))
-# ## test dataset: Lambda Chile 1920 males
-#
-# # y: Death counts in the age group (e.g. Dx from abridged life table)
-#
-# y <- c(30763 + 13590, 2852, 2920, 3222, 3531, 3920, 4194, 4271, 4304, 4352, 4349, 4291, 4203, 3826, 2910, 1702, 662, 138)
-#
-# # offset: Population exposed to risk in the age group (e.g., Lx from abridged life table)
-#
-# offset <- c(79389 + 240959, 270388, 256964, 241639, 224789, 206200, 185942, 164788, 143354, 121719, 99966, 78362, 57117, 37005, 20074, 8254, 2345, 306)
-#
-# nlast <- 26
-#
-# M5 <- pclm(x, y, nlast, offset)
-#
-# plot(M5, type = "s")
-#
-# ## fitted
-#
-# mx5 <- cbind(fitted(M5))
-#
-# print(mx5, digits=8)
-# ## testing on Wilmoth model
-#
-# library(devtools)
-#
-# install_github("mpascariu/MortalityEstimate")
-#
-# library(MortalityEstimate)
-#
-# # DATA
-#
-# HMD719f <- HMD719[HMD719$sex == "female", ]
-#
-# # Fit Log-quadratic model
-#
-# x <- c(0,1, seq(5, 110, by = 5))
-#
-# W <- wilmoth(x = x, LT = HMD719f)
-#
-# # case 4: Using 5q0 and 35q15
-#
-# L4 <- wilmothLT(W, q0_5 = 0.05, q15_35 = 0.125)
-#
-#
-#
-# M5 <- pclm(x= L4$lt$x, y= L4$lt$dx, nlast=24, offset= L4$lt$Lx)
-#
-# plot(M5, type = "s")
 
+SingleAgeLogQuad <-
+  function( k = NULL,
+            e0 = NULL,
+            q0_1 = NULL,
+            q0_5 = NULL,
+            q15_35 = NULL,
+            q15_45 = NULL,
+            lt = NULL,
+            sex = 'total' ){
 
+    require(ungroup)
+    require(MortalityEstimate)
+    require(MortalityLaws)
 
+    if( is.null(lt) ){
+      lt_lqmodel <- HMD719[HMD719$sex == sex, ]
+    }
+
+    # fit log-quadratic
+    x <- c( 0, 1, seq( 5, 110, by = 5 ) )
+    W <- wilmoth(x = x, LT = lt_lqmodel )
+
+    # use available information to retrieve life table
+    lt5 <- wilmothLT( W,
+                      q0_1 = q0_1, q0_5 = q0_5,
+                      q15_35 = q15_35, q15_45 = q15_45,
+                      e0 = e0, k = k )
+
+    # ungroup using ages 1 - 110
+    lts_model <- pclm( x = lt5$lt$x[ 2:24 ],
+                       y = lt5$lt$dx[ 2:24 ],
+                       nlast = 20,
+                       offset = lt5$lt$Lx[ 2:24 ] )
+
+    # single life table
+    lts <-
+      LifeTable( x = 0:99,
+                 mx = c( lt5$lt$mx[1], fitted( lts_model )[ 1:99 ] ),
+                 lx0 = 1,
+                 sex = sex )$lt
+
+    return( lts )
+  }

@@ -22,11 +22,24 @@ FertRevSurv(
   q15_45 = NULL,
   date_ref,
   location_list = NULL,
-  lt_family = "West"
+  lt_family = "West",
+  logquad = FALSE,
+  q0_1b = NULL,
+  q0_1f = NULL,
+  q0_5b = NULL,
+  q0_5f = NULL,
+  q15_35b = NULL,
+  q15_35f = NULL,
+  q15_45b = NULL,
+  q15_45f = NULL,
+  kb = NULL,
+  kf = NULL,
+  e0b = NULL,
+  e0f = NULL
 )
 }
 \arguments{
-\item{ages_c}{children ages (default 0:14)}
+\item{ages_c}{children ages (default 0:15)}
 
 \item{pop_c}{children population matching ages_c vector}
 
@@ -54,6 +67,29 @@ Y-m-d (4 digit year - 2 digit month - 2 digit day), Y-m (4 digit year - 2 digit 
 
 \item{lt_family}{family model life table to be used for reverse survival of children and women (Chilean, Far_East_Asian, Latin,
 General (default), South_Asian, North, South, East, West)}
+
+\item{logquad}{dummy variable to set the use of log-quadratic model for estimation of
+single-age survival functions for children (lx_c) and women (lx_w)}
+
+\item{q0_1b}{death probability between ages 0 and 1 for both sexes, used in case of
+logquad = TRUE}
+
+\item{q0_1f}{death probability between ages 0 and 1 for females, used in case of
+logquad = TRUE}
+
+\item{q15_35b}{death probability between ages 15 and 35 for both sexes, used in case of
+logquad = TRUE}
+
+\item{q15_35f}{death probability between ages 15 and 35 for females, used in case of
+logquad = TRUE}
+
+\item{kb}{log-quadratic model k parameter for both sexes}
+
+\item{kf}{log-quadratic model k parameter for females}
+
+\item{e0b}{life expectancy for both sexes, used in case of logquad = TRUE}
+
+\item{e0f}{life expectancy for females, used in case of logquad = TRUE}
 
 \item{asfr_std_15_prior}{standardized age specific fertility rates for five-year age groups from 10-45 for the
 period of 15 years before the current inquiry period}

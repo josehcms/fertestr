@@ -2,7 +2,7 @@
 #'
 #' Reverse Survival Fertility Estimation
 #'
-#' @param ages_c children ages (default 0:14)
+#' @param ages_c children ages (default 0:15)
 #' @param pop_c children population matching ages_c vector
 #' @param lx_c children survival function vector matching ages_c vector
 #' @param ages_w women ages (default c( 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65 ))
@@ -21,6 +21,20 @@
 #' @param location_list list of either country names or location IDs from wpp 2019
 #' @param lt_family family model life table to be used for reverse survival of children and women (Chilean, Far_East_Asian, Latin,
 #' General (default), South_Asian, North, South, East, West)
+#' @param logquad dummy variable to set the use of log-quadratic model for estimation of
+#' single-age survival functions for children (lx_c) and women (lx_w)
+#' @param q0_1b death probability between ages 0 and 1 for both sexes, used in case of
+#' logquad = TRUE
+#' @param q0_1f death probability between ages 0 and 1 for females, used in case of
+#' logquad = TRUE
+#' @param q15_35b death probability between ages 15 and 35 for both sexes, used in case of
+#' logquad = TRUE
+#' @param q15_35f death probability between ages 15 and 35 for females, used in case of
+#' logquad = TRUE
+#' @param kb log-quadratic model k parameter for both sexes
+#' @param kf log-quadratic model k parameter for females
+#' @param e0b life expectancy for both sexes, used in case of logquad = TRUE
+#' @param e0f life expectancy for females, used in case of logquad = TRUE
 #'
 #' @return data.frame with 2 elements: year (reference period of fertility estimation) and
 #' TFR (indirect estimated total fertility rate) plus location name and ID if using wpp 2019 country data
@@ -60,7 +74,14 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
                          q0_5 = NULL, q15_45 = NULL,
                          date_ref,
                          location_list = NULL,
-                         lt_family = 'West'
+                         lt_family = 'West',
+                         logquad = FALSE,
+                         q0_1b = NULL, q0_1f = NULL,
+                         q0_5b = NULL, q0_5f = NULL,
+                         q15_35b = NULL, q15_35f = NULL,
+                         q15_45b = NULL, q15_45f = NULL,
+                         kb = NULL, kf = NULL,
+                         e0b = NULL, e0f = NULL
                          ){
 
   if ( !is.null( location_list ) & !is.numeric( location_list ) ){
@@ -72,6 +93,7 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
   year <- decimal_anydate( date_ref )
 
   if( is.null( location_list ) ){
+
     datChildren <-
       data.frame(
         ages_c,
@@ -91,22 +113,63 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
         asfr_std_15prior = c( asfr_std )
       )
 
-    if( !is.null( asfr_std_15prior) ){
+    if( !is.null( asfr_std_15prior ) ){
       fertPattern$asfr_std_15prior <-  c( asfr_std_15prior )
     }
 
-    # This is the point to insert log-quadratic mortality estimation function
-    lxChildren_std <-
-      data.frame(
-        age = c( ages_c, 15 ),
-        lx_std = lx_c
-      )
+    if( logquad ){
 
-    lxWomen_std <-
-      data.frame(
-        age = ages_w,
-        lx_std = lx_w
-      )
+      if( sum( !is.null( q0_1b ), !is.null( q0_5b ), !is.null( q15_35b ),
+               !is.null( q15_45b ), !is.null( kb ), !is.null(e0b) ) != 2 &
+          sum( !is.null( q0_1f ), !is.null( q0_5f ), !is.null( q15_35f ),
+               !is.null( q15_45f ), !is.null( kf ), !is.null(e0f) ) != 2 ){
+        stop( 'If using log-quadratic model estimation, please set exactly two parameters for both sexes and for females')
+      }
+
+      lxb <-
+        SingleAgeLogQuad( k = kb,
+                          e0 = e0b,
+                          q0_1 = q0_1b,
+                          q0_5 = q0_5b,
+                          q15_35 = q15_35b,
+                          q15_45 = q15_45b,
+                          lt = NULL,
+                          sex = 'total' )
+      lxf <-
+        SingleAgeLogQuad( k = kf,
+                          e0 = e0f,
+                          q0_1 = q0_1f,
+                          q0_5 = q0_5f,
+                          q15_35 = q15_35f,
+                          q15_45 = q15_45f,
+                          lt = NULL,
+                          sex = 'female' )
+
+      lxChildren_std <-
+        data.frame(
+          age = lxb$x[1:16],
+          lx_std = lxb$lx[1:16]
+        )
+
+      lxWomen_std <-
+        data.frame(
+          age = lxbf$x[1:16],
+          lx_std = lxf$x[1:16]
+        )
+    } else{
+
+      lxChildren_std <-
+        data.frame(
+          age = ages_c,
+          lx_std = lx_c
+        )
+
+      lxWomen_std <-
+        data.frame(
+          age = ages_w,
+          lx_std = lx_w
+        )
+      }
 
     revSurvTFR <- data.frame()
 
