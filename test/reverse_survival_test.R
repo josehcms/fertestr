@@ -13,5 +13,12 @@
 FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5), pop_w,
              lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45, date_ref = '2008-11-12')
 
+
+FertRevSurv( ages_c = 0:14, pop_c = pop_c, ages_w = seq(10,65,5), pop_w = pop_w,
+             asfr_std = asfr_std, asfr_std_15prior = asfr_std_15prior,
+             q0_5 = q0_5, q15_45 = q15_45,
+             logquad = T, q0_5b = 0.05, q0_5f = 0.05, e0b = 69, e0f = 72,
+             date_ref = '2008-11-12')
+
 countries <- c( 32, 76, 380, 508, 752 ) # Argentina, Brazil, Italy, Mozambique, Sweden
 FertRevSurv( location_list = countries, date_ref = 2010, lt_family = 'General' )

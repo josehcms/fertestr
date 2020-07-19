@@ -2,9 +2,9 @@
 #'
 #' Reverse Survival Fertility Estimation
 #'
-#' @param ages_c children ages (default 0:15)
+#' @param ages_c children ages (default 0:14)
 #' @param pop_c children population matching ages_c vector
-#' @param lx_c children survival function vector matching ages_c vector
+#' @param lx_c children survival function vector for single ages from 0 to 15
 #' @param ages_w women ages (default c( 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65 ))
 #' @param pop_women women population matching ages_w vector
 #' @param lx_w women survival function matching ages_w vector
@@ -60,6 +60,13 @@
 #' FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5),
 #' pop_w,  lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45,
 #' date_ref = '2008-03-03')
+#'
+#' ## using Log-Quad model for estimation of lx_c and lx_w
+#' FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5),
+#' pop_w,  lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45,
+#' date_ref = '2008-03-03', logquad = T,
+#' q0_5b = 0.075, q0_5f = 0.06, e0b = 65, e0f = 68)
+#'
 #'
 #' ## reverse survival for 5 selected countries in 2010 using UN General mortality profile
 #'
@@ -153,14 +160,14 @@ FertRevSurv <- function( ages_c = 0:14, pop_c,
 
       lxWomen_std <-
         data.frame(
-          age = lxbf$x[1:16],
-          lx_std = lxf$x[1:16]
+          age = lxf$x[ lxf$x %in% ages_w  ],
+          lx_std = lxf$lx[ lxf$x %in% ages_w ]
         )
     } else{
 
       lxChildren_std <-
         data.frame(
-          age = ages_c,
+          age = 0:15,
           lx_std = lx_c
         )
 

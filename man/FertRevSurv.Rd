@@ -39,7 +39,7 @@ FertRevSurv(
 )
 }
 \arguments{
-\item{ages_c}{children ages (default 0:15)}
+\item{ages_c}{children ages (default 0:14)}
 
 \item{pop_c}{children population matching ages_c vector}
 
@@ -47,7 +47,7 @@ FertRevSurv(
 
 \item{pop_women}{women population matching ages_w vector}
 
-\item{lx_c}{children survival function vector matching ages_c vector}
+\item{lx_c}{children survival function vector for single ages from 0 to 15}
 
 \item{lx_w}{women survival function matching ages_w vector}
 
@@ -117,6 +117,13 @@ asfr_std_15prior <- asfr_15prior/(5 * sum(asfr_15prior) )
 FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5),
 pop_w,  lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45,
 date_ref = '2008-03-03')
+
+## using Log-Quad model for estimation of lx_c and lx_w
+FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5),
+pop_w,  lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45,
+date_ref = '2008-03-03', logquad = T,
+q0_5b = 0.075, q0_5f = 0.06, e0b = 65, e0f = 68)
+
 
 ## reverse survival for 5 selected countries in 2010 using UN General mortality profile
 
