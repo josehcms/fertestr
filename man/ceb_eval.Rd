@@ -48,4 +48,7 @@ pop_w <- c( 350140, 280920, 230080, 173260, 158140, 111360, 82080, 54220 )
 ceb <- c( 2532140, 2151920, 1736540, 1314140, 1143740, 816820, 560520, 371060 )
 
 ceb_eval( date_svy, ages_w, pop_w, ceb, mac = 28, plot_ceb = TRUE )
+
+# Using mac retrieved from WPP2019
+ceb_eval( date_svy, ages_w, pop_w, ceb, location_mac = 'Kenya', plot_ceb = TRUE )
 }
