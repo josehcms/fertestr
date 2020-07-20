@@ -4,7 +4,15 @@
 \alias{ceb_eval}
 \title{Cohort analysis of mean children ever born (CEB)}
 \usage{
-ceb_eval(date_svy, ages_w, pop_w, ceb, mac = 28, plot_ceb = TRUE)
+ceb_eval(
+  date_svy,
+  ages_w,
+  pop_w,
+  ceb,
+  mac = 28,
+  location_mac = NULL,
+  plot_ceb = TRUE
+)
 }
 \arguments{
 \item{date_svy}{survey or census date in the format Y-m-d or string in the formats
@@ -18,6 +26,8 @@ Y, Y-m, Y-m-d}
 
 \item{mac}{mean age at childbearing matching ages in age_w or unique value for all ages,
 default = 28}
+
+\item{location_mac}{retrieve MAC from a given location id or name from WPP2019}
 
 \item{plot_ceb}{dummy variable to return the plot for mean CEB results}
 }
