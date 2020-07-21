@@ -607,7 +607,12 @@ fertGompPF <-
               pch  = 19,
               col  = 'skyblue',
               xlab = 'g()',
-              ylab = 'z()-e()'
+              ylab = 'z()-e()',
+              xlim = range( fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$x,
+                            fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$x ),
+              ylim = range( fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$y,
+                            fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$y )
+
             )
             abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
 
