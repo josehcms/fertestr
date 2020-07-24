@@ -147,9 +147,9 @@ get_location_name <- function( country_code ){
 #'
 #' @param country_code list of country codes to retrieve fertility pattern data from
 #' @param year period of reference to retrieve fertility pattern data
-#' @return data.frame with three columns \item{age}: women ages, \item{asfr_std_ref}:
+#' @return data.frame with three columns age: women ages, asfr_std_ref:
 #' age-specific fertility rates for the time-period which contains the reference year and
-#' \item{asfr_std_15prior}: age-specific fertility rates for the time-period
+#' asfr_std_15prior: age-specific fertility rates for the time-period
 #' 15 years prior to the reference period
 #'
 #' @keywords internal
@@ -287,22 +287,23 @@ interpolate <- function( y1, y2, x1, x2, x ){
   return( y )
 }
 
-#' Get lx data from model life tables
+#' Find life table survival function lx data from model life tables
 #'
 #' Retrieve survival data for provided model life tables
 #'
 #' @param lt_family Model Life Table family name (Chilean, Far_East_Asian, Latin, General, South_Asian, North, South, East, West)
 #' @param e0 Life expectancy level for life table (lower bound = 20)
 #' @param ages age selection of data (single age-interval from 0 to 130)
-#' @param sex `Female` or `Male`
+#' @param sex `female` or `male` or `both`
+#'
 #' @return data.frame with selected ages `$age` and survival functions `$lx_std`
 #'
 #' @keywords internal
 #'
 #'
-get_mlt <- function( lt_family, e0, ages, sex ){
+find_mlt <- function( lt_family, e0, ages, sex ){
 
-  if( !( lt_family %in% unique( modelLTx1$Family ) ) ){
+  if( !( lt_family %in% unique( modelLTx1$family ) ) ){
     stop( 'Enter a model life table family name within the options: Chilean, Far_East_Asian, Latin, General, South_Asian, North, South, East, West' )
   }
 
@@ -311,23 +312,47 @@ get_mlt <- function( lt_family, e0, ages, sex ){
     e0 <- 20
   }
 
-  MLT       <- modelLTx1[ modelLTx1$Family == lt_family & modelLTx1$Sex == sex & modelLTx1$age %in% ages, ]
-  e0_levels <- unique( MLT$E0 )
-  e0_inf    <- e0_levels[ findInterval( e0, e0_levels ) ]
-  e0_sup    <- e0_levels[ findInterval( e0, e0_levels ) + 1]
-  age       <- unique( MLT$age )
+  get_mlt <-  function( lt_family, e0, ages, sex ){
 
-  lx_inf    <- MLT[ MLT$E0 == e0_inf, ]$lx / 100000
-  lx_sup    <- MLT[ MLT$E0 == e0_sup, ]$lx / 100000
-  lx_interp <- interpolate( lx_inf, lx_sup, e0_inf, e0_sup, e0 )
+    model_lt <- modelLTx1[ tolower( modelLTx1$family ) == tolower( lt_family ) &
+                             modelLTx1$sex == tolower(sex) & modelLTx1$age %in% ages, ]
 
-  lx_std <-
-    data.frame(
-      age    = age,
-      lx_std = lx_interp
-    )
+    e0_levels <- unique( model_lt$e0 )
+    e0_inf    <- e0_levels[ findInterval( e0, e0_levels ) ]
+    e0_sup    <- e0_levels[ findInterval( e0, e0_levels ) + 1]
+    age       <- unique( model_lt$age )
+    lx_inf    <- model_lt[ model_lt$e0 == e0_inf, ]$lx1 / 100000
+    lx_sup    <- model_lt[ model_lt$e0 == e0_sup, ]$lx1 / 100000
+    lx_interp <- interpolate( lx_inf, lx_sup, e0_inf, e0_sup, e0 )
+
+    lx_std <-
+      data.frame(
+        age    = age,
+        lx_std = lx_interp
+      )
+
+    return( lx_std )
+  }
+
+  if( tolower( sex ) == 'both' ){
+
+    lx_m <- get_mlt( lt_family, e0, ages, sex = 'male' )
+    lx_f <- get_mlt( lt_family, e0, ages, sex = 'female' )
+
+    lx_std <-
+      data.frame(
+        age = unique( lx_m$age ),
+        lx_std = round( lx_f$lx_std * 0.4886 + ( 1 - 0.4886 ) * lx_m$lx_std, 5 )
+      )
+
+  } else{
+
+    lx_std <- get_mlt( lt_family, e0, ages, tolower( sex ) )
+
+  }
 
   return( lx_std )
+
 }
 
 
@@ -673,4 +698,158 @@ SingleAgeLogQuad <-
                  sex = sex )$lt
 
     return( lts )
+  }
+
+
+#' Estimate single-age life table using Log-Quadratic Model
+#'
+#' Estimate single-age life table functions using Log-Quadratic Model
+#'
+#' @param q0_1 log-quad parameter 0q1
+#' @param q0_5 log-quad parameter 0q5
+#' @param q15_35 log-quad parameter 15q35
+#' @param q15_45 log-quad parameter 15q45
+#' @param e0 log-quad parameter e0
+#' @param k log-quad parameter k
+#' @param lt reference life table for modeling log quad parametes, defaul = HMD
+#' @param sex sex to retrieve HMD sex and life table ('female','male','total' - default)
+#'
+#' @return single age life table estimated by ungrouping log-quad model estimation
+#' @export
+#'
+#' @example
+#' SingleAgeLogQuadLT( e0 = 70, q0_5 = 0.05 )
+#'
+#
+
+SingleAgeLogQuadLT <-
+  function( k = NULL,
+            e0 = NULL,
+            q0_1 = NULL,
+            q0_5 = NULL,
+            q15_35 = NULL,
+            q15_45 = NULL,
+            lt = NULL,
+            sex = 'total' ){
+
+    require(ungroup)
+    require(MortalityEstimate)
+    require(MortalityLaws)
+
+    if( is.null(lt) ){
+      lt_lqmodel <- HMD719[HMD719$sex == sex, ]
+    } else{
+      lt_lqmodel <- lt
+    }
+
+    # fit log-quadratic
+    x <- c( 0, 1, seq( 5, 110, by = 5 ) )
+    W <- wilmoth(x = x, LT = lt_lqmodel )
+
+    # use available information to retrieve life table
+    lt5 <- wilmothLT( W,
+                      q0_1 = q0_1, q0_5 = q0_5,
+                      q15_35 = q15_35, q15_45 = q15_45,
+                      e0 = e0, k = k )
+
+    # ungroup using ages 1 - 110
+    lts_model <- pclm( x = lt5$lt$x[ 2:24 ],
+                       y = lt5$lt$dx[ 2:24 ],
+                       nlast = 20,
+                       offset = lt5$lt$Lx[ 2:24 ] )
+
+    # single life table
+    lts <-
+      LifeTable( x = 0:99,
+                 mx = c( lt5$lt$mx[1], fitted( lts_model )[ 1:99 ] ),
+                 lx0 = 1,
+                 sex = sex )$lt
+
+    return( lts )
+  }
+
+
+#' Reverse Survival Estimation
+#'
+#' Estimate TFR levels from processed information of women, children and date
+#'
+#' @param year reference date of estimation in decimal format
+#' @param datWoman women population data.frame
+#' @param lxWomen_std female survival functions data.frame for reverse survival of females
+#' @param q15_45f female adult mortality probability 3 element vector or single value
+#' @param fertPattern female fertility pattern (age-specific standardized rates)
+#' @param datChildren children population data.frame
+#' @param lxChildren_std children survival functions data.frame for reverse survival of
+#' children
+#' @param q0_5 children mortality probability 3 element vector or single value
+#'
+#' @return estimates of TFR by year prior to reference date
+#'
+#' @keywords internal
+#
+
+revSurvMain <-
+  function(  year,
+             datWomen, lxWomen_std, q15_45f, fertPattern,
+             datChildren, lxChildren_std, q0_5  ){
+
+    if( length( q0_5 ) != 3 ){
+      if( length( q0_5 ) == 1 ){
+        q0_5 <- rep( q0_5, 3)
+        warning( 'q0_5 unique value provided - q0_5 set to 3 element vector of same value' )
+      } else{
+        stop( 'Please provide a 3 element vector for q0_5 or an unique value for all 3 elements')
+      }
+    }
+
+    if( length( q15_45f ) != 3 ){
+      if( length( q14_45f ) == 1 ){
+        q15_45f <- rep( q15_45f, 3)
+        warning( 'q15_45f unique value provided - q15_45f set to 3 element vector of same value' )
+      } else{
+        stop( 'Please provide a 3 element vector for q15_45f or an unique value for all 3 elements')
+      }
+    }
+
+    alphaChildren <- alphaRevSurv( lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
+                                   qx = q0_5,
+                                   type = 'child' )
+
+    alphaWomen <- alphaRevSurv( lx_std = lxWomen_std,
+                                qx =  q15_45f,
+                                type = 'women' )
+
+    Lc <- childSurvProb( age = lxChildren_std$age,
+                         lx_std = lxChildren_std$lx_std,
+                         alphaChildren )
+
+    revSurvWomen <-
+      womenRevSurv( age = lxWomen_std$age,
+                    lx_std = lxWomen_std$lx_std,
+                    women = datWomen$pop_w,
+                    alphaWomen,
+                    year,
+                    fertPattern )
+
+    revSurvBirths <-
+      data.frame(
+        year = year - seq( 0.5, 14.5, 1 ),
+        births = datChildren$pop_c / Lc )
+
+    revSurvTFR <- data.frame()
+
+    for( t in unique( revSurvWomen$year ) ){
+      den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
+      num <- revSurvBirths[ revSurvBirths$year == t, ]$births
+
+      revSurvTFR <- rbind(
+        revSurvTFR,
+        data.frame(
+          year = t,
+          TFR  = num / den
+        )
+      )
+    }
+
+    return( revSurvTFR )
   }

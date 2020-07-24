@@ -12,9 +12,9 @@ fetch_FertPattern_Wpp2019(country_code = NULL, year)
 \item{year}{period of reference to retrieve fertility pattern data}
 }
 \value{
-data.frame with three columns \item{age}: women ages, \item{asfr_std_ref}:
+data.frame with three columns age: women ages, asfr_std_ref:
 age-specific fertility rates for the time-period which contains the reference year and
-\item{asfr_std_15prior}: age-specific fertility rates for the time-period
+asfr_std_15prior: age-specific fertility rates for the time-period
 15 years prior to the reference period
 }
 \description{

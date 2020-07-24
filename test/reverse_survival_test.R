@@ -9,10 +9,16 @@
  asfr_15prior <- c( 0.0000, 0.0533, 0.1974, 0.2144, 0.1836, 0.1332, 0.0676, 0.0134 )
  asfr_std_15prior <- asfr_15prior/(5 * sum(asfr_15prior) )
 
+ require(fertestr)
 # input data:
 FertRevSurv( ages_c = 0:14, pop_c, ages_w = seq(10,65,5), pop_w,
-             lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45, date_ref = '2008-11-12')
+             lx_c, lx_w, asfr_std, asfr_std_15prior, q0_5, q15_45, date_ref = '2008-03-03')
 
+FertRevSurv( ages_c = 0:14, pop_c = pop_c, ages_w = seq(10,65,5), pop_w = pop_w,
+             lx_c = lx_c, lx_w = lx_w, asfr_std = asfr_std,
+             asfr_std_15prior = asfr_std_15prior,
+             location_list = 116,
+             q0_5 = q0_5, q15_45 = q15_45, date_ref = '2008-03-03')
 
 FertRevSurv( ages_c = 0:14, pop_c = pop_c, ages_w = seq(10,65,5), pop_w = pop_w,
              asfr_std = asfr_std, asfr_std_15prior = asfr_std_15prior,
