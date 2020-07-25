@@ -219,7 +219,7 @@ fetch_MortProb_Wpp2019 <- function( country_code = NULL, year ){
     lt_both <- data.frame( x = ltM$x , lx = rep( NA, nrow( ltM ) ) )
     lt_both$lx <- ltF$lx * 0.4886 + ( 1 - 0.4886 )*ltM$lx
 
-    e0T <- LifeTable( x = lt_both$x, lx = lt_both$lx )$lt$ex[0]
+    e0T <- LifeTable( x = lt_both$x, lx = lt_both$lx )$lt$ex[1]
 
     q0_5   <- ( lt_both[ lt_both$x == 0, ]$lx - lt_both[ lt_both$x == 5, ]$lx ) / lt_both[ lt_both$x == 0, ]$lx
     q15_45 <- ( ltF[ ltF$x == 15, ]$lx - ltF[ ltF$x == 60, ]$lx ) / ltF[ ltF$x == 15, ]$lx
