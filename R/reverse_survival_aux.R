@@ -219,6 +219,8 @@ fetch_MortProb_Wpp2019 <- function( country_code = NULL, year ){
     lt_both <- data.frame( x = ltM$x , lx = rep( NA, nrow( ltM ) ) )
     lt_both$lx <- ltF$lx * 0.4886 + ( 1 - 0.4886 )*ltM$lx
 
+    e0T <- LifeTable( x = lt_both$x, lx = lt_both$lx )$lt$ex[0]
+
     q0_5   <- ( lt_both[ lt_both$x == 0, ]$lx - lt_both[ lt_both$x == 5, ]$lx ) / lt_both[ lt_both$x == 0, ]$lx
     q15_45 <- ( ltF[ ltF$x == 15, ]$lx - ltF[ ltF$x == 60, ]$lx ) / ltF[ ltF$x == 15, ]$lx
 
@@ -231,7 +233,8 @@ fetch_MortProb_Wpp2019 <- function( country_code = NULL, year ){
           q0_5,
           q15_45,
           e0M,
-          e0F
+          e0F,
+          e0T
         )
       )
   }
@@ -853,3 +856,91 @@ revSurvMain <-
 
     return( revSurvTFR )
   }
+
+#' Fetch population data from WPP2019
+#'
+#' @param locations location id from WPP 2019 data
+#' @param year period of reference of population data
+#' @param ages selected ages to retrieve pop data
+#' @param age_interval how to display ages in result - single ages (1 - default)
+#' or 5-year age group (5)
+#' @param sex sex to retrieve information form (default - total)
+#'
+#' @keywords internal
+#'
+#'
+fetch_PopData_Wpp2019 <-
+  function( locations = NULL,
+            year,
+            ages,
+            age_interval = 1,
+            sex = 'total' ){
+
+  require( wpp2019 )
+
+  year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
+
+  year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
+  year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
+
+  popx1_inf <-
+    popWpp2019x1[ popWpp2019x1$LocID %in% locations &
+                    popWpp2019x1$Time == year_inf & popWpp2019x1$AgeGrp %in% ages,
+                  c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
+  popx1_sup <-
+    popWpp2019x1[ popWpp2019x1$LocID %in% locations &
+                    popWpp2019x1$Time == year_sup & popWpp2019x1$AgeGrp %in% ages,
+                  c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
+
+  pop_sex <- names( popx1_inf )[ grep( sex, tolower( names( popx1_inf ) ) )]
+
+  popx1_inf <- popx1_inf[, c( 'LocID', 'AgeGrp', pop_sex ) ]
+  popx1_sup <- popx1_sup[, c( 'LocID', 'AgeGrp', pop_sex ) ]
+
+  names( popx1_inf ) <- c( 'LocID' ,'ages', 'pop' )
+  names( popx1_sup ) <- c( 'LocID' ,'ages', 'pop' )
+
+  popx1 <-
+    data.frame(
+      LocID = popx1_inf$LocID,
+      ages  = popx1_inf$ages,
+      pop   = interpolate( y1 = popx1_inf$pop, y2 = popx1_sup$pop,
+                           x1 = year_inf, x2 = year_sup,
+                           x = year )
+      )
+
+  if( age_interval == 5 ){
+
+    if( ( min( ages )%%10 != 0 & min( ages )%%10 != 5 ) |
+        ( max( ages )%%10 != 4 & max( ages )%%10 != 9 ) ){
+      stop( 'Please insert min(ages) with final digit either 0 or 5 and max(ages) with final digit either 4 or 9.')
+    } else{
+      age_inf <- min( ages )
+      age_sup <- ifelse( max( ages )%%10 == 4,
+                         trunc( max( ages ) / 10 ) * 10,
+                         trunc( max( ages ) / 10 ) * 10 + 5 )
+    }
+
+    popx1$age.x5 <-
+      cut( popx1$ages,
+           breaks = seq( age_inf, age_sup + 5, 5 ),
+           labels = seq( age_inf, age_sup, 5 ),
+           right = FALSE )
+
+    popx5 <-
+      aggregate( popx1$pop,
+                 by = list( LocID = popx1$LocID, ages = popx1$age.x5 ),
+                 FUN = 'sum' )
+
+    names( popx5 ) <- c( 'LocID', 'ages', 'pop' )
+
+    return( popx5 )
+
+    } else if( age_interval == 1){
+
+    return( popx1 )
+
+  }
+
+
+}
