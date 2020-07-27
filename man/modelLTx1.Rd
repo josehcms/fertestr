@@ -6,11 +6,12 @@
 \title{Model Life Tables United Nations}
 \format{
 A data frame with 15 columns:
-    Type_MLT (model life table type: 'CD' for Coale-Demeny or 'UN' for Uniter Nations)
-    Family (model life table family: 'Chilean', 'Far_East_Asian', 'General, 'Latin', 'South_Asian',
+    source (model life table source: 'CD' for Coale-Demeny or 'UN' for Uniter Nations)
+    family (model life table family: 'Chilean', 'Far_East_Asian', 'General, 'Latin', 'South_Asian',
     'East', 'West', 'North', 'South')
-    Sex ('Female' or 'Male')
-    E0 (life expectancy level)
+    type_mlt (source + family name)
+    sex ('Female' or 'Male')
+    e0 (life expectancy level)
     and other life table functions for one year age interval
     age, mx1, qx1, lx1, dx1, Lx1, Tx1, sx1, ex1, ax1
 }

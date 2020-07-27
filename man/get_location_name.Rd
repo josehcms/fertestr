@@ -4,13 +4,13 @@
 \alias{get_location_name}
 \title{Get WPP 2019 location name from codes}
 \usage{
-get_location_name(country_code)
+get_location_name(location_code)
 }
 \arguments{
-\item{country_code}{country code}
+\item{location_code}{location code}
 }
 \value{
-country_name
+location_name
 }
 \description{
 Get WPP 2019 location name from codes

@@ -172,10 +172,4 @@
 #'   https://population.un.org/wpp/Download/Standard/CSV/
 "popWpp2019x1"
 
-modelLTx1$Type_MLT %>% unique
-modelLTx1$Family %>% unique
-modelLTx1$Type %>% unique
 
-names(modelLTx1) <- c("source","family","type_mlt","sex","e0","age","mx1","qx1","lx1","dx1","Lx1","Tx1","sx1","ex1", "ax1" )
-modelLTx1$sex <- tolower(modelLTx1$sex)
-save(modelLTx1,file='data/modelLTx1.rda')

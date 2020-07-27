@@ -132,8 +132,8 @@ FertRevSurv0 <- function( ages1_c = 0:14, popx1_c,
 #'
 #' Apply reverse survival fertility estimation to WPP2019 country data
 #'
-#' @param locations
-#' @param lt_family
+#' @param locations list of locations by name or code according to WPP 2019 location list (check fertestr::locs_avail() for list of available locations)
+#' @param lt_family model life table family to be used to retrieve single age survival information
 #' @param date_ref reference date of inquiry given in the following formats:
 #' Y-m-d (4 digit year - 2 digit month - 2 digit day), Y-m (4 digit year - 2 digit month),
 #' Y (4 digit year)
@@ -168,18 +168,18 @@ FertRevSurvWPP <-
   }
 
   datWomen <-
-    fetch_PopData_Wpp2019( locations = location_codes, year,
-                           ages = 10:69, age_interval = 5, sex = 'female' )
+    FetchPopWpp2019( locations = location_codes, year,
+                     ages = 10:69, age_interval = 5, sex = 'female' )
   names( datWomen ) <- c( 'LocID', 'ages_w', 'pop_w' )
 
   datChildren <-
-    fetch_PopData_Wpp2019( locations = location_codes, year,
-                           ages = 0:14, age_interval = 1, sex = 'total' )
+    FetchPopWpp2019( locations = location_codes, year,
+                     ages = 0:14, age_interval = 1, sex = 'total' )
   names( datChildren ) <- c('LocID', 'ages_c', 'pop_c')
 
   revSurvTFR <- data.frame()
 
-  print( paste0( 'Reverse Survival - WPP 2019 Country Data - Reference Year: ', year ) )
+  print( paste0( 'Reverse Survival - WPP 2019 Country Data - Reference Date: ', date_ref ) )
   len <- length( location_codes )
   i = 1
 
@@ -189,44 +189,41 @@ FertRevSurvWPP <-
     print( paste0( loc_name,' - location number ', i, ' out of ', len  ) )
     i = i + 1
 
-    fertPattern <- data.frame()
-    LT.dat <- data.frame()
-    q.dat <- data.frame()
-    lxChildrenF_std <- data.frame()
-    lxChildrenM_std <- data.frame()
-    lxChildren_std <- data.frame()
-    lxWomen_std    <- data.frame()
-    alphaChildren <- NULL
-    alphaWomen <- NULL
-    Lc <- NULL
+    fertPattern <-
+      data.frame(
+        age = seq( 10, 45, 5 ),
+        asfr_std_ref = FetchFertilityWpp2019( country, year )$asfr_std,
+        asfr_std_15prior = FetchFertilityWpp2019( country, ( year - 15 ) )$asfr_std
+      )
 
-    fertPattern <- fetch_FertPattern_Wpp2019( country, year )
+    q0_5 <-
+      q_calcWpp2019 ( location_code = country,
+                      years = year - seq( 2.5, 12.5, 5 ),
+                      sex = 'both', age_inf = 0, age_sup = 5 )$qx
 
-    fetch_q_dat <- fetch_MortProb_Wpp2019( country,  year )
+    q15_45f <-
+      q_calcWpp2019 ( location_code = country,
+                      years = year - seq( 2.5, 12.5, 5 ),
+                      sex = 'female', age_inf = 15, age_sup = 60 )$qx
 
-    LT.dat <- fetch_q_dat$lt_data_wpp2019
-    q.dat <- fetch_q_dat$interp_data
+    e0f <- FetchLifeTableWpp2019( country, year, sex = 'female' )$ex[1]
+    e0t <- FetchLifeTableWpp2019( country, year, sex = 'both' )$ex[1]
 
-    lxChildrenM_std <- find_mlt( lt_family, e0 = LT.dat$e0M[1],
-                                 ages = seq( 0, 15 ), sex = 'male' )
 
-    lxChildrenF_std <- find_mlt( lt_family, e0 = LT.dat$e0F[1],
-                                 ages = seq( 0, 15 ), sex = 'female' )
+    lxChildren_std <- find_mlt( lt_family,
+                                e0 = e0t,
+                                ages = seq( 0, 15 ), sex = 'both' )
 
-    lxChildren_std <- lxChildrenF_std
-
-    lxChildren_std$lx_std <-
-      lxChildrenF_std$lx_std * 0.4886 + ( 1 - 0.4886 ) * lxChildrenM_std$lx_std
-
-    lxWomen_std <- find_mlt( lt_family, e0 = LT.dat$e0F[1],
+    lxWomen_std <- find_mlt( lt_family,
+                             e0 = e0f,
                              ages = seq( 10, 65, 5 ), sex = 'female' )
 
     alphaChildren <- alphaRevSurv( lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
-                                   qx =  q.dat$q0_5_est,
+                                   qx   = q0_5,
                                    type = 'child' )
 
     alphaWomen <- alphaRevSurv( lx_std = lxWomen_std,
-                                qx =  q.dat$q15_45_est,
+                                qx   = q15_45f,
                                 type = 'women' )
 
     Lc <- childSurvProb( age = lxChildren_std$age,

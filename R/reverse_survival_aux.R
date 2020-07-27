@@ -72,7 +72,7 @@ decimal_anydate <-
 #'
 #' Provides the list of available locations from WPP 2019 data
 #'
-#' @return data.frame with two columns name and country_code
+#' @return data.frame with two columns name and location_code
 #' @export
 
 #' @examples
@@ -83,7 +83,9 @@ decimal_anydate <-
 locs_avail <- function( ){
   require(wpp2019)
   data('UNlocations')
-  return(UNlocations[, c('name','country_code')])
+  locs <- UNlocations[, c( 'name', 'country_code' ) ]
+  names( locs ) = c( 'location_name', 'location_code' )
+  return( locs )
 }
 
 #' Get WPP 2019 country codes from country names
@@ -91,32 +93,32 @@ locs_avail <- function( ){
 #' Provides the list of countries and respective codes available in WPP 2019 or
 #' fetch the country code for given country name
 #'
-#' @param country_name country name or vector of country names
+#' @param location_name country name or vector of country names
 #' @return data.frame with two columns country_name and country_code
 #' @export
 
 #' @examples
-#' # provides all country codes
-#' get_country_code()
+#' # provides all location codes
+#' get_location_code()
 #'
-#' # provides country codes for a given list of countries
+#' # provides location codes for a given list of countries
 #' names <- c('Brazil','Argentina','Uruguay','Paraguay')
 #' get_location_code( names )
 #'
 
-get_location_code <- function( country_name ){
+get_location_code <- function( location_names ){
 
   locs_list <- locs_avail()
-  country_code_list <- NULL
+  location_code_list <- NULL
   invalid_names <- NULL
-  for( name in country_name ){
-    if( !( name %in% locs_list$name ) ){
+  for( name in location_names ){
+    if( !( name %in% locs_list$location_name ) ){
       invalid_names <- c( invalid_names, name )
     }
     else{
-      country_code_list <-
-        c( country_code_list,
-           locs_list[locs_list$name == name,]$country_code )
+      location_code_list <-
+        c( location_code_list,
+           locs_list[locs_list$location_name == name,]$location_code )
     }
   }
 
@@ -125,155 +127,302 @@ get_location_code <- function( country_name ){
                  ' is not a valid name among wpp 2019 location names.\n' ) )
   }
 
-  return( country_code_list )
+  return( location_code_list )
 }
 
 
 #' Get WPP 2019 location name from codes
 #'
-#' @param country_code country code
-#' @return country_name
+#' @param location_code location code
+#' @return location_name
 #' @export
 
 #' @keywords internal
 
-get_location_name <- function( country_code ){
+get_location_name <- function( location_code ){
   locs_list <- locs_avail()
-  country_name <- as.character( locs_list[ locs_list$country_code == country_code, ]$name )
-  return( country_name )
+  location_name <-
+    as.character(
+      locs_list[ locs_list$location_code == location_code, ]$location_name )
+  return( location_name )
 }
 
-#' Function to get fertility pattern from Wpp 2019 data
+#' Retrieve Fertility Pattern from WPP 2019
 #'
-#' @param country_code list of country codes to retrieve fertility pattern data from
+#' Retrieve age-specific fertility rates for available WPP 2019 locations
+#'
+#' @param location_code list of location codes to retrieve fertility pattern data from
 #' @param year period of reference to retrieve fertility pattern data
 #' @return data.frame with three columns age: women ages, asfr_std_ref:
 #' age-specific fertility rates for the time-period which contains the reference year and
 #' asfr_std_15prior: age-specific fertility rates for the time-period
 #' 15 years prior to the reference period
 #'
-#' @keywords internal
+#' @export
 #'
 #'
-fetch_FertPattern_Wpp2019 <- function( country_code = NULL, year ){
+FetchFertilityWpp2019 <- function( locations = NULL, year ){
 
   require( wpp2019 )
   data('percentASFR')
+  data('tfr')
+
+  if ( !is.numeric( locations ) ){
+    location_codes <- get_location_code( locations )
+  } else {
+    location_codes <- locations
+  }
+
   year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
 
   year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
   year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
 
-  # standardized fertility distribution of selected country
-  std_asfr <-
-    data.frame(
-      age = seq( 10, 45, 5 ),
-      asfr_std_ref     = c( 0, percentASFR[ percentASFR$country_code %in% country_code,
-                                            c( paste0( year_inf, '-', year_sup) ) ] / ( 5 * 100 ) ),
-      asfr_std_15prior = c( 0, percentASFR[ percentASFR$country_code %in% country_code,
-                                            c( paste0( year_inf - 15, '-', year_sup - 15) ) ] / ( 5 * 100 ) )
-    )
+  # print( paste0( 'Fetching Fertility Pattern for period ', year_inf, '-', year_sup ) )
 
-  return(std_asfr)
+  asfr_df <- data.frame()
+
+  for( location_code in location_codes ){
+    tfr <- tfr[ tfr$country_code %in% location_code,
+                c( paste0( year_inf, '-', year_sup ) ) ]
+
+    asfr <- tfr * c( 0,
+                     percentASFR[ percentASFR$country_code %in% location_code,
+                                  c( paste0( year_inf, '-', year_sup ) ) ] / ( 5 * 100 ) )
+
+    asfr_std <- c( 0,
+                   percentASFR[ percentASFR$country_code %in% location_code,
+                                c( paste0( year_inf, '-', year_sup ) ) ] / ( 5 * 100 ) )
+    asfr_df <-
+      rbind( asfr_df,
+             data.frame(
+               location_code = location_code,
+               location_name = get_location_name( location_code ),
+               age  = seq( 10, 45, 5 ),
+               asfr = asfr,
+               asfr_std = asfr_std ) )
+  }
+
+  return( asfr_df )
+
 }
 
-#' Function to get child and adult-women mortality from Wpp 2019 data
+
+#' Retrieve life table functions from WPP 2019 data
 #'
-#' @param country_code list of country codes to retrieve mortality pattern data from
-#' @param year period of reference to retrieve mortality
+#' Retrieve life tables for selected period and locations from WPP 2019 data
 #'
-#' @keywords internal
+#' @param locations list of location codes or names to retrieve LT information
+#' @param year period of reference to generate estimates
+#' @param sex sex to retrieve mortality (male, female or both)
 #'
 #'
-fetch_MortProb_Wpp2019 <- function( country_code = NULL, year ){
+#' @export
+#'
+#'
+FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 
   require( wpp2019 )
-  require(MortalityLaws)
-  year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
+  require( MortalityLaws )
 
+  if ( !is.numeric( locations ) ){
+    location_codes <- get_location_code( locations )
+  } else {
+    location_codes <- locations
+  }
+
+  year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
   year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
   year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
-  year_half_interv <- 0.5 * ( year_sup + year_inf )
 
-  # mortality data
-  data('mxM')
-  data('mxF')
+  year_ref_sup <- ( year_sup - year_inf ) / 2 + year_inf
+  year_ref_inf <- ( year_inf - ( year_inf - 5 ) ) / 2 + ( year_inf - 5 )
 
-  q_dat <- data.frame()
+  # print( paste0( 'Estimating Life Tables from mx interpolated from periods ', year_inf - 5, '-', year_inf, ' and ', year_inf, '-', year_sup ) )
 
-  for( year_sel in ( year_inf - seq( 0, 20, 5 ) ) ){
+  lt_df <- data.frame()
 
-    ltM   <- LifeTable( x   = mxM[ mxM$country_code == country_code, ]$age ,
-                        mx  = mxM[ mxM$country_code == country_code, c( paste0( year_sel, '-', year_sel + 5 ) ) ] ,
-                        lx0 = 1,
-                        sex = 'male' )$lt
-    ltF   <- LifeTable( x   = mxF[ mxF$country_code == country_code, ]$age ,
-                        mx  = mxF[ mxF$country_code == country_code, c( paste0( year_sel, '-', year_sel + 5 ) ) ] ,
-                        lx0 = 1,
-                        sex = 'female' )$lt
+  for( location_code in location_codes ){
 
-    e0M <- ltM[ ltM$x == 0, ]$ex
-    e0F <- ltF[ ltF$x == 0, ]$ex
+    if( tolower( sex ) == 'male' | tolower( sex ) == 'both' ){
 
-    # compute infant mortality for both sex using fraction of females at birth 0.4886
-    lt_both <- data.frame( x = ltM$x , lx = rep( NA, nrow( ltM ) ) )
-    lt_both$lx <- ltF$lx * 0.4886 + ( 1 - 0.4886 )*ltM$lx
+      data('mxM')
+      mx_inf <- mxM[ mxM$country_code %in% location_code,
+                     c( paste0( year_inf - 5, '-', year_inf ) ) ]
 
-    e0T <- LifeTable( x = lt_both$x, lx = lt_both$lx )$lt$ex[1]
+      mx_sup <- mxM[ mxM$country_code %in% location_code,
+                     c( paste0( year_inf, '-', year_sup ) ) ]
 
-    q0_5   <- ( lt_both[ lt_both$x == 0, ]$lx - lt_both[ lt_both$x == 5, ]$lx ) / lt_both[ lt_both$x == 0, ]$lx
-    q15_45 <- ( ltF[ ltF$x == 15, ]$lx - ltF[ ltF$x == 60, ]$lx ) / ltF[ ltF$x == 15, ]$lx
+      mx <- interpolate( y1 = mx_inf, y2 = mx_sup,
+                         x1 = year_ref_inf, x2 = year_ref_sup, x = year )
 
-    q_dat <-
-      rbind(
-        q_dat,
-        data.frame(
-          year_int = paste0( year_sel, '-', year_sel + 5 ),
-          year_ref = ( 2 * year_sel + 5) / 2,
-          q0_5,
-          q15_45,
-          e0M,
-          e0F,
-          e0T
-        )
-      )
+      age <- mxM[ mxM$country_code %in% location_code,
+                 c( 'age' ) ]
+
+      ltm <-
+        LifeTable( x   = age,
+                   mx  = mx,
+                   lx0 = 1,
+                   sex = 'male' )$lt
+
+      if( tolower( sex ) == 'male' ){
+        lt_df <-
+          rbind( lt_df,
+                 data.frame( location_code = location_code,
+                             location_name = get_location_name( location_code ),
+                             year = year,
+                             reference_period = paste0( year_ref_inf, '-', year_ref_sup ),
+                             sex = 'male',
+                             ltm ) )
+      }
+    }
+
+    if( tolower( sex ) == 'female' | tolower( sex ) == 'both' ){
+
+      data('mxF')
+      mx_inf <- mxF[ mxF$country_code %in% location_code,
+                     c( paste0( year_inf - 5, '-', year_inf ) ) ]
+
+      mx_sup <- mxF[ mxF$country_code %in% location_code,
+                     c( paste0( year_inf, '-', year_sup ) ) ]
+
+      mx <- interpolate( y1 = mx_inf, y2 = mx_sup,
+                         x1 = year_ref_inf, x2 = year_ref_sup, x = year )
+
+
+      age <- mxF[ mxF$country_code %in% location_code,
+                  c( 'age' ) ]
+
+      ltf <-
+        LifeTable( x   = age,
+                   mx  = mx,
+                   lx0 = 1,
+                   sex = 'female' )$lt
+
+      if( tolower( sex ) == 'female' ){
+        lt_df <-
+          rbind( lt_df,
+                 data.frame( location_code = location_code,
+                             location_name = get_location_name( location_code ),
+                             year = year,
+                             reference_period = paste0( year_ref_inf, '-', year_ref_sup ),
+                             sex = 'female',
+                             ltf ) )
+      }
+    }
+
+    if( tolower( sex ) == 'both' ){
+      lxb <- ltf$lx * 0.4886 + ( 1 - 0.4886 )*ltm$lx
+
+      ltb <-
+        LifeTable( x   = age,
+                   lx  = lxb,
+                   lx0 = 1,
+                   sex = 'total' )$lt
+
+      lt_df <-
+        rbind( lt_df,
+               data.frame( location_code = location_code,
+                           location_name = get_location_name( location_code ),
+                           year = year,
+                           reference_period = paste0( year_ref_inf, '-', year_ref_sup ),
+                           sex = 'both',
+                           ltb ) )
+      }
+    }
+
+  return( lt_df )
+
   }
 
-  interpdat_q <- data.frame( )
-  years_interp <- rev( unique( q_dat$year_ref ) )
+#' Fetch population data from WPP2019
+#'
+#' @param locations location id from WPP 2019 data
+#' @param year period of reference of population data
+#' @param ages selected ages to retrieve pop data
+#' @param age_interval how to display ages in result - single ages (1 - default)
+#' or 5-year age group (5)
+#' @param sex sex to retrieve information form (default - total)
+#'
+#' @keywords internal
+#' @export
+#'
+#'
+FetchPopWpp2019 <-
+  function( locations = NULL,
+            year,
+            ages,
+            age_interval = 1,
+            sex = 'total' ){
 
-  for ( year_est in ( year - c( 2.5, 7.5, 12.5 ) ) ){
+    require( wpp2019 )
 
-    year1 <- years_interp[ findInterval( year_est, years_interp ) ]
-    year2 <- year1 + 5
+    year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
 
-    q0_5.1 <- q_dat[ q_dat$year_ref == year1, ]$q0_5
-    q0_5.2 <- q_dat[ q_dat$year_ref == year2, ]$q0_5
+    year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
+    year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
 
-    q15_45.1 <- q_dat[ q_dat$year_ref == year1, ]$q15_45
-    q15_45.2 <- q_dat[ q_dat$year_ref == year2, ]$q15_45
+    popx1_inf <-
+      popWpp2019x1[ popWpp2019x1$LocID %in% locations &
+                      popWpp2019x1$Time == year_inf & popWpp2019x1$AgeGrp %in% ages,
+                    c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
+    popx1_sup <-
+      popWpp2019x1[ popWpp2019x1$LocID %in% locations &
+                      popWpp2019x1$Time == year_sup & popWpp2019x1$AgeGrp %in% ages,
+                    c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
 
-    interpdat_q <-
-      rbind(
-        interpdat_q,
-        data.frame(
-          years_prior = paste0( year - (year_est) - 2.5, '-', year - (year_est) + 1.5),
-          year_est    = year_est,
-          q0_5_est    = interpolate( q0_5.1, q0_5.2, year1, year2, year_est),
-          q15_45_est    = interpolate( q15_45.1, q15_45.2, year1, year2, year_est)
-        )
+    pop_sex <- names( popx1_inf )[ grep( sex, tolower( names( popx1_inf ) ) )]
+
+    popx1_inf <- popx1_inf[, c( 'LocID', 'AgeGrp', pop_sex ) ]
+    popx1_sup <- popx1_sup[, c( 'LocID', 'AgeGrp', pop_sex ) ]
+
+    names( popx1_inf ) <- c( 'LocID' ,'ages', 'pop' )
+    names( popx1_sup ) <- c( 'LocID' ,'ages', 'pop' )
+
+    popx1 <-
+      data.frame(
+        LocID = popx1_inf$LocID,
+        ages  = popx1_inf$ages,
+        pop   = interpolate( y1 = popx1_inf$pop, y2 = popx1_sup$pop,
+                             x1 = year_inf, x2 = year_sup,
+                             x = year )
       )
+
+    if( age_interval == 5 ){
+
+      if( ( min( ages )%%10 != 0 & min( ages )%%10 != 5 ) |
+          ( max( ages )%%10 != 4 & max( ages )%%10 != 9 ) ){
+        stop( 'Please insert min(ages) with final digit either 0 or 5 and max(ages) with final digit either 4 or 9.')
+      } else{
+        age_inf <- min( ages )
+        age_sup <- ifelse( max( ages )%%10 == 4,
+                           trunc( max( ages ) / 10 ) * 10,
+                           trunc( max( ages ) / 10 ) * 10 + 5 )
+      }
+
+      popx1$age.x5 <-
+        cut( popx1$ages,
+             breaks = seq( age_inf, age_sup + 5, 5 ),
+             labels = seq( age_inf, age_sup, 5 ),
+             right = FALSE )
+
+      popx5 <-
+        aggregate( popx1$pop,
+                   by = list( LocID = popx1$LocID, ages = popx1$age.x5 ),
+                   FUN = 'sum' )
+
+      names( popx5 ) <- c( 'LocID', 'ages', 'pop' )
+
+      return( popx5 )
+
+    } else if( age_interval == 1){
+
+      return( popx1 )
+
+    }
+
+
   }
-
-  output <-
-    list(
-      lt_data_wpp2019 = q_dat,
-      interp_data = interpdat_q
-    )
-
-  return( output )
-
-}
 
 #' 2 point interpolation
 #'
@@ -358,6 +507,44 @@ find_mlt <- function( lt_family, e0, ages, sex ){
 
 }
 
+
+#' Compute qx probability of death
+#'
+#' Calculate qx probability of death between age interval age_inf, age_sup for WPP 2019 locations
+#'
+#' @param location_code location code from WPP 2019 data
+#' @param years years to retrieve estimation of qx
+#' @param age_inf lower bound age of estimation
+#' @param age_sup upper_bound age of estimation
+#' @param sex female, male or both
+#'
+#' @return data.frame with 3 columns, years of estimation, age_interval, qx
+#'
+#' @keywords internal
+#'
+#'
+q_calcWpp2019 <- function( location_code, years, sex, age_inf, age_sup ){
+
+  q_df <- data.frame()
+
+  for( year in years ){
+    lt <- FetchLifeTableWpp2019( location_code, year, sex = 'both' )
+
+    qx <-
+      ( lt$lx[ lt$x == age_inf ] - lt$lx[ lt$x == age_sup ] ) / lt$lx[ lt$x == age_inf ]
+
+    q_df <-
+      rbind(
+        q_df,
+        data.frame(
+          year = year,
+          age_interval = paste0( age_inf, '-', age_sup ),
+          qx = qx ) )
+  }
+
+  return( q_df )
+
+}
 
 #' Logit lx
 #'
@@ -704,74 +891,6 @@ SingleAgeLogQuad <-
   }
 
 
-#' Estimate single-age life table using Log-Quadratic Model
-#'
-#' Estimate single-age life table functions using Log-Quadratic Model
-#'
-#' @param q0_1 log-quad parameter 0q1
-#' @param q0_5 log-quad parameter 0q5
-#' @param q15_35 log-quad parameter 15q35
-#' @param q15_45 log-quad parameter 15q45
-#' @param e0 log-quad parameter e0
-#' @param k log-quad parameter k
-#' @param lt reference life table for modeling log quad parametes, defaul = HMD
-#' @param sex sex to retrieve HMD sex and life table ('female','male','total' - default)
-#'
-#' @return single age life table estimated by ungrouping log-quad model estimation
-#' @export
-#'
-#' @example
-#' SingleAgeLogQuadLT( e0 = 70, q0_5 = 0.05 )
-#'
-#
-
-SingleAgeLogQuadLT <-
-  function( k = NULL,
-            e0 = NULL,
-            q0_1 = NULL,
-            q0_5 = NULL,
-            q15_35 = NULL,
-            q15_45 = NULL,
-            lt = NULL,
-            sex = 'total' ){
-
-    require(ungroup)
-    require(MortalityEstimate)
-    require(MortalityLaws)
-
-    if( is.null(lt) ){
-      lt_lqmodel <- HMD719[HMD719$sex == sex, ]
-    } else{
-      lt_lqmodel <- lt
-    }
-
-    # fit log-quadratic
-    x <- c( 0, 1, seq( 5, 110, by = 5 ) )
-    W <- wilmoth(x = x, LT = lt_lqmodel )
-
-    # use available information to retrieve life table
-    lt5 <- wilmothLT( W,
-                      q0_1 = q0_1, q0_5 = q0_5,
-                      q15_35 = q15_35, q15_45 = q15_45,
-                      e0 = e0, k = k )
-
-    # ungroup using ages 1 - 110
-    lts_model <- pclm( x = lt5$lt$x[ 2:24 ],
-                       y = lt5$lt$dx[ 2:24 ],
-                       nlast = 20,
-                       offset = lt5$lt$Lx[ 2:24 ] )
-
-    # single life table
-    lts <-
-      LifeTable( x = 0:99,
-                 mx = c( lt5$lt$mx[1], fitted( lts_model )[ 1:99 ] ),
-                 lx0 = 1,
-                 sex = sex )$lt
-
-    return( lts )
-  }
-
-
 #' Reverse Survival Estimation
 #'
 #' Estimate TFR levels from processed information of women, children and date
@@ -857,90 +976,4 @@ revSurvMain <-
     return( revSurvTFR )
   }
 
-#' Fetch population data from WPP2019
-#'
-#' @param locations location id from WPP 2019 data
-#' @param year period of reference of population data
-#' @param ages selected ages to retrieve pop data
-#' @param age_interval how to display ages in result - single ages (1 - default)
-#' or 5-year age group (5)
-#' @param sex sex to retrieve information form (default - total)
-#'
-#' @keywords internal
-#'
-#'
-fetch_PopData_Wpp2019 <-
-  function( locations = NULL,
-            year,
-            ages,
-            age_interval = 1,
-            sex = 'total' ){
 
-  require( wpp2019 )
-
-  year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
-
-  year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
-  year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
-
-  popx1_inf <-
-    popWpp2019x1[ popWpp2019x1$LocID %in% locations &
-                    popWpp2019x1$Time == year_inf & popWpp2019x1$AgeGrp %in% ages,
-                  c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
-  popx1_sup <-
-    popWpp2019x1[ popWpp2019x1$LocID %in% locations &
-                    popWpp2019x1$Time == year_sup & popWpp2019x1$AgeGrp %in% ages,
-                  c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
-
-  pop_sex <- names( popx1_inf )[ grep( sex, tolower( names( popx1_inf ) ) )]
-
-  popx1_inf <- popx1_inf[, c( 'LocID', 'AgeGrp', pop_sex ) ]
-  popx1_sup <- popx1_sup[, c( 'LocID', 'AgeGrp', pop_sex ) ]
-
-  names( popx1_inf ) <- c( 'LocID' ,'ages', 'pop' )
-  names( popx1_sup ) <- c( 'LocID' ,'ages', 'pop' )
-
-  popx1 <-
-    data.frame(
-      LocID = popx1_inf$LocID,
-      ages  = popx1_inf$ages,
-      pop   = interpolate( y1 = popx1_inf$pop, y2 = popx1_sup$pop,
-                           x1 = year_inf, x2 = year_sup,
-                           x = year )
-      )
-
-  if( age_interval == 5 ){
-
-    if( ( min( ages )%%10 != 0 & min( ages )%%10 != 5 ) |
-        ( max( ages )%%10 != 4 & max( ages )%%10 != 9 ) ){
-      stop( 'Please insert min(ages) with final digit either 0 or 5 and max(ages) with final digit either 4 or 9.')
-    } else{
-      age_inf <- min( ages )
-      age_sup <- ifelse( max( ages )%%10 == 4,
-                         trunc( max( ages ) / 10 ) * 10,
-                         trunc( max( ages ) / 10 ) * 10 + 5 )
-    }
-
-    popx1$age.x5 <-
-      cut( popx1$ages,
-           breaks = seq( age_inf, age_sup + 5, 5 ),
-           labels = seq( age_inf, age_sup, 5 ),
-           right = FALSE )
-
-    popx5 <-
-      aggregate( popx1$pop,
-                 by = list( LocID = popx1$LocID, ages = popx1$age.x5 ),
-                 FUN = 'sum' )
-
-    names( popx5 ) <- c( 'LocID', 'ages', 'pop' )
-
-    return( popx5 )
-
-    } else if( age_interval == 1){
-
-    return( popx1 )
-
-  }
-
-
-}

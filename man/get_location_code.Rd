@@ -4,10 +4,10 @@
 \alias{get_location_code}
 \title{Get WPP 2019 country codes from country names}
 \usage{
-get_location_code(country_name)
+get_location_code(location_names)
 }
 \arguments{
-\item{country_name}{country name or vector of country names}
+\item{location_name}{country name or vector of country names}
 }
 \value{
 data.frame with two columns country_name and country_code
@@ -17,10 +17,10 @@ Provides the list of countries and respective codes available in WPP 2019 or
 fetch the country code for given country name
 }
 \examples{
-# provides all country codes
-get_country_code()
+# provides all location codes
+get_location_code()
 
-# provides country codes for a given list of countries
+# provides location codes for a given list of countries
 names <- c('Brazil','Argentina','Uruguay','Paraguay')
 get_location_code( names )
 
