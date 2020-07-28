@@ -7,8 +7,9 @@
 ceb_eval(
   date_svy,
   ages_w,
-  pop_w,
-  ceb,
+  pop_w = NULL,
+  ceb = NULL,
+  mean_ceb = NULL,
   mac = 28,
   location_mac = NULL,
   plot_ceb = TRUE

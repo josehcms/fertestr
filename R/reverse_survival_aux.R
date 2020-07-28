@@ -357,17 +357,23 @@ FetchPopWpp2019 <-
 
     require( wpp2019 )
 
+    if ( !is.numeric( locations ) ){
+      location_codes <- get_location_code( locations )
+    } else {
+      location_codes <- locations
+    }
+
     year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
 
     year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
     year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
 
     popx1_inf <-
-      popWpp2019x1[ popWpp2019x1$LocID %in% locations &
+      popWpp2019x1[ popWpp2019x1$LocID %in% location_codes &
                       popWpp2019x1$Time == year_inf & popWpp2019x1$AgeGrp %in% ages,
                     c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
     popx1_sup <-
-      popWpp2019x1[ popWpp2019x1$LocID %in% locations &
+      popWpp2019x1[ popWpp2019x1$LocID %in% location_codes &
                       popWpp2019x1$Time == year_sup & popWpp2019x1$AgeGrp %in% ages,
                     c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
 
@@ -512,18 +518,30 @@ find_mlt <- function( lt_family, e0, ages, sex ){
 #'
 #' Calculate qx probability of death between age interval age_inf, age_sup for WPP 2019 locations
 #'
-#' @param location_code location code from WPP 2019 data
-#' @param years years to retrieve estimation of qx
+#' @param location location from WPP 2019 data
+#' @param years years to retrieve estimation of qx (numeric)
 #' @param age_inf lower bound age of estimation
 #' @param age_sup upper_bound age of estimation
 #' @param sex female, male or both
 #'
 #' @return data.frame with 3 columns, years of estimation, age_interval, qx
 #'
-#' @keywords internal
+#' @export
 #'
+#' @examples
+#' # q0_5 for Mexico for periods 0-4, 5-9 and 10-14 before 2010
+#' q_calcWpp2019( location = 'Mexico', years = 2010 - c( 2.5, 7.5, 12.5 ), sex = 'both', age_inf = 0, age_sup = 5 )
 #'
-q_calcWpp2019 <- function( location_code, years, sex, age_inf, age_sup ){
+#' # q15_45 for Mexican females for periods 0-4, 5-9 and 10-14 before 2010
+#' q_calcWpp2019( location = 'Mexico', years = 2010 - c( 2.5, 7.5, 12.5 ), sex = 'female', age_inf = 15, age_sup = 60 )
+#'
+q_calcWpp2019 <- function( location, years, sex, age_inf, age_sup ){
+
+  if ( !is.numeric( location ) ){
+    location_code <- get_location_code( location )
+  } else {
+    location_code <- location
+  }
 
   q_df <- data.frame()
 
@@ -539,7 +557,7 @@ q_calcWpp2019 <- function( location_code, years, sex, age_inf, age_sup ){
         data.frame(
           year = year,
           age_interval = paste0( age_inf, '-', age_sup ),
-          qx = qx ) )
+          qx = round( qx, 6 ) ) )
   }
 
   return( q_df )
@@ -842,9 +860,10 @@ womenRevSurv <- function( age, lx_std, women, alphaWomen, year, std_asfr ){
 #'
 #' @return single age life table estimated by ungrouping log-quad model estimation
 #'
-#' @keywords internal
+#' @export
 #'
-#
+#' @examples
+#' SingleAgeLogQuad( e0 = 70, q0_5 = 0.04 )
 
 SingleAgeLogQuad <-
   function( k = NULL,
@@ -861,12 +880,12 @@ SingleAgeLogQuad <-
     require(MortalityLaws)
 
     if( is.null(lt) ){
-      lt_lqmodel <- HMD719[HMD719$sex == sex, ]
+      W <- hmd_lqcoeffs[[sex ]]
+    } else{
+      # fit log-quadratic
+      x <- c( 0, 1, seq( 5, 110, by = 5 ) )
+      W <- wilmoth(x = x, LT = lt )
     }
-
-    # fit log-quadratic
-    x <- c( 0, 1, seq( 5, 110, by = 5 ) )
-    W <- wilmoth(x = x, LT = lt_lqmodel )
 
     # use available information to retrieve life table
     lt5 <- wilmothLT( W,
@@ -925,7 +944,7 @@ revSurvMain <-
     }
 
     if( length( q15_45f ) != 3 ){
-      if( length( q14_45f ) == 1 ){
+      if( length( q15_45f ) == 1 ){
         q15_45f <- rep( q15_45f, 3)
         warning( 'q15_45f unique value provided - q15_45f set to 3 element vector of same value' )
       } else{

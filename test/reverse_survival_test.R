@@ -123,3 +123,29 @@ FertRevSurv0( ages1_c = 0:14, popx1_c = pop_c,
               asfr5_15prior = asfr_15prior,
               q0_5 = q0_5, q15_45f = q15_45f,
               date_ref = '2008-03-03' )
+
+# 7 - using WPP information with user data - qx
+
+locs_avail() # use lower-middle-income countries' data
+
+q0_5 <- q_calcWpp2019( location = 'Cambodia',
+                       years = decimal_anydate( '2008-03-03' ) - c( 2.5, 7.5, 12.5),
+                       sex = 'both', age_inf = 0, age_sup = 5 )$qx
+
+q15_45f <- q_calcWpp2019( location = 'Cambodia',
+                          years = decimal_anydate( '2008-03-03' ) - c( 2.5, 7.5, 12.5),
+                          sex = 'female', age_inf = 15, age_sup = 60 )$qx
+
+asfr <- FetchFertilityWpp2019( locations = 'Cambodia',
+                               year = decimal_anydate( '2008-03-03' ) )$asfr
+
+asfr_15prior <- FetchFertilityWpp2019( locations = 'Cambodia',
+                                       year = decimal_anydate( '1993-03-03' ) )$asfr
+
+FertRevSurv0( ages1_c = 0:14, popx1_c = pop_c,
+              ages5_w = seq( 10, 65, 5 ), popx5_w = pop_w,
+              lx1_c = lx_c, lx5_w = lx_w,
+              asfr5 = asfr,
+              asfr5_15prior = asfr_15prior,
+              q0_5 = q0_5, q15_45f = q15_45f,
+              date_ref = '2008-03-03' )

@@ -39,4 +39,6 @@ single age life table estimated by ungrouping log-quad model estimation
 Estimate single-age survival functions using Log-Quadratic Model for children 0-14 and
 women 10-64
 }
-\keyword{internal}
+\examples{
+SingleAgeLogQuad( e0 = 70, q0_5 = 0.04 )
+}

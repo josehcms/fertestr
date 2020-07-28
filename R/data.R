@@ -173,3 +173,7 @@
 "popWpp2019x1"
 
 
+#' Log-Quadratic Model coefficients for Human Mortality Database
+#'
+#' @format
+#' A list with 3 elements representing coefficients for both sexes (total), males (male) and females (female)

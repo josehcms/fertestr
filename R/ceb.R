@@ -34,8 +34,9 @@
 ceb_eval <-
   function( date_svy,
             ages_w,
-            pop_w,
-            ceb,
+            pop_w = NULL,
+            ceb = NULL,
+            mean_ceb = NULL,
             mac = 28,
             location_mac = NULL,
             plot_ceb = TRUE ){
@@ -55,6 +56,7 @@ ceb_eval <-
 
       }
 
+      age_interval <- unique( diff( ages_w ) )
       mac <- fetch_mac_Wpp2019( country_code = location_code, year = year_svy )
 
       cat( paste0( 'WPP 2019 - Mean Age at Childbearing for ',
@@ -70,16 +72,37 @@ ceb_eval <-
       mac <- rep( mac, length( ages_w ) )
     }
 
-    stopifnot(
-      length( ages_w ) == length( pop_w ),
-      length( ages_w )  == length( ceb ),
-      length( ages_w )  == length( mac )
-      )
+    age_interval <- unique( diff( ages_w ) )
 
-    midgroup_ages <- ( ages_w ) + 5 / 2
+    if( length( age_interval ) != 1 ){
+      stop( 'Please select an unique age interval length.')
+    }
+
+    midgroup_ages <- ( ages_w ) + age_interval / 2
 
     year_ceb <- round( year_svy - ( midgroup_ages - mac ), 3 )
-    mean_ceb <- round( ceb / pop_w , 3 )
+
+    if( is.null( mean_ceb ) ){
+
+      stopifnot(
+        length( ages_w ) == length( pop_w ),
+        length( ages_w ) == length( ceb ),
+        length( ages_w ) == length( mac )
+      )
+
+      print( 'Estimates using mean_ceb provided values.' )
+
+      mean_ceb <- round( ceb / pop_w , 3 )
+
+    } else{
+
+      stopifnot(
+        length( ages_w ) == length( mean_ceb ),
+        length( ages_w ) == length( mac )
+      )
+
+      print( 'Estimates using mean_ceb values computed from pop_w and ceb.' )
+    }
 
     if( plot_ceb ){
 

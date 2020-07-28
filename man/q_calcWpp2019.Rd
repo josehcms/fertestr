@@ -4,12 +4,12 @@
 \alias{q_calcWpp2019}
 \title{Compute qx probability of death}
 \usage{
-q_calcWpp2019(location_code, years, sex, age_inf, age_sup)
+q_calcWpp2019(location, years, sex, age_inf, age_sup)
 }
 \arguments{
-\item{location_code}{location code from WPP 2019 data}
+\item{location}{location from WPP 2019 data}
 
-\item{years}{years to retrieve estimation of qx}
+\item{years}{years to retrieve estimation of qx (numeric)}
 
 \item{sex}{female, male or both}
 
@@ -23,4 +23,11 @@ data.frame with 3 columns, years of estimation, age_interval, qx
 \description{
 Calculate qx probability of death between age interval age_inf, age_sup for WPP 2019 locations
 }
-\keyword{internal}
+\examples{
+# q0_5 for Mexico for periods 0-4, 5-9 and 10-14 before 2010
+q_calcWpp2019( location = 'Mexico', years = 2010 - c( 2.5, 7.5, 12.5 ), sex = 'both', age_inf = 0, age_sup = 5 )
+
+# q15_45 for Mexican females for periods 0-4, 5-9 and 10-14 before 2010
+q_calcWpp2019( location = 'Mexico', years = 2010 - c( 2.5, 7.5, 12.5 ), sex = 'female', age_inf = 15, age_sup = 60 )
+
+}

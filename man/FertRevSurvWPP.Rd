@@ -9,7 +9,7 @@ Moultrie TA, RE Dorrington, AG Hill, K Hill, IM Timæus and B Zaba (eds). 2013.
   Population. demographicestimation.iussp.org
 }
 \usage{
-FertRevSurvWPP(locations, date_ref, lt_family = "General")
+FertRevSurvWPP(locations, date_ref, lt_family = "General", logquad = FALSE)
 }
 \arguments{
 \item{locations}{list of locations by name or code according to WPP 2019 location list (check fertestr::locs_avail() for list of available locations)}
@@ -19,6 +19,8 @@ Y-m-d (4 digit year - 2 digit month - 2 digit day), Y-m (4 digit year - 2 digit 
 Y (4 digit year)}
 
 \item{lt_family}{model life table family to be used to retrieve single age survival information}
+
+\item{logquad}{if TRUE estimates lx functions from logquad models instead of using lt_family (default FALSE)}
 }
 \value{
 data.frame with 2 elements: year (reference period of fertility estimation) and
