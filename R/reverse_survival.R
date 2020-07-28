@@ -73,266 +73,266 @@
 #' countries <- c( 32, 76, 380, 508, 752 ) # Argentina, Brazil, Italy, Mozambique, Sweden
 #' FertRevSurv( location_list = countries, date_ref = 2010, lt_family = 'General' )
 
-FertRevSurv <- function( ages_c = 0:14, pop_c,
-                         ages_w = seq( 10, 65, 5 ), pop_women,
-                         lx_c, lx_w,
-                         asfr_std         = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
-                         asfr_std_15prior = NULL,
-                         q0_5 = NULL, q15_45 = NULL,
-                         date_ref,
-                         location_list = NULL,
-                         lt_family = 'West',
-                         logquad = FALSE,
-                         q0_1b = NULL, q0_1f = NULL,
-                         q0_5b = NULL, q0_5f = NULL,
-                         q15_35b = NULL, q15_35f = NULL,
-                         q15_45b = NULL, q15_45f = NULL,
-                         kb = NULL, kf = NULL,
-                         e0b = NULL, e0f = NULL
-                         ){
-
-  if ( !is.null( location_list ) & !is.numeric( location_list ) ){
-    location_codes <- get_location_code( location_list )
-  } else {
-    location_codes <- location_list
-  }
-
-  year <- decimal_anydate( date_ref )
-
-  if( is.null( location_list ) ){
-
-    datChildren <-
-      data.frame(
-        ages_c,
-        pop_c
-      )
-
-    datWomen <-
-      data.frame(
-        ages_w,
-        pop_w
-      )
-
-    fertPattern <-
-      data.frame(
-        age = seq( 10, 45, 5 ),
-        asfr_std_ref = c( asfr_std ),
-        asfr_std_15prior = c( asfr_std )
-      )
-
-    if( !is.null( asfr_std_15prior ) ){
-      fertPattern$asfr_std_15prior <-  c( asfr_std_15prior )
-    }
-
-    if( logquad ){
-
-      if( sum( !is.null( q0_1b ), !is.null( q0_5b ), !is.null( q15_35b ),
-               !is.null( q15_45b ), !is.null( kb ), !is.null(e0b) ) != 2 &
-          sum( !is.null( q0_1f ), !is.null( q0_5f ), !is.null( q15_35f ),
-               !is.null( q15_45f ), !is.null( kf ), !is.null(e0f) ) != 2 ){
-        stop( 'If using log-quadratic model estimation, please set exactly two parameters for both sexes and for females')
-      }
-
-      lxb <-
-        SingleAgeLogQuad( k = kb,
-                          e0 = e0b,
-                          q0_1 = q0_1b,
-                          q0_5 = q0_5b,
-                          q15_35 = q15_35b,
-                          q15_45 = q15_45b,
-                          lt = NULL,
-                          sex = 'total' )
-      lxf <-
-        SingleAgeLogQuad( k = kf,
-                          e0 = e0f,
-                          q0_1 = q0_1f,
-                          q0_5 = q0_5f,
-                          q15_35 = q15_35f,
-                          q15_45 = q15_45f,
-                          lt = NULL,
-                          sex = 'female' )
-
-      lxChildren_std <-
-        data.frame(
-          age = lxb$x[1:16],
-          lx_std = lxb$lx[1:16]
-        )
-
-      lxWomen_std <-
-        data.frame(
-          age = lxf$x[ lxf$x %in% ages_w  ],
-          lx_std = lxf$lx[ lxf$x %in% ages_w ]
-        )
-    } else{
-
-      lxChildren_std <-
-        data.frame(
-          age = 0:15,
-          lx_std = lx_c
-        )
-
-      lxWomen_std <-
-        data.frame(
-          age = ages_w,
-          lx_std = lx_w
-        )
-      }
-
-    revSurvTFR <- data.frame()
-
-    print( paste0( 'Reverse Survival Fertility Estimation - Reference date: ',
-                    substr( lubridate::date_decimal( year ), 1, 10 ) ) )
-
-    alphaChildren <- alphaRevSurv( lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
-                                   qx = q0_5,
-                                   type = 'child' )
-
-    alphaWomen <- alphaRevSurv( lx_std = lxWomen_std,
-                                qx =  q15_45,
-                                type = 'women' )
-
-    Lc <- childSurvProb( age = lxChildren_std$age,
-                         lx_std = lxChildren_std$lx_std,
-                         alphaChildren )
-
-    revSurvWomen <-
-      womenRevSurv( age = lxWomen_std$age,
-                    lx_std = lxWomen_std$lx_std,
-                    women = datWomen$pop_w,
-                    alphaWomen,
-                    year,
-                    fertPattern )
-
-    revSurvBirths <-
-      data.frame(
-        year = year - seq( 0.5, 14.5, 1 ),
-        births = datChildren$pop_c / Lc )
-
-    for( t in unique( revSurvWomen$year ) ){
-      den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
-      num <- revSurvBirths[ revSurvBirths$year == t, ]$births
-
-      revSurvTFR <- rbind(
-        revSurvTFR,
-        data.frame(
-          year = t,
-          TFR  = num / den
-          )
-        )
-    }
-
-  }
-
-  # country estimation:
-  else{
-
-    year <- trunc(year)
-
-    if ( ! ( year %in% 1950:2100 ) ){
-      stop( 'year value out of bounds, please insert year value within 1950-2100 for using WPP 2019 data for estimation')
-    }
-
-    datChildren <-
-      popWpp2019x1[ popWpp2019x1$LocID %in% location_codes & popWpp2019x1$Time == year & popWpp2019x1$AgeGrp %in% 0:14,
-                    c( 'LocID','AgeGrp', 'PopTotal' ) ]
-    names(datChildren) <- c( 'LocID' ,'ages_c', 'pop_c' )
-
-    popWomen.x1  <-
-      popWpp2019x1[ popWpp2019x1$LocID %in% location_codes & popWpp2019x1$Time == year & popWpp2019x1$AgeGrp %in% 10:69,
-                    c( 'LocID', 'AgeGrp', 'PopFemale' ) ]
-    popWomen.x1$age.x5 <-
-      cut( popWomen.x1$AgeGrp, breaks = seq( 10, 70, 5 ), labels = seq( 10, 65, 5 ), right = FALSE )
-
-    datWomen <-
-      aggregate( popWomen.x1$PopFemale,
-                 by = list( LocID = popWomen.x1$LocID, ages_w = popWomen.x1$age.x5 ),
-                 FUN = 'sum' )
-    names(datWomen) <- c( 'LocID', 'ages_w', 'pop_w' )
-
-    revSurvTFR <- data.frame()
-
-    print( paste0( 'Reverse Survival - WPP 2019 Country Data - Reference Year: ', year ) )
-    len <- length( location_codes )
-    i = 1
-
-    for ( country in location_codes ){
-
-      loc_name <- get_location_name( country )
-      print( paste0( loc_name,' - location number ', i, ' out of ', len  ) )
-      i = i + 1
-
-      fertPattern <- data.frame()
-      LT.dat <- data.frame()
-      q.dat <- data.frame()
-      lxChildrenF_std <- data.frame()
-      lxChildrenM_std <- data.frame()
-      lxChildren_std <- data.frame()
-      lxWomen_std    <- data.frame()
-      alphaChildren <- NULL
-      alphaWomen <- NULL
-      Lc <- NULL
-
-      fertPattern <- fetch_FertPattern_Wpp2019( country, year )
-
-      fetch_q_dat <- fetch_MortProb_Wpp2019( country,  year )
-
-      LT.dat <- fetch_q_dat$lt_data_wpp2019
-      q.dat <- fetch_q_dat$interp_data
-
-
-      lxChildrenM_std <- get_mlt( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Male' )
-      lxChildrenF_std <- get_mlt( lt_family, e0 = LT.dat$e0F[1], ages = seq(0,15), sex = 'Female' )
-      # compute lx for both sexes using female at birth factor (pg 69 Watcher - Essential Demographic Methods)
-      lxChildren_std <- data.frame( age = lxChildrenM_std$age, lx_std = rep( NA, nrow( lxChildrenM_std ) ) )
-      lxChildren_std$lx_std <- lxChildrenF_std$lx_std * 0.4886 + ( 1 - 0.4886 ) * lxChildrenM_std$lx_std
-
-      lxWomen_std <- get_mlt( lt_family, e0 = LT.dat$e0F[1], ages = seq(10,65,5), sex = 'Female' )
-
-      alphaChildren <- alphaRevSurv( lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
-                                     qx =  q.dat$q0_5_est,
-                                     type = 'child' )
-
-      alphaWomen <- alphaRevSurv( lx_std = lxWomen_std,
-                                  qx =  q.dat$q15_45_est,
-                                  type = 'women' )
-
-      Lc <- childSurvProb( age = lxChildren_std$age,
-                           lx_std = lxChildren_std$lx_std,
-                           alphaChildren )
-
-      revSurvWomen <-
-        womenRevSurv( age = lxWomen_std$age,
-                      lx_std = lxWomen_std$lx_std,
-                      women = datWomen[ datWomen$LocID == country, ]$pop_w,
-                      alphaWomen,
-                      year,
-                      fertPattern )
-
-      revSurvBirths <-
-        data.frame(
-          year = year - seq( 0.5, 14.5, 1 ),
-          births = datChildren[ datChildren$LocID == country, ]$pop_c / Lc
-        )
-
-      for( t in unique( revSurvWomen$year ) ){
-        den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
-        num <- revSurvBirths[ revSurvBirths$year == t, ]$births
-
-        revSurvTFR <- rbind(
-          revSurvTFR,
-          data.frame(
-            LocID = country,
-            LocName = loc_name,
-            year = t,
-            TFR  = num / den
-          )
-        )
-      }
-
-    }
-  }
-
-  return( revSurvTFR )
-
-}
-
+# FertRevSurv <- function( ages_c = 0:14, pop_c,
+#                          ages_w = seq( 10, 65, 5 ), pop_women,
+#                          lx_c, lx_w,
+#                          asfr_std         = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
+#                          asfr_std_15prior = NULL,
+#                          q0_5 = NULL, q15_45 = NULL,
+#                          date_ref,
+#                          location_list = NULL,
+#                          lt_family = 'West',
+#                          logquad = FALSE,
+#                          q0_1b = NULL, q0_1f = NULL,
+#                          q0_5b = NULL, q0_5f = NULL,
+#                          q15_35b = NULL, q15_35f = NULL,
+#                          q15_45b = NULL, q15_45f = NULL,
+#                          kb = NULL, kf = NULL,
+#                          e0b = NULL, e0f = NULL
+#                          ){
+#
+#   if ( !is.null( location_list ) & !is.numeric( location_list ) ){
+#     location_codes <- get_location_code( location_list )
+#   } else {
+#     location_codes <- location_list
+#   }
+#
+#   year <- decimal_anydate( date_ref )
+#
+#   if( is.null( location_list ) ){
+#
+#     datChildren <-
+#       data.frame(
+#         ages_c,
+#         pop_c
+#       )
+#
+#     datWomen <-
+#       data.frame(
+#         ages_w,
+#         pop_w
+#       )
+#
+#     fertPattern <-
+#       data.frame(
+#         age = seq( 10, 45, 5 ),
+#         asfr_std_ref = c( asfr_std ),
+#         asfr_std_15prior = c( asfr_std )
+#       )
+#
+#     if( !is.null( asfr_std_15prior ) ){
+#       fertPattern$asfr_std_15prior <-  c( asfr_std_15prior )
+#     }
+#
+#     if( logquad ){
+#
+#       if( sum( !is.null( q0_1b ), !is.null( q0_5b ), !is.null( q15_35b ),
+#                !is.null( q15_45b ), !is.null( kb ), !is.null(e0b) ) != 2 &
+#           sum( !is.null( q0_1f ), !is.null( q0_5f ), !is.null( q15_35f ),
+#                !is.null( q15_45f ), !is.null( kf ), !is.null(e0f) ) != 2 ){
+#         stop( 'If using log-quadratic model estimation, please set exactly two parameters for both sexes and for females')
+#       }
+#
+#       lxb <-
+#         SingleAgeLogQuad( k = kb,
+#                           e0 = e0b,
+#                           q0_1 = q0_1b,
+#                           q0_5 = q0_5b,
+#                           q15_35 = q15_35b,
+#                           q15_45 = q15_45b,
+#                           lt = NULL,
+#                           sex = 'total' )
+#       lxf <-
+#         SingleAgeLogQuad( k = kf,
+#                           e0 = e0f,
+#                           q0_1 = q0_1f,
+#                           q0_5 = q0_5f,
+#                           q15_35 = q15_35f,
+#                           q15_45 = q15_45f,
+#                           lt = NULL,
+#                           sex = 'female' )
+#
+#       lxChildren_std <-
+#         data.frame(
+#           age = lxb$x[1:16],
+#           lx_std = lxb$lx[1:16]
+#         )
+#
+#       lxWomen_std <-
+#         data.frame(
+#           age = lxf$x[ lxf$x %in% ages_w  ],
+#           lx_std = lxf$lx[ lxf$x %in% ages_w ]
+#         )
+#     } else{
+#
+#       lxChildren_std <-
+#         data.frame(
+#           age = 0:15,
+#           lx_std = lx_c
+#         )
+#
+#       lxWomen_std <-
+#         data.frame(
+#           age = ages_w,
+#           lx_std = lx_w
+#         )
+#       }
+#
+#     revSurvTFR <- data.frame()
+#
+#     print( paste0( 'Reverse Survival Fertility Estimation - Reference date: ',
+#                     substr( lubridate::date_decimal( year ), 1, 10 ) ) )
+#
+#     alphaChildren <- alphaRevSurv( lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
+#                                    qx = q0_5,
+#                                    type = 'child' )
+#
+#     alphaWomen <- alphaRevSurv( lx_std = lxWomen_std,
+#                                 qx =  q15_45,
+#                                 type = 'women' )
+#
+#     Lc <- childSurvProb( age = lxChildren_std$age,
+#                          lx_std = lxChildren_std$lx_std,
+#                          alphaChildren )
+#
+#     revSurvWomen <-
+#       womenRevSurv( age = lxWomen_std$age,
+#                     lx_std = lxWomen_std$lx_std,
+#                     women = datWomen$pop_w,
+#                     alphaWomen,
+#                     year,
+#                     fertPattern )
+#
+#     revSurvBirths <-
+#       data.frame(
+#         year = year - seq( 0.5, 14.5, 1 ),
+#         births = datChildren$pop_c / Lc )
+#
+#     for( t in unique( revSurvWomen$year ) ){
+#       den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
+#       num <- revSurvBirths[ revSurvBirths$year == t, ]$births
+#
+#       revSurvTFR <- rbind(
+#         revSurvTFR,
+#         data.frame(
+#           year = t,
+#           TFR  = num / den
+#           )
+#         )
+#     }
+#
+#   }
+#
+#   # country estimation:
+#   else{
+#
+#     year <- trunc(year)
+#
+#     if ( ! ( year %in% 1950:2100 ) ){
+#       stop( 'year value out of bounds, please insert year value within 1950-2100 for using WPP 2019 data for estimation')
+#     }
+#
+#     datChildren <-
+#       popWpp2019x1[ popWpp2019x1$LocID %in% location_codes & popWpp2019x1$Time == year & popWpp2019x1$AgeGrp %in% 0:14,
+#                     c( 'LocID','AgeGrp', 'PopTotal' ) ]
+#     names(datChildren) <- c( 'LocID' ,'ages_c', 'pop_c' )
+#
+#     popWomen.x1  <-
+#       popWpp2019x1[ popWpp2019x1$LocID %in% location_codes & popWpp2019x1$Time == year & popWpp2019x1$AgeGrp %in% 10:69,
+#                     c( 'LocID', 'AgeGrp', 'PopFemale' ) ]
+#     popWomen.x1$age.x5 <-
+#       cut( popWomen.x1$AgeGrp, breaks = seq( 10, 70, 5 ), labels = seq( 10, 65, 5 ), right = FALSE )
+#
+#     datWomen <-
+#       aggregate( popWomen.x1$PopFemale,
+#                  by = list( LocID = popWomen.x1$LocID, ages_w = popWomen.x1$age.x5 ),
+#                  FUN = 'sum' )
+#     names(datWomen) <- c( 'LocID', 'ages_w', 'pop_w' )
+#
+#     revSurvTFR <- data.frame()
+#
+#     print( paste0( 'Reverse Survival - WPP 2019 Country Data - Reference Year: ', year ) )
+#     len <- length( location_codes )
+#     i = 1
+#
+#     for ( country in location_codes ){
+#
+#       loc_name <- get_location_name( country )
+#       print( paste0( loc_name,' - location number ', i, ' out of ', len  ) )
+#       i = i + 1
+#
+#       fertPattern <- data.frame()
+#       LT.dat <- data.frame()
+#       q.dat <- data.frame()
+#       lxChildrenF_std <- data.frame()
+#       lxChildrenM_std <- data.frame()
+#       lxChildren_std <- data.frame()
+#       lxWomen_std    <- data.frame()
+#       alphaChildren <- NULL
+#       alphaWomen <- NULL
+#       Lc <- NULL
+#
+#       fertPattern <- fetch_FertPattern_Wpp2019( country, year )
+#
+#       fetch_q_dat <- fetch_MortProb_Wpp2019( country,  year )
+#
+#       LT.dat <- fetch_q_dat$lt_data_wpp2019
+#       q.dat <- fetch_q_dat$interp_data
+#
+#
+#       lxChildrenM_std <- get_mlt( lt_family, e0 = LT.dat$e0M[1], ages = seq(0,15), sex = 'Male' )
+#       lxChildrenF_std <- get_mlt( lt_family, e0 = LT.dat$e0F[1], ages = seq(0,15), sex = 'Female' )
+#       # compute lx for both sexes using female at birth factor (pg 69 Watcher - Essential Demographic Methods)
+#       lxChildren_std <- data.frame( age = lxChildrenM_std$age, lx_std = rep( NA, nrow( lxChildrenM_std ) ) )
+#       lxChildren_std$lx_std <- lxChildrenF_std$lx_std * 0.4886 + ( 1 - 0.4886 ) * lxChildrenM_std$lx_std
+#
+#       lxWomen_std <- get_mlt( lt_family, e0 = LT.dat$e0F[1], ages = seq(10,65,5), sex = 'Female' )
+#
+#       alphaChildren <- alphaRevSurv( lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
+#                                      qx =  q.dat$q0_5_est,
+#                                      type = 'child' )
+#
+#       alphaWomen <- alphaRevSurv( lx_std = lxWomen_std,
+#                                   qx =  q.dat$q15_45_est,
+#                                   type = 'women' )
+#
+#       Lc <- childSurvProb( age = lxChildren_std$age,
+#                            lx_std = lxChildren_std$lx_std,
+#                            alphaChildren )
+#
+#       revSurvWomen <-
+#         womenRevSurv( age = lxWomen_std$age,
+#                       lx_std = lxWomen_std$lx_std,
+#                       women = datWomen[ datWomen$LocID == country, ]$pop_w,
+#                       alphaWomen,
+#                       year,
+#                       fertPattern )
+#
+#       revSurvBirths <-
+#         data.frame(
+#           year = year - seq( 0.5, 14.5, 1 ),
+#           births = datChildren[ datChildren$LocID == country, ]$pop_c / Lc
+#         )
+#
+#       for( t in unique( revSurvWomen$year ) ){
+#         den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
+#         num <- revSurvBirths[ revSurvBirths$year == t, ]$births
+#
+#         revSurvTFR <- rbind(
+#           revSurvTFR,
+#           data.frame(
+#             LocID = country,
+#             LocName = loc_name,
+#             year = t,
+#             TFR  = num / den
+#           )
+#         )
+#       }
+#
+#     }
+#   }
+#
+#   return( revSurvTFR )
+#
+# }
+#

@@ -40,44 +40,16 @@
 #' asfr <- c( 0.0000, 0.0418,0.1535, 0.1482, 0.1118, 0.0708, 0.0301, 0.0032 )
 #' asfr_15prior <- c( 0.0000, 0.0533, 0.1974, 0.2144, 0.1836, 0.1332, 0.0676, 0.0134 )
 #'
-#' FertRevSurv0( ages1_c = 0:14, popx1_c = pop_c,
-#'               ages5_w = seq( 10, 65, 5 ), popx5_w = pop_w,
-#'               lx1_c = lx_c, lx5_w = lx_w,
-#'               asfr5 = asfr,
-#'               asfr5_15prior = asfr_15prior,
-#'               q0_5 = q0_5, q15_45f = q15_45f,
-#'               date_ref = '2008-03-03' )
-#'
-#'# 2 - using log-quadratic estimated survival functions
-#' ltb <- SingleAgeLogQuadLT( q15_45 = 0.20, q0_5 = 0.07 )
-#' ltf <- SingleAgeLogQuadLT( q15_45 = 0.19, q0_5 = 0.05, sex = 'female' )
-#' lx_c <- ltb[ ltb$x %in% seq( 0, 15 ), ]$lx
-#' lx_w <- ltf[ ltf$x %in% seq( 10, 65, 5 ), ]$lx
+#' FertRevSurv( ages1_c = 0:14, popx1_c = pop_c,
+#'              ages5_w = seq( 10, 65, 5 ), popx5_w = pop_w,
+#'              lx1_c = lx_c, lx5_w = lx_w,
+#'              asfr5 = asfr,
+#'              asfr5_15prior = asfr_15prior,
+#'              q0_5 = q0_5, q15_45f = q15_45f,
+#'              date_ref = '2008-03-03' )
 #'
 #'
-#' FertRevSurv0( ages1_c = 0:14, popx1_c = pop_c,
-#'               ages5_w = seq( 10, 65, 5 ), popx5_w = pop_w,
-#'               lx1_c = lx_c, lx5_w = lx_w,
-#'               asfr5 = asfr,
-#'               asfr5_15prior = asfr_15prior,
-#'               q0_5 = q0_5, q15_45f = q15_45f,
-#'               date_ref = '2008-03-03' )
-#'
-#' # 3 - using model life table estimated survival functions
-#' lx_w <- find_mlt( lt_family = 'General', e0 = 69,
-#'                   ages = seq( 10, 65, 5 ), sex = 'female' )$lx_std
-#' lx_c <- find_mlt( lt_family = 'General', e0 = 67,
-#'                   ages = seq( 0, 15 ), sex = 'both' )$lx_std
-#'
-#' FertRevSurv0( ages1_c = 0:14, popx1_c = pop_c,
-#'               ages5_w = seq( 10, 65, 5 ), popx5_w = pop_w,
-#'               lx1_c = lx_c, lx5_w = lx_w,
-#'               asfr5 = asfr,
-#'               asfr5_15prior = asfr_15prior,
-#'               q0_5 = q0_5, q15_45f = q15_45f,
-#'               date_ref = '2008-03-03' )
-#'
-FertRevSurv0 <- function( ages1_c = 0:14, popx1_c,
+FertRevSurv <- function( ages1_c = 0:14, popx1_c,
                          ages5_w = seq( 10, 65, 5 ), popx5_w,
                          lx1_c, lx5_w,
                          asfr5 = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
