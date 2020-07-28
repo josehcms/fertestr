@@ -22,8 +22,8 @@ FertRevSurv( ages1_c = 0:14, popx1_c = pop_c,
              date_ref = '2008-03-03' )
 
 # 2 - using log-quadratic estimated survival functions
-ltb <- SingleAgeLogQuadLT( q15_45 = 0.20, q0_5 = 0.07 )
-ltf <- SingleAgeLogQuadLT( q15_45 = 0.19, q0_5 = 0.05, sex = 'female' )
+ltb <- SingleAgeLogQuad( q15_45 = 0.20, q0_5 = 0.07 )
+ltf <- SingleAgeLogQuad( q15_45 = 0.19, q0_5 = 0.05, sex = 'female' )
 
 lx_w <- ltf[ ltf$x %in% seq( 10, 65, 5 ), ]$lx
 lx_c <- ltb[ ltb$x %in% seq( 0, 15 ), ]$lx
