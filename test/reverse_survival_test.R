@@ -77,3 +77,49 @@ FertRevSurv0( ages1_c = 0:14, popx1_c = pop_c,
               asfr5_15prior = asfr_15prior,
               q0_5 = q0_5, q15_45f = q15_45f,
               date_ref = '2008-03-03' )
+
+# 4 - country estimation by WPP 2019 data
+
+FertRevSurvWPP( locations = c('Argentina','Italy','Canada','Brazil','Colombia'),
+                date_ref = '2015-07-31',
+                lt_family = 'West' )
+
+# 5 - using WPP information with user data - survival functions
+
+locs_avail() # use lower-middle-income countries' data
+
+ltb <- FetchLifeTableWpp2019( locations = 1501,
+                              year = decimal_anydate('2008-03-03'),
+                              sex = 'both' )
+lx_c <- find_mlt( lt_family = 'West', e0 = ltb$ex[1], ages = 0:15, sex = 'both' )$lx_std
+
+ltf <- FetchLifeTableWpp2019( locations = 1501,
+                              year = decimal_anydate('2008-03-03'),
+                              sex = 'female' )
+
+lx_w <- ltf$lx[ ltf$x %in% seq( 10, 65, 5)]
+
+FertRevSurv0( ages1_c = 0:14, popx1_c = pop_c,
+              ages5_w = seq( 10, 65, 5 ), popx5_w = pop_w,
+              lx1_c = lx_c, lx5_w = lx_w,
+              asfr5 = asfr,
+              asfr5_15prior = asfr_15prior,
+              q0_5 = q0_5, q15_45f = q15_45f,
+              date_ref = '2008-03-03' )
+
+# 6 - using WPP information with user data - asfr
+
+locs_avail() # use lower-middle-income countries' data
+
+asfr <- FetchFertilityWpp2019( locations = 'Cambodia',
+                               year = decimal_anydate( '2008-03-03' ) )$asfr
+asfr_15prior <- FetchFertilityWpp2019( locations = 'Cambodia',
+                                       year = decimal_anydate( '1993-03-03' ) )$asfr
+
+FertRevSurv0( ages1_c = 0:14, popx1_c = pop_c,
+              ages5_w = seq( 10, 65, 5 ), popx5_w = pop_w,
+              lx1_c = lx_c, lx5_w = lx_w,
+              asfr5 = asfr,
+              asfr5_15prior = asfr_15prior,
+              q0_5 = q0_5, q15_45f = q15_45f,
+              date_ref = '2008-03-03' )
