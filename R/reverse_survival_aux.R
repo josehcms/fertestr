@@ -183,12 +183,12 @@ FetchFertilityWpp2019 <- function( locations = NULL, year ){
   asfr_df <- data.frame()
 
   for( location_code in location_codes ){
-    tfr <- tfr[ tfr$country_code %in% location_code,
-                c( paste0( year_inf, '-', year_sup ) ) ]
+    tfr_aux <- tfr[ tfr$country_code %in% location_code,
+                    c( paste0( year_inf, '-', year_sup ) ) ]
 
-    asfr <- tfr * c( 0,
-                     percentASFR[ percentASFR$country_code %in% location_code,
-                                  c( paste0( year_inf, '-', year_sup ) ) ] / ( 5 * 100 ) )
+    asfr <- tfr_aux * c( 0,
+                         percentASFR[ percentASFR$country_code %in% location_code,
+                                      c( paste0( year_inf, '-', year_sup ) ) ] / ( 5 * 100 ) )
 
     asfr_std <- c( 0,
                    percentASFR[ percentASFR$country_code %in% location_code,
