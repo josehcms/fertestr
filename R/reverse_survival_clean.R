@@ -43,8 +43,8 @@
 #' FertRevSurv( ages1_c = 0:14, popx1_c = pop_c,
 #'              ages5_w = seq( 10, 65, 5 ), popx5_w = pop_w,
 #'              lx1_c = lx_c, lx5_w = lx_w,
-#'              asfr5 = asfr,
-#'              asfr5_15prior = asfr_15prior,
+#'              asfr = asfr,
+#'              asfr_15prior = asfr_15prior,
 #'              q0_5 = q0_5, q15_45f = q15_45f,
 #'              date_ref = '2008-03-03' )
 #'
@@ -52,8 +52,8 @@
 FertRevSurv <- function( ages1_c = 0:14, popx1_c,
                          ages5_w = seq( 10, 65, 5 ), popx5_w,
                          lx1_c, lx5_w,
-                         asfr5 = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
-                         asfr5_15prior = NULL,
+                         asfr = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
+                         asfr_15prior = NULL,
                          q0_5 = NULL, q15_45f = NULL,
                          date_ref ){
 
