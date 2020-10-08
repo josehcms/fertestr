@@ -987,7 +987,8 @@ revSurvMain <-
         revSurvTFR,
         data.frame(
           year = t,
-          TFR  = num / den
+          TFR  = num / den,
+          births = num
         )
       )
     }
