@@ -14,7 +14,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0001-6275-9854"))
            )
 Description: What the package does (one paragraph).
-License: What license it uses
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
