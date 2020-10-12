@@ -53,6 +53,8 @@ Average Parity Computation Function
 }
 \examples{
 
+library(DemoToolsData)
+
 ### Kenya 1989 data:
 prtyAverage( ages = data.prty_KEN$ages,
              parity = data.prty_KEN$parity,

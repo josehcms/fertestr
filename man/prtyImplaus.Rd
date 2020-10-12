@@ -28,6 +28,10 @@ The original data_par data.frame with implausible parities set to 0
 Implausible Parities correction function
 }
 \examples{
+
+library(DemoToolsData)
+
 ### Kenya 1989 data:
 prtyImplaus( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
+
 }

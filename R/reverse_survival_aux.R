@@ -353,7 +353,7 @@ FetchPopWpp2019 <-
             age_interval = 1,
             sex = 'total' ){
 
-    utils::data("popWpp2019x1", package = "wpp2019")
+    popWpp2019x1 <- DemoToolsData::popWpp2019x1
 
     if ( !is.numeric( locations ) ){
       location_codes <- get_location_code( locations )
@@ -458,6 +458,7 @@ interpolate <- function( y1, y2, x1, x2, x ){
 #'
 #'
 find_mlt <- function( lt_family, e0, ages, sex ){
+  modelLTx1 <- DemoToolsData::modelLTx1
 
   if( !( lt_family %in% unique( modelLTx1$family ) ) ){
     stop( 'Enter a model life table family name within the options: Chilean, Far_East_Asian, Latin, General, South_Asian, North, South, East, West' )
@@ -883,7 +884,7 @@ SingleAgeLogQuad <-
             sex = 'total' ){
 
     if( is.null(lt) ){
-      W <- hmd_lqcoeffs[[sex ]]
+      W <- DemoToolsData::hmd_lqcoeffs[[sex ]]
     } else{
       # fit log-quadratic
       x <- c( 0, 1, seq( 5, 110, by = 5 ) )

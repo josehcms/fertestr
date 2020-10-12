@@ -27,6 +27,8 @@
 #'   Asian and Pacific Population Forum 5(2-3):51-55, 76-87. http://hdl.handle.net/10125/3600.
 #' @examples
 #'
+#' library(DemoToolsData)
+#' 
 #' ### Kenya 1989 data:
 #' prtyAverage( ages = data.prty_KEN$ages,
 #'              parity = data.prty_KEN$parity,
@@ -199,6 +201,8 @@ prtyAverage <-
 #'
 #' @examples
 #'
+#' library(DemoToolsData)
+#'
 #' ### Kenya 1989 data:
 #' prtyElBadry( ages = data.prty_KEN$ages,
 #'              parity = data.prty_KEN$parity,
@@ -350,8 +354,12 @@ prtyElBadry <-
 #'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
 #'   Population. demographicestimation.iussp.org
 #' @examples
+#'
+#' library(DemoToolsData)
+#'
 #' ### Kenya 1989 data:
 #' prtyImplaus( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
+#' 
 
 # correct implausible parities
 prtyImplaus <-
@@ -408,8 +416,12 @@ prtyImplaus <-
 #'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
 #'   Population. demographicestimation.iussp.org
 #' @examples
+#'
+#' library(DemoToolsData)
+#'
 #' ### Malawi 2008 data:
 #' prtyAssess.plot( ages = data.pf_MWI$ages, P = data.pf_MWI$P )
+#'
 
 prtyAssess.plot <-
   function( ages,

@@ -159,6 +159,8 @@ fertGompPF <-
                asfr
                ){
 
+        std.zaba <- DemoToolsData::std.zaba
+
         # 2.1 Merge ages and asfr data with correspondent zaba std Fx value for age shift defined in madef
         fgomp.dat <-
           merge(

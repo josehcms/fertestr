@@ -27,7 +27,9 @@ fertBrassPF <-
   function( ages = seq(15,45,5),
             P,
             asfr,
-            adjust_group = c(20)){
+           adjust_group = c(20)){
+
+    mult.pf_brass <- DemoToolsData::mult.pf_brass
 
   # INPUTS:
   ## ages : 5 year age group from 15 to 49 as a vector c(15,20,25,30,35,40,45) by default
@@ -180,7 +182,11 @@ fertBrassPF.cltrss <-
             P,
             asfr,
             adjust_group = c(20),
-            age_shift = TRUE){
+           age_shift = TRUE){
+
+    mult.age_shift <- DemoToolsData::mult.age_shift
+    mult.cltrs_noshift <- DemoToolsData::mult.cltrs_noshift
+    mult.cltrs_shift <- DemoToolsData::mult.cltrs_shift
 
     # 1. Check if inputs have the correct dimensions
     stopifnot( all.equal( length(ages), length(P), length(asfr)) )

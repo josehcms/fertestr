@@ -41,6 +41,8 @@ El-Badry correction Function
 }
 \examples{
 
+library(DemoToolsData)
+
 ### Kenya 1989 data:
 prtyElBadry( ages = data.prty_KEN$ages,
              parity = data.prty_KEN$parity,
