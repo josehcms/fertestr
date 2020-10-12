@@ -451,7 +451,7 @@ fertGompPF <-
 
         ## A. All points first
         Fall.model <-
-          lm(
+          stats::lm(
             y ~ x,
             data = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]
           )
@@ -464,7 +464,7 @@ fertGompPF <-
 
         ## B. Selected points
         Fsel.model <-
-          lm(
+          stats::lm(
             y ~ x,
             data = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points' & fitGomp.dat$age.ub %in% sel.ages, ]
           )
@@ -492,7 +492,7 @@ fertGompPF <-
 
           ## A. All points first
           Pall.model <-
-            lm(
+            stats::lm(
               y ~ x,
               data = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]
             )
@@ -505,7 +505,7 @@ fertGompPF <-
 
           ## B. Selected points
           Psel.model <-
-            lm(
+            stats::lm(
               y ~ x,
               data = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' & fitGomp.dat$age.ub %in% sel.ages, ]
             )
@@ -522,7 +522,7 @@ fertGompPF <-
           ## C. F and P selected points
 
           FPsel.model <-
-            lm(
+            stats::lm(
               y ~ x,
               data = fitGomp.dat[ fitGomp.dat$age.ub %in% sel.ages, ]
             )
