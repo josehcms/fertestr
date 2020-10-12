@@ -41,7 +41,7 @@ El-Badry correction Function
 }
 \examples{
 ### Kenya 1989 data:
-prtyElBadry( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyElBadry.graph = T )
+prtyElBadry( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyElBadry.graph = TRUE)
 ###
 ### Cambodia 2008 data:
 prtyElBadry( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
