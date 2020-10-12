@@ -56,15 +56,15 @@
 
 prtyAverage <-
   function(
-    ages,
-    parity,
-    women,
-    na_code           = NA,
-    prtyElBadry.set   = FALSE,
-    prtyImp.set       = FALSE,
-    prtyElBadry.graph = FALSE,
-    prtyAssess.graph  = FALSE,
-    age_group         = 'q'){
+           ages,
+           parity,
+           women,
+           na_code           = NA,
+           prtyElBadry.set   = FALSE,
+           prtyImp.set       = FALSE,
+           prtyElBadry.graph = FALSE,
+           prtyAssess.graph  = FALSE,
+           age_group         = 'q'){
 
     # stop with lengths are not equal
     stopifnot( all.equal( length(ages), length(parity), length(women) ) )
@@ -79,17 +79,17 @@ prtyAverage <-
     if ( prtyImp.set ){
       data_par <-
         prtyImplaus( ages   = data_par$ages,
-                     parity = data_par$parity,
-                     women  = data_par$women,
-                     age_group
-                     )
+                    parity = data_par$parity,
+                    women  = data_par$women,
+                    age_group
+                    )
 
       data_par <-
         data.frame(
           ages   = data_par$ages,
           parity = data_par$parity,
           women  = data_par$women.updt
-          )
+        )
     }
 
     if ( age_group == 's' ){
@@ -109,26 +109,26 @@ prtyAverage <-
         )
 
       data_par <-
-        aggregate(
-          women ~ ages + parity,
-          data = data_par,
-          FUN = 'sum'
-          )
+        stats::aggregate(
+                 women ~ ages + parity,
+                 data = data_par,
+                 FUN = 'sum'
+               )
 
     }
 
     # compute maximum unkown women parity percentage
     max_missing_rt <-
       max( 100 *
-             tapply( data_par[ is.na(data_par$parity),]$women,
-                     data_par[ is.na(data_par$parity),]$ages,
-                     sum
-                     ) /
-             tapply( data_par[!is.na(data_par$parity),]$women,
-                     data_par[!is.na(data_par$parity),]$ages,
-                     sum
-                     )
-           )
+           tapply( data_par[ is.na(data_par$parity),]$women,
+                  data_par[ is.na(data_par$parity),]$ages,
+                  sum
+                  ) /
+           tapply( data_par[!is.na(data_par$parity),]$women,
+                  data_par[!is.na(data_par$parity),]$ages,
+                  sum
+                  )
+          )
     if ( prtyElBadry.set ){
       if ( max_missing_rt < 2 ){
         warning('Maximum parity missing percentage lower than 2% , verify whether El Badry correction is necessary!')
@@ -136,10 +136,10 @@ prtyAverage <-
 
       out.elbadry <-
         prtyElBadry( ages   = data_par$ages,
-                     parity = data_par$parity,
-                     women  = data_par$women,
-                     prtyElBadry.graph
-                     )
+                    parity = data_par$parity,
+                    women  = data_par$women,
+                    prtyElBadry.graph
+                    )
       data_par <-
         out.elbadry$data_par
     }
@@ -154,18 +154,18 @@ prtyAverage <-
           tapply(data_par[!is.na(data_par$parity), ]$women*data_par[!is.na(data_par$parity), ]$parity,
                  data_par[!is.na(data_par$parity), ]$ages,
                  sum
-          ) /
+                 ) /
           tapply(data_par$women,
                  data_par$ages,
                  sum
-          ),
+                 ),
         row.names = NULL
       )
 
     if( prtyAssess.graph ){
       prtyAssess.plot( ages = avg_par$ages,
-                       P    = avg_par$P
-                       )
+                      P    = avg_par$P
+                      )
     }
 
     return(avg_par)
@@ -233,16 +233,16 @@ prtyElBadry <-
     # Compute women totals by age group
     totals_1 <-
       tapply( data_par$women,
-              data_par$ages,
-              sum
-      )
+             data_par$ages,
+             sum
+             )
 
     # Compute percentage of unknown parities by age group
     Ui <-
       tapply( data_par[is.na(data_par$parity),]$women,
-              data_par[is.na(data_par$parity),]$ages,
-              sum
-      ) /
+             data_par[is.na(data_par$parity),]$ages,
+             sum
+             ) /
       totals_1
 
     # get data.frame of Ui
@@ -251,14 +251,14 @@ prtyElBadry <-
         ages = seq(15,45,5),
         Ui = round( Ui, 4 ),
         row.names = NULL
-        )
+      )
 
     # Compute percentage of zero parities by age group
     Zi <-
       tapply( data_par[!is.na(data_par$parity) & data_par$parity == 0,]$women,
-              data_par[!is.na(data_par$parity) & data_par$parity == 0,]$ages,
-              sum
-      ) /
+             data_par[!is.na(data_par$parity) & data_par$parity == 0,]$ages,
+             sum
+             ) /
       totals_1
 
     # get data.frame of Zi
@@ -270,20 +270,20 @@ prtyElBadry <-
       )
 
     # Take the intercept of regression Ui vs Zi
-    alpha <- lm(as.numeric(Ui)~as.numeric(Zi))$coefficients[1]
+    alpha <- stats::lm(as.numeric(Ui)~as.numeric(Zi))$coefficients[1]
 
     data_par[!is.na(data_par$parity) & data_par$parity == 0,]$women <-
       round(
-        ( Ui + Zi - alpha ) * totals_1 ,
-        digits=0
+      ( Ui + Zi - alpha ) * totals_1 ,
+      digits=0
       )
 
     data_par[is.na(data_par$parity),]$women <-
       totals_1 -
       tapply( data_par[!is.na(data_par$parity),]$women,
-              data_par[!is.na(data_par$parity),]$ages,
-              sum
-      )
+             data_par[!is.na(data_par$parity),]$ages,
+             sum
+             )
 
     if (prtyElBadry.graph==TRUE){
       plot(
@@ -297,29 +297,29 @@ prtyElBadry <-
         xlim = c(0,max(as.numeric(Zi),na.rm=T)+0.1),
         ylim = c(0,max(as.numeric(Ui),na.rm=T)+0.05)
       )
-      text(x = as.numeric(Zi),
-           y = as.numeric(Ui),
-           labels = c('15-19','20-24','25-29','30-34','35-39','40-44','45-49'),
-           cex=1,
-           pos=4
-      )
-      abline(
-        lm( as.numeric(Ui) ~ as.numeric(Zi) ) ,
-        col = 'red',
-        cex = 1.25 ,
-        lty = 3
-      )
-      legend(
-        'topleft',
-        legend = paste0( 'Ui = ' ,
-                         round(lm( as.numeric(Ui) ~ as.numeric(Zi) )$coefficients[1],3) ,
-                         ' + Zi * ',
-                         round(lm( as.numeric(Ui) ~ as.numeric(Zi) )$coefficients[2],3)
-        ),
-        col = 'red',
-        lty = 3,
-        bty = 'n'
-      )
+      graphics::text(x = as.numeric(Zi),
+                     y = as.numeric(Ui),
+                     labels = c('15-19','20-24','25-29','30-34','35-39','40-44','45-49'),
+                     cex=1,
+                     pos=4
+                     )
+      graphics::abline(
+                  stats::lm( as.numeric(Ui) ~ as.numeric(Zi) ) ,
+                  col = 'red',
+                  cex = 1.25 ,
+                  lty = 3
+                )
+      graphics::legend(
+                  'topleft',
+                  legend = paste0( 'Ui = ' ,
+                                  round(stats::lm( as.numeric(Ui) ~ as.numeric(Zi) )$coefficients[1],3) ,
+                                  ' + Zi * ',
+                                  round(stats::lm( as.numeric(Ui) ~ as.numeric(Zi) )$coefficients[2],3)
+                                  ),
+                  col = 'red',
+                  lty = 3,
+                  bty = 'n'
+                )
 
     }
 
@@ -356,9 +356,9 @@ prtyElBadry <-
 # correct implausible parities
 prtyImplaus <-
   function( ages,
-            parity,
-            women,
-            age_group = 'q'){
+           parity,
+           women,
+           age_group = 'q'){
 
     # stop with lengths are not equal
     stopifnot( all.equal( length(ages), length(parity), length(women) ) )
@@ -413,8 +413,8 @@ prtyImplaus <-
 
 prtyAssess.plot <-
   function( ages,
-            P
-            ){
+           P
+           ){
 
     # stop with lengths are not equal
     stopifnot( all.equal( length(ages), length(P) ) )
@@ -434,15 +434,15 @@ prtyAssess.plot <-
       cex  = 1.5,
       xlim = c(15,50),
       ylim = c(0,ceiling(max(as.numeric(avg_par$P),na.rm=T)+0.5))
-      )
-    lines(
-      x = as.numeric(avg_par$ages),
-      y = as.numeric(avg_par$P),
-      type = 'l',
-      lty  = 5,
-      cex  = 1.25
-      )
-    }
+    )
+    graphics::lines(
+                x = as.numeric(avg_par$ages),
+                y = as.numeric(avg_par$P),
+                type = 'l',
+                lty  = 5,
+                cex  = 1.25
+              )
+  }
 
 #' Parity Assessment function between two surveys
 #'

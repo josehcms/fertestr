@@ -70,6 +70,7 @@ fertGompPF( ages            = ages_ma,
             sel.ages        = c( 20, 25, 30, 35, 40, 45 ),
             plot.diagnostic = FALSE)
 
+
 ## Malawi 2008 Census data:
 ages_ma = c(15, 20, 25, 30, 35, 40, 45)
 asfr_ma = c(0.111, 0.245, 0.230, 0.195, 0.147, 0.072, 0.032)

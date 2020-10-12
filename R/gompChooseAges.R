@@ -33,21 +33,21 @@
 
 fertGompPF <-
   function( ages            = seq( 15, 45, 5 ),
-            asfr,
-            P               = NULL,
-            level           = FALSE,
-            madef           = '12m'
-  ){
+           asfr,
+           P               = NULL,
+           level           = FALSE,
+           madef           = '12m'
+           ){
 
 
     # 1. Adjust the inputs into the correct form for the method
     adjustGompInput <-
       function( ages,
-                asfr,
-                P,      # default = null
-                level,  # default = FALSE
-                madef   # default = '12m'
-      ){
+               asfr,
+               P,      # default = null
+               level,  # default = FALSE
+               madef   # default = '12m'
+               ){
 
 
         # 1.1 Check if level = TRUE and P is provided
@@ -153,11 +153,11 @@ fertGompPF <-
 
     F.GompitCalc <-
       function(
-        age.group,
-        age.shift,
-        age.noshift,
-        asfr
-      ){
+               age.group,
+               age.shift,
+               age.noshift,
+               asfr
+               ){
 
         # 2.1 Merge ages and asfr data with correspondent zaba std Fx value for age shift defined in madef
         fgomp.dat <-
@@ -248,7 +248,7 @@ fertGompPF <-
 
         ## cumulate asfr
         fgomp.dat$Fx.obs <-
-          c( 0, 5 * cumsum( na.omit( fgomp.dat$asfr ) ) )
+          c( 0, 5 * cumsum( stats::na.omit( fgomp.dat$asfr ) ) )
 
         ## Fx ratios
         fgomp.dat$Fx_x5.obs <-
@@ -282,10 +282,10 @@ fertGompPF <-
 
     P.GompitCalc <-
       function(
-        age.group,
-        age.noshift,
-        P
-      ){
+               age.group,
+               age.noshift,
+               P
+               ){
 
         # 3.1 Merge ages and P data with correspondent zaba std Px_x5 value for exact ages
         pgomp.dat <-
@@ -399,18 +399,18 @@ fertGompPF <-
 
     fitGompPF <-
       function(
-        age.group,
-        age.ub,
-        gi = NULL,
-        ei = NULL,
-        zi = NULL,
-        gx,
-        ex,
-        zx,
-        level = FALSE,
-        c.F,
-        c.P = NA
-      ){
+               age.group,
+               age.ub,
+               gi = NULL,
+               ei = NULL,
+               zi = NULL,
+               gx,
+               ex,
+               zx,
+               level = FALSE,
+               c.F,
+               c.P = NA
+               ){
 
         p.flag <-
           level & !is.null(gi) & !is.null(ei) & !is.null(zi)
@@ -491,7 +491,7 @@ fertGompPF <-
 
         pointsel.incomplete <- T
 
-        x11( width = 6, height = 6 )
+        grDevices::x11( width = 6, height = 6 )
         plot(
           x    = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$x,
           y    = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$y,
@@ -504,42 +504,42 @@ fertGompPF <-
           ylim = range( fitGomp.dat$y ),
           main = 'Select sequential F points for fertility estimation\nAttention: 0.80 < beta < 1.25 and |alpha| < 0.3'
         )
-        points(
-          x   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
-          y   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
-          col = 'skyblue',
-          pch = 0,
-          cex = 1.5
-        )
-        abline(
-          a   = FPall.intercept,
-          b   = FPall.beta,
-          col = "gray65",
-          lwd = 0.75
-        )
-        abline(
-          a   = Fall.intercept,
-          b   = Fall.beta,
-          col = "tomato3",
-          lty = "dashed",
-          lwd = 1.5
-        )
-        abline(
-          a   = Pall.intercept,
-          b   = Pall.beta,
-          col = "skyblue",
-          lwd = 1.5
-        )
-        grid( col = "gray70", lty = "dotted", equilogs = TRUE)
-        legend(
-          'bottomright',
-          c( 'F-Points', 'P-Points' ),
-          col = c( 'tomato3', 'skyblue' ),
-          pch = c( 19, 15 ),
-          cex = 1.2,
-          bty = "n",
-          horiz = T
-        )
+        graphics::points(
+                    x   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
+                    y   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
+                    col = 'skyblue',
+                    pch = 0,
+                    cex = 1.5
+                  )
+        graphics::abline(
+                    a   = FPall.intercept,
+                    b   = FPall.beta,
+                    col = "gray65",
+                    lwd = 0.75
+                  )
+        graphics::abline(
+                    a   = Fall.intercept,
+                    b   = Fall.beta,
+                    col = "tomato3",
+                    lty = "dashed",
+                    lwd = 1.5
+                  )
+        graphics::abline(
+                    a   = Pall.intercept,
+                    b   = Pall.beta,
+                    col = "skyblue",
+                    lwd = 1.5
+                  )
+        graphics::grid( col = "gray70", lty = "dotted", equilogs = TRUE)
+        graphics::legend(
+                    'bottomright',
+                    c( 'F-Points', 'P-Points' ),
+                    col = c( 'tomato3', 'skyblue' ),
+                    pch = c( 19, 15 ),
+                    cex = 1.2,
+                    bty = "n",
+                    horiz = T
+                  )
 
         while( pointsel.incomplete ){
 
@@ -571,94 +571,94 @@ fertGompPF <-
             Fsel.intercept - ( Fsel.beta - 1 ) ^ (2) * c.F / 2
 
           # add selected points to plot
-          points(
-            x   = fitGomp.Fdat[ sel.Fpoints, ]$x,
-            y   = fitGomp.Fdat[ sel.Fpoints, ]$y,
-            col = 'tomato3',
-            pch = 19,
-            cex = 1.5
-          )
-          abline(
-            a = Fsel.intercept,
-            b = Fsel.beta,
-            col = "tomato3",
-            lty = "dashed",
-            lwd = 1.5
-          )
-          mtext(
-            side = 3,
-            line = -1,
-            text = paste0('   alpha.F = ', round( Fsel.alpha, 3 ),
-                          '; beta.F = ', round( Fsel.beta, 3 ),
-                          '; intercept.F = ', round( Fsel.intercept, 3 ) ),
-            cex = 1.0,
-            adj = 0
-          )
-          grid( col = "gray70", lty = "dotted", equilogs = TRUE)
-          legend(
-            'bottomright',
-            c( 'F-Points', 'P-Points' ),
-            col = c( 'tomato3', 'skyblue' ),
-            pch = c( 19, 15 ),
-            cex = 1.2,
-            bty = "n",
-            horiz = T
-          )
+          graphics::points(
+                      x   = fitGomp.Fdat[ sel.Fpoints, ]$x,
+                      y   = fitGomp.Fdat[ sel.Fpoints, ]$y,
+                      col = 'tomato3',
+                      pch = 19,
+                      cex = 1.5
+                    )
+          graphics::abline(
+                      a = Fsel.intercept,
+                      b = Fsel.beta,
+                      col = "tomato3",
+                      lty = "dashed",
+                      lwd = 1.5
+                    )
+          graphics::mtext(
+                      side = 3,
+                      line = -1,
+                      text = paste0('   alpha.F = ', round( Fsel.alpha, 3 ),
+                                    '; beta.F = ', round( Fsel.beta, 3 ),
+                                    '; intercept.F = ', round( Fsel.intercept, 3 ) ),
+                      cex = 1.0,
+                      adj = 0
+                    )
+          graphics::grid( col = "gray70", lty = "dotted", equilogs = TRUE)
+          graphics::legend(
+                      'bottomright',
+                      c( 'F-Points', 'P-Points' ),
+                      col = c( 'tomato3', 'skyblue' ),
+                      pch = c( 19, 15 ),
+                      cex = 1.2,
+                      bty = "n",
+                      horiz = T
+                    )
 
           if ( p.flag ){
-          # add P points to plot if there are any
-          plot(
-            x    = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
-            y    = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
-            col = 'skyblue',
-            pch  = 0,
-            xlab ='g()',
-            ylab = 'z()-e()',
-            cex = 1.5,
-            xlim = range( fitGomp.dat$x ),
-            ylim = range( fitGomp.dat$y ),
-            main = 'SELECT P POINTS\n 0.80 < beta < 1.25 and |alpha| < 0.3'
-          )
-          points(
-            x   = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$x,
-            y   = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$y,
-            col = 'tomato3',
-            pch = 1,
-            cex = 1.5
-          )
-          points(
-            x   = fitGomp.Fdat[ sel.Fpoints, ]$x,
-            y   = fitGomp.Fdat[ sel.Fpoints, ]$y,
-            col = 'tomato3',
-            pch = 19,
-            cex = 1.5
-          )
-          abline(
-            a = Fsel.intercept,
-            b = Fsel.beta,
-            col = "tomato3",
-            lty = "dashed",
-            lwd = 1.5
-          )
-          mtext(
-            side = 3,
-            line = -1,
-            text = paste0('   alpha.F = ', round( Fsel.alpha, 3 ),
-                          '; beta.F = ', round( Fsel.beta, 3 ),
-                          '; intercept.F = ', round( Fsel.intercept, 3 ) ),
-            cex = 1.0,
-            adj = 0
-          )
-          grid( col = "gray70", lty = "dotted", equilogs = TRUE)
-          legend(
-            'bottomright',
-            c( 'F-Points', 'P-Points' ),
-            col = c( 'tomato3', 'skyblue' ),
-            pch = c( 19, 15 ),
-            cex = 1.2,
-            bty = "n",
-            horiz = T
-          )
+            # add P points to plot if there are any
+            plot(
+              x    = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
+              y    = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
+              col = 'skyblue',
+              pch  = 0,
+              xlab ='g()',
+              ylab = 'z()-e()',
+              cex = 1.5,
+              xlim = range( fitGomp.dat$x ),
+              ylim = range( fitGomp.dat$y ),
+              main = 'SELECT P POINTS\n 0.80 < beta < 1.25 and |alpha| < 0.3'
+            )
+            graphics::points(
+                        x   = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$x,
+                        y   = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$y,
+                        col = 'tomato3',
+                        pch = 1,
+                        cex = 1.5
+                      )
+            graphics::points(
+                        x   = fitGomp.Fdat[ sel.Fpoints, ]$x,
+                        y   = fitGomp.Fdat[ sel.Fpoints, ]$y,
+                        col = 'tomato3',
+                        pch = 19,
+                        cex = 1.5
+                      )
+            graphics::abline(
+                        a = Fsel.intercept,
+                        b = Fsel.beta,
+                        col = "tomato3",
+                        lty = "dashed",
+                        lwd = 1.5
+                      )
+            graphics::mtext(
+                        side = 3,
+                        line = -1,
+                        text = paste0('   alpha.F = ', round( Fsel.alpha, 3 ),
+                                      '; beta.F = ', round( Fsel.beta, 3 ),
+                                      '; intercept.F = ', round( Fsel.intercept, 3 ) ),
+                        cex = 1.0,
+                        adj = 0
+                      )
+            graphics::grid( col = "gray70", lty = "dotted", equilogs = TRUE)
+            graphics::legend(
+                        'bottomright',
+                        c( 'F-Points', 'P-Points' ),
+                        col = c( 'tomato3', 'skyblue' ),
+                        pch = c( 19, 15 ),
+                        cex = 1.2,
+                        bty = "n",
+                        horiz = T
+                      )
 
 
             # select P-Points
@@ -688,39 +688,39 @@ fertGompPF <-
               Psel.intercept - ( Psel.beta - 1 ) ^ (2) * c.P / 2
 
             # add selected P points to plot
-            points(
-              x   = fitGomp.Pdat[ sel.Ppoints, ]$x,
-              y   = fitGomp.Pdat[ sel.Ppoints, ]$y,
-              col = 'skyblue',
-              pch = 15,
-              cex = 1.5
-            )
-            abline(
-              a = Psel.intercept,
-              b = Psel.beta,
-              col = "skyblue",
-              lty = 1,
-              lwd = 1.5
-            )
-            mtext(
-              side = 3,
-              line = -2,
-              text = paste0('   alpha.P = ', round( Psel.alpha, 3 ),
-                            '; beta.P = ', round( Psel.beta, 3 ),
-                            '; intercept.P = ', round( Psel.intercept, 3 ) ),
-              cex = 1.0,
-              adj = 0
-            )
-            grid( col = "gray70", lty = "dotted", equilogs = TRUE)
-            legend(
-              'bottomright',
-              c( 'F-Points', 'P-Points' ),
-              col = c( 'tomato3', 'skyblue' ),
-              pch = c( 19, 15 ),
-              cex = 1.2,
-              bty = "n",
-              horiz = T
-            )
+            graphics::points(
+                        x   = fitGomp.Pdat[ sel.Ppoints, ]$x,
+                        y   = fitGomp.Pdat[ sel.Ppoints, ]$y,
+                        col = 'skyblue',
+                        pch = 15,
+                        cex = 1.5
+                      )
+            graphics::abline(
+                        a = Psel.intercept,
+                        b = Psel.beta,
+                        col = "skyblue",
+                        lty = 1,
+                        lwd = 1.5
+                      )
+            graphics::mtext(
+                        side = 3,
+                        line = -2,
+                        text = paste0('   alpha.P = ', round( Psel.alpha, 3 ),
+                                      '; beta.P = ', round( Psel.beta, 3 ),
+                                      '; intercept.P = ', round( Psel.intercept, 3 ) ),
+                        cex = 1.0,
+                        adj = 0
+                      )
+            graphics::grid( col = "gray70", lty = "dotted", equilogs = TRUE)
+            graphics::legend(
+                        'bottomright',
+                        c( 'F-Points', 'P-Points' ),
+                        col = c( 'tomato3', 'skyblue' ),
+                        pch = c( 19, 15 ),
+                        cex = 1.2,
+                        bty = "n",
+                        horiz = T
+                      )
 
           }
 
@@ -740,7 +740,7 @@ fertGompPF <-
             lm(
               y ~ x,
               data = fitGomp.FPdat
-              )
+            )
 
           FPsel.beta  <-
             FPsel.model$coefficients[2]
@@ -751,20 +751,20 @@ fertGompPF <-
           FPsel.alpha <-
             FPsel.intercept - ( FPsel.beta - 1 ) ^ (2) * mean( c.F, c.P, na.rm = TRUE ) / 2
 
-          abline(
-            a = FPsel.intercept,
-            b = FPsel.beta,
-            col = "black",
-            lty = 3,
-            lwd = 1.5
-            )
-          mtext(
-            side = 3,
-            line = -3,
-            text = paste0('   alpha = ', round( FPsel.alpha, 3 ), '; beta = ', round( FPsel.beta, 3 ) ),
-            cex = 1,
-            adj = 0
-          )
+          graphics::abline(
+                      a = FPsel.intercept,
+                      b = FPsel.beta,
+                      col = "black",
+                      lty = 3,
+                      lwd = 1.5
+                    )
+          graphics::mtext(
+                      side = 3,
+                      line = -3,
+                      text = paste0('   alpha = ', round( FPsel.alpha, 3 ), '; beta = ', round( FPsel.beta, 3 ) ),
+                      cex = 1,
+                      adj = 0
+                    )
 
 
           if ( abs( FPsel.alpha ) > 0.3 ){
@@ -795,7 +795,7 @@ fertGompPF <-
               cat( 'New F and P points selection\n' )
               # new plot for point selection
               graphics.off()
-              x11( width = 6, height = 6 )
+              grDevices::x11( width = 6, height = 6 )
               plot(
                 x    = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$x,
                 y    = fitGomp.dat[ fitGomp.dat$point.lab == "F-Points", ]$y,
@@ -808,42 +808,42 @@ fertGompPF <-
                 ylim = range( fitGomp.dat$y ),
                 main = 'Select sequential F points for fertility estimation\nAttention: 0.80 < beta < 1.25 and |alpha| < 0.3'
               )
-              points(
-                x   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
-                y   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
-                col = 'skyblue',
-                pch = 0,
-                cex = 1.5
-              )
-              abline(
-                a   = FPall.intercept,
-                b   = FPall.beta,
-                col = "gray65",
-                lwd = 0.75
-              )
-              abline(
-                a   = Fall.intercept,
-                b   = Fall.beta,
-                col = "tomato3",
-                lty = "dashed",
-                lwd = 1.5
-              )
-              abline(
-                a   = Pall.intercept,
-                b   = Pall.beta,
-                col = "skyblue",
-                lwd = 1.5
-              )
-              grid( col = "gray70", lty = "dotted", equilogs = TRUE)
-              legend(
-                'bottomright',
-                c( 'F-Points', 'P-Points' ),
-                col = c( 'tomato3', 'skyblue' ),
-                pch = c( 19, 15 ),
-                cex = 1.2,
-                bty = "n",
-                horiz = T
-              )
+              graphics::points(
+                          x   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$x,
+                          y   = fitGomp.dat[ fitGomp.dat$point.lab == "P-Points", ]$y,
+                          col = 'skyblue',
+                          pch = 0,
+                          cex = 1.5
+                        )
+              graphics::abline(
+                          a   = FPall.intercept,
+                          b   = FPall.beta,
+                          col = "gray65",
+                          lwd = 0.75
+                        )
+              graphics::abline(
+                          a   = Fall.intercept,
+                          b   = Fall.beta,
+                          col = "tomato3",
+                          lty = "dashed",
+                          lwd = 1.5
+                        )
+              graphics::abline(
+                          a   = Pall.intercept,
+                          b   = Pall.beta,
+                          col = "skyblue",
+                          lwd = 1.5
+                        )
+              graphics::grid( col = "gray70", lty = "dotted", equilogs = TRUE)
+              graphics::legend(
+                          'bottomright',
+                          c( 'F-Points', 'P-Points' ),
+                          col = c( 'tomato3', 'skyblue' ),
+                          pch = c( 19, 15 ),
+                          cex = 1.2,
+                          bty = "n",
+                          horiz = T
+                        )
               break
             }
 
@@ -862,8 +862,8 @@ fertGompPF <-
 
         if ( level ){
 
-          x11( width = 9, height = 6)
-          par( mfrow = c( 1, 2 ) )
+          grDevices::x11( width = 9, height = 6)
+          graphics::par( mfrow = c( 1, 2 ) )
 
           ## A.1 All F points
           plot(
@@ -876,56 +876,56 @@ fertGompPF <-
             xlim = rangeAll.x,
             ylim = rangeAll.y
           )
-          abline( reg = Fall.model, col = 'skyblue' , lty = 5)
+          graphics::abline( reg = Fall.model, col = 'skyblue' , lty = 5)
 
           ## A.2 All P points
-          points(
-            x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' ,]$x,
-            y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' ,]$y,
-            pch = 15,
-            col = 'tomato3'
-          )
-          abline( reg = Pall.model, col = 'tomato3' , lty = 3)
-          legend(
-            'bottomright',
-            legend = c( 'F-points', 'P-points' ),
-            lty    = c(  5,  3 ),
-            pch    = c( 19, 15 ),
-            col    = c( 'skyblue', 'tomato3' ),
-            bty    = 'n'
-          )
-          grid()
-          mtext(
-            side = 3,
-            line = 2.35,
-            adj  = 0,
-            cex  = 1.15,
-            'Figure 1: All F Points and P points'
-          )
-          mtext(
-            side = 3,
-            line = 0.60,
-            adj  = 0,
-            cex  = 0.75,
-            paste0( 'F-points linear: y(x) = ', round( Fall.intercept, 4) , ' + ', round( Fall.beta, 4 ) , ' * x\n',
-                    'P-points linear: y(x) = ', round( Pall.intercept, 4) , ' + ', round( Pall.beta, 4 ) , ' * x' )
-          )
-          text(
-            x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$x,
-            y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$y,
-            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$age.group,
-            cex = 0.75,
-            pos = 4,
-            col = 'skyblue'
-          )
-          text(
-            x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$x,
-            y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$y,
-            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$age.group,
-            cex = 0.75,
-            pos = 4,
-            col = 'tomato3'
-          )
+          graphics::points(
+                      x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' ,]$x,
+                      y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points' ,]$y,
+                      pch = 15,
+                      col = 'tomato3'
+                    )
+          graphics::abline( reg = Pall.model, col = 'tomato3' , lty = 3)
+          graphics::legend(
+                      'bottomright',
+                      legend = c( 'F-points', 'P-points' ),
+                      lty    = c(  5,  3 ),
+                      pch    = c( 19, 15 ),
+                      col    = c( 'skyblue', 'tomato3' ),
+                      bty    = 'n'
+                    )
+          graphics::grid()
+          graphics::mtext(
+                      side = 3,
+                      line = 2.35,
+                      adj  = 0,
+                      cex  = 1.15,
+                      'Figure 1: All F Points and P points'
+                    )
+          graphics::mtext(
+                      side = 3,
+                      line = 0.60,
+                      adj  = 0,
+                      cex  = 0.75,
+                      paste0( 'F-points linear: y(x) = ', round( Fall.intercept, 4) , ' + ', round( Fall.beta, 4 ) , ' * x\n',
+                             'P-points linear: y(x) = ', round( Pall.intercept, 4) , ' + ', round( Pall.beta, 4 ) , ' * x' )
+                    )
+          graphics::text(
+                      x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$x,
+                      y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$y,
+                      labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$age.group,
+                      cex = 0.75,
+                      pos = 4,
+                      col = 'skyblue'
+                    )
+          graphics::text(
+                      x = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$x,
+                      y = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$y,
+                      labels = fitGomp.dat[ fitGomp.dat$point.lab == 'P-Points', ]$age.group,
+                      cex = 0.75,
+                      pos = 4,
+                      col = 'tomato3'
+                    )
 
           ## B.1 Selected F points
           plot(
@@ -938,67 +938,67 @@ fertGompPF <-
             xlim = rangeAll.x,
             ylim = rangeAll.y
           )
-          abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
+          graphics::abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
 
           ## B.2 Selected P points
-          points(
-            x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$x,
-            y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$y,
-            pch = 15,
-            col = 'tomato3'
-          )
-          abline( reg = Psel.model, col = 'tomato3' , lty = 3)
+          graphics::points(
+                      x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$x,
+                      y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$y,
+                      pch = 15,
+                      col = 'tomato3'
+                    )
+          graphics::abline( reg = Psel.model, col = 'tomato3' , lty = 3)
 
           ## B.3 Combined P and F points
-          abline( reg = FPsel.model, col = 'black' , lty = 1, lwd = 0.5)
-          legend(
-            'bottomright',
-            legend = c( 'F-points', 'P-points', 'Combined F and P' ),
-            lty    = c(  5,  3 , 1),
-            pch    = c( 19, 15 , NA),
-            col    = c( 'skyblue', 'tomato3', 'black' ),
-            bty    = 'n'
-          )
-          grid()
-          mtext(
-            side = 3,
-            line = 2.35,
-            adj  = 0,
-            cex  = 1.15,
-            'Figure 2: Selected F Points and P points'
-          )
-          mtext(
-            side = 3,
-            line = 0.10,
-            adj  = 0,
-            cex  = 0.75,
-            paste0( 'F-points linear: y(x) = ', round( Fsel.intercept, 4) , ' + ', round( Fsel.beta, 4 ) , ' * x\n',
-                    'P-points linear: y(x) = ', round( Psel.intercept, 4) , ' + ', round( Psel.beta, 4 ) , ' * x\n',
-                    'Combined F and P linear: y(x) = ', round( FPsel.intercept, 4) , ' + ', round( FPsel.beta, 4 ) , ' * x' )
-          )
-          text(
-            x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$x,
-            y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$y,
-            labels = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$age.group,
-            cex = 0.75,
-            pos = 4,
-            col = 'skyblue'
-          )
-          text(
-            x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$x,
-            y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$y,
-            labels = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$age.group,
-            cex = 0.75,
-            pos = 4,
-            col = 'tomato3'
-          )
+          graphics::abline( reg = FPsel.model, col = 'black' , lty = 1, lwd = 0.5)
+          graphics::legend(
+                      'bottomright',
+                      legend = c( 'F-points', 'P-points', 'Combined F and P' ),
+                      lty    = c(  5,  3 , 1),
+                      pch    = c( 19, 15 , NA),
+                      col    = c( 'skyblue', 'tomato3', 'black' ),
+                      bty    = 'n'
+                    )
+          graphics::grid()
+          graphics::mtext(
+                      side = 3,
+                      line = 2.35,
+                      adj  = 0,
+                      cex  = 1.15,
+                      'Figure 2: Selected F Points and P points'
+                    )
+          graphics::mtext(
+                      side = 3,
+                      line = 0.10,
+                      adj  = 0,
+                      cex  = 0.75,
+                      paste0( 'F-points linear: y(x) = ', round( Fsel.intercept, 4) , ' + ', round( Fsel.beta, 4 ) , ' * x\n',
+                             'P-points linear: y(x) = ', round( Psel.intercept, 4) , ' + ', round( Psel.beta, 4 ) , ' * x\n',
+                             'Combined F and P linear: y(x) = ', round( FPsel.intercept, 4) , ' + ', round( FPsel.beta, 4 ) , ' * x' )
+                    )
+          graphics::text(
+                      x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$x,
+                      y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$y,
+                      labels = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$age.group,
+                      cex = 0.75,
+                      pos = 4,
+                      col = 'skyblue'
+                    )
+          graphics::text(
+                      x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$x,
+                      y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'P-Points', ]$y,
+                      labels = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$age.group,
+                      cex = 0.75,
+                      pos = 4,
+                      col = 'tomato3'
+                    )
 
         }
 
         else{
 
-          x11( width = 9, height = 6)
-          par( mfrow = c( 1, 2 ) )
+          grDevices::x11( width = 9, height = 6)
+          graphics::par( mfrow = c( 1, 2 ) )
 
           ## A.1 All F points
           plot(
@@ -1011,30 +1011,30 @@ fertGompPF <-
             xlim = rangeAll.x,
             ylim = rangeAll.y
           )
-          abline( reg = Fall.model, col = 'skyblue' , lty = 5)
-          grid()
-          mtext(
-            side = 3,
-            line = 2,
-            adj  = 0,
-            cex  = 1.25,
-            'Figure 1: All F Points'
-          )
-          mtext(
-            side = 3,
-            line = 0.75,
-            adj  = 0,
-            cex  = 1,
-            paste0( 'F-points linear: y(x) = ', round( Fall.intercept, 4) , ' + ', round( Fall.beta, 4 ) , ' * x')
-          )
-          text(
-            x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$x,
-            y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$y,
-            labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$age.group,
-            cex = 0.75,
-            pos = 4,
-            col = 'skyblue'
-          )
+          graphics::abline( reg = Fall.model, col = 'skyblue' , lty = 5)
+          graphics::grid()
+          graphics::mtext(
+                      side = 3,
+                      line = 2,
+                      adj  = 0,
+                      cex  = 1.25,
+                      'Figure 1: All F Points'
+                    )
+          graphics::mtext(
+                      side = 3,
+                      line = 0.75,
+                      adj  = 0,
+                      cex  = 1,
+                      paste0( 'F-points linear: y(x) = ', round( Fall.intercept, 4) , ' + ', round( Fall.beta, 4 ) , ' * x')
+                    )
+          graphics::text(
+                      x = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$x,
+                      y = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$y,
+                      labels = fitGomp.dat[ fitGomp.dat$point.lab == 'F-Points', ]$age.group,
+                      cex = 0.75,
+                      pos = 4,
+                      col = 'skyblue'
+                    )
 
           ## B.1 Selected F points
           plot(
@@ -1047,30 +1047,30 @@ fertGompPF <-
             xlim = rangeAll.x,
             ylim = rangeAll.y
           )
-          abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
-          grid()
-          mtext(
-            side = 3,
-            line = 2,
-            adj  = 0,
-            cex  = 1.25,
-            'Figure 2: Selected F Points'
-          )
-          mtext(
-            side = 3,
-            line = 0.75,
-            adj  = 0,
-            cex  = 1,
-            paste0( 'F-points linear: y(x) = ', round( Fsel.intercept, 4) , ' + ', round( Fsel.beta, 4 ) , ' * x')
-          )
-          text(
-            x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$x,
-            y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$y,
-            labels = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$age.group,
-            cex = 0.75,
-            pos = 4,
-            col = 'skyblue'
-          )
+          graphics::abline( reg = Fsel.model, col = 'skyblue' , lty = 5)
+          graphics::grid()
+          graphics::mtext(
+                      side = 3,
+                      line = 2,
+                      adj  = 0,
+                      cex  = 1.25,
+                      'Figure 2: Selected F Points'
+                    )
+          graphics::mtext(
+                      side = 3,
+                      line = 0.75,
+                      adj  = 0,
+                      cex  = 1,
+                      paste0( 'F-points linear: y(x) = ', round( Fsel.intercept, 4) , ' + ', round( Fsel.beta, 4 ) , ' * x')
+                    )
+          graphics::text(
+                      x = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$x,
+                      y = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$y,
+                      labels = fitGomp.FPdat[ fitGomp.FPdat$point.lab == 'F-Points', ]$age.group,
+                      cex = 0.75,
+                      pos = 4,
+                      col = 'skyblue'
+                    )
         }
 
         # 4.5 Create output data.frame for regression and compute RMSE
@@ -1147,18 +1147,18 @@ fertGompPF <-
 
     AntiGompitCalc <-
       function(
-        age.group,
-        age.shift,
-        age.noshift,
-        level = FALSE,
-        coeffs.Gomp,
-        Fx.std,
-        Fx.stdnoshift,
-        Fx.obs,
-        P.std = NULL,
-        P.obs = NULL,
-        sel.ages
-      ){
+               age.group,
+               age.shift,
+               age.noshift,
+               level = FALSE,
+               coeffs.Gomp,
+               Fx.std,
+               Fx.stdnoshift,
+               Fx.obs,
+               P.std = NULL,
+               P.obs = NULL,
+               sel.ages
+               ){
 
         F.alpha <-
           coeffs.Gomp$F.alpha
@@ -1226,9 +1226,9 @@ fertGompPF <-
 
         FP.level <-
           ifelse ( is.null( P.level ),
-                   F.level,
-                   P.level
-          )
+                  F.level,
+                  P.level
+                  )
 
         Fmodel.dat$fmx <-
           Fmodel.dat$Fx.fit * FP.level / 5
@@ -1305,13 +1305,13 @@ fertGompPF <-
     # 6. Estimate PF series
     PFseries.Calc <-
       function(
-        age.group,
-        age.lb,
-        age.ub,
-        P.obs,
-        F.level,
-        coeffs.Gomp
-      ){
+               age.group,
+               age.lb,
+               age.ub,
+               P.obs,
+               F.level,
+               coeffs.Gomp
+               ){
 
         PFseries.dat <-
           data.frame(

@@ -411,9 +411,9 @@ FetchPopWpp2019 <-
              right = FALSE )
 
       popx5 <-
-        aggregate( popx1$pop,
-                   by = list( LocID = popx1$LocID, ages = popx1$age.x5 ),
-                   FUN = 'sum' )
+        stats::aggregate( popx1$pop,
+                         by = list( LocID = popx1$LocID, ages = popx1$age.x5 ),
+                         FUN = 'sum' )
 
       names( popx5 ) <- c( 'LocID', 'ages', 'pop' )
 
@@ -905,7 +905,7 @@ SingleAgeLogQuad <-
     # single life table
     lts <-
       MortalityLaws::LifeTable( x = 0:99,
-                               mx = c( lt5$lt$mx[1], fitted( lts_model )[ 1:99 ] ),
+                               mx = c( lt5$lt$mx[1], stats::fitted( lts_model )[ 1:99 ] ),
                                lx0 = 1,
                                sex = sex )$lt
 

@@ -115,7 +115,7 @@ ceb_eval <-
             xlab = 'Reference year of CEB',
             ylab = 'Children per Women',
             main = 'Cohort analysis of mean CEB' )
-      legend( 'bottomleft',
+      graphics::legend( 'bottomleft',
               legend = paste0( substr( date_svy, 1, 4 ), ' census/survey' ),
               lty = c( 5 ), col = c( 'blue' ), pch = c( 1 ),
               bty = 'n' )
@@ -137,7 +137,7 @@ ceb_eval <-
 #'
 fetch_mac_Wpp2019 <- function( country_code = NULL, year ){
 
-  data('percentASFR', package = "wpp2019")
+  utils::data('percentASFR', package = "wpp2019")
   year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
 
   year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
