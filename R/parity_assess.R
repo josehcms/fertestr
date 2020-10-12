@@ -26,16 +26,31 @@
 #'   Feeney G. 1991. "Child survivorship estimation: Methods and data analysis",
 #'   Asian and Pacific Population Forum 5(2-3):51-55, 76-87. http://hdl.handle.net/10125/3600.
 #' @examples
+#'
 #' ### Kenya 1989 data:
-#' prtyAverage( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
+#' prtyAverage( ages = data.prty_KEN$ages,
+#'              parity = data.prty_KEN$parity,
+#'              women = data.prty_KEN$women
+#' )
+#'
 #' # With El-Badry:
-#' prtyAverage(  ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women,
-#' prtyElBadry.set = TRUE, prtyElBadry.graph = TRUE)
+#' prtyAverage(  ages = data.prty_KEN$ages,
+#'               parity = data.prty_KEN$parity,
+#'               women = data.prty_KEN$women,
+#'               prtyElBadry.set = TRUE,
+#'               prtyElBadry.graph = TRUE )
+#'
 #' # Correction for implausible parities
-#' prtyAverage(  ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyImp.set = TRUE )
+#' prtyAverage(  ages = data.prty_KEN$ages,
+#'               parity = data.prty_KEN$parity,
+#'               women = data.prty_KEN$women,
+#'               prtyImp.set = TRUE )
 #' ###
 #' ### Cambodia 2008 data:
-#' prtyAverage( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
+#' prtyAverage( ages = data.prty_KHM$ages,
+#'              parity = data.prty_KHM$parity,
+#'              women = data.prty_KHM$women )
+#'
 #' ###
 
 
@@ -181,12 +196,20 @@ prtyAverage <-
 #'  UN Population Division. 1983. Manual X: Indirect Techniques for Demographic Estimation.
 #'  New York: United Nations, Department of Economic and Social Affairs, ST/ESA/SER.A/81.
 #'  http://www.un.org/esa/population/techcoop/DemEst/manual10/manual10.html
+#'
 #' @examples
+#'
 #' ### Kenya 1989 data:
-#' prtyElBadry( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyElBadry.graph = TRUE)
-#' ###
+#' prtyElBadry( ages = data.prty_KEN$ages,
+#'              parity = data.prty_KEN$parity,
+#'              women = data.prty_KEN$women,
+#'              prtyElBadry.graph = TRUE)
+#'
+#'
 #' ### Cambodia 2008 data:
-#' prtyElBadry( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
+#' prtyElBadry( ages = data.prty_KHM$ages,
+#'              parity = data.prty_KHM$parity,
+#'              women = data.prty_KHM$women )
 #' ###
 
 

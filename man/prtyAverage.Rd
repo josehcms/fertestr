@@ -52,15 +52,30 @@ A data.frame with 2 variables: ages and P for average parities by age group
 Average Parity Computation Function
 }
 \examples{
+
 ### Kenya 1989 data:
-prtyAverage( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
+prtyAverage( ages = data.prty_KEN$ages,
+             parity = data.prty_KEN$parity,
+             women = data.prty_KEN$women
+)
+
 # With El-Badry:
-prtyAverage(  ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women,
-prtyElBadry.set = TRUE, prtyElBadry.graph = TRUE)
+prtyAverage(  ages = data.prty_KEN$ages,
+              parity = data.prty_KEN$parity,
+              women = data.prty_KEN$women,
+              prtyElBadry.set = TRUE,
+              prtyElBadry.graph = TRUE )
+
 # Correction for implausible parities
-prtyAverage(  ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyImp.set = TRUE )
+prtyAverage(  ages = data.prty_KEN$ages,
+              parity = data.prty_KEN$parity,
+              women = data.prty_KEN$women,
+              prtyImp.set = TRUE )
 ###
 ### Cambodia 2008 data:
-prtyAverage( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
+prtyAverage( ages = data.prty_KHM$ages,
+             parity = data.prty_KHM$parity,
+             women = data.prty_KHM$women )
+
 ###
 }
