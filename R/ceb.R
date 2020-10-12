@@ -137,8 +137,7 @@ ceb_eval <-
 #'
 fetch_mac_Wpp2019 <- function( country_code = NULL, year ){
 
-  require( wpp2019 )
-  data('percentASFR')
+  data('percentASFR', package = "wpp2019")
   year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
 
   year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]

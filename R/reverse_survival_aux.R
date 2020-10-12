@@ -81,8 +81,7 @@ decimal_anydate <-
 #'
 
 locs_avail <- function( ){
-  require(wpp2019)
-  data('UNlocations')
+  utils::data('UNlocations', package = "wpp2019")
   locs <- UNlocations[, c( 'name', 'country_code' ) ]
   names( locs ) = c( 'location_name', 'location_code' )
   return( locs )
@@ -166,9 +165,8 @@ get_location_name <- function( location_code ){
 #'
 FetchFertilityWpp2019 <- function( locations = NULL, year ){
 
-  require( wpp2019 )
-  data('percentASFR')
-  data('tfr')
+  utils::data('percentASFR', package = "wpp2019")
+  utils::data('tfr', package = "wpp2019")
 
   if ( !is.numeric( locations ) ){
     location_codes <- get_location_code( locations )
@@ -225,9 +223,6 @@ FetchFertilityWpp2019 <- function( locations = NULL, year ){
 #'
 FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 
-  require( wpp2019 )
-  require( MortalityLaws )
-
   if ( !is.numeric( locations ) ){
     location_codes <- get_location_code( locations )
   } else {
@@ -249,7 +244,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 
     if( tolower( sex ) == 'male' | tolower( sex ) == 'both' ){
 
-      data('mxM')
+      utils::data('mxM', package = "wpp2019")
       mx_inf <- mxM[ mxM$country_code %in% location_code,
                      c( paste0( year_inf - 5, '-', year_inf ) ) ]
 
@@ -263,10 +258,10 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
                  c( 'age' ) ]
 
       ltm <-
-        LifeTable( x   = age,
-                   mx  = mx,
-                   lx0 = 1,
-                   sex = 'male' )$lt
+        MortalityLaws::LifeTable( x   = age,
+                                 mx  = mx,
+                                 lx0 = 1,
+                                 sex = 'male' )$lt
 
       if( tolower( sex ) == 'male' ){
         lt_df <-
@@ -282,7 +277,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 
     if( tolower( sex ) == 'female' | tolower( sex ) == 'both' ){
 
-      data('mxF')
+      utils::data('mxF', package = "wpp2019")
       mx_inf <- mxF[ mxF$country_code %in% location_code,
                      c( paste0( year_inf - 5, '-', year_inf ) ) ]
 
@@ -297,10 +292,10 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
                   c( 'age' ) ]
 
       ltf <-
-        LifeTable( x   = age,
-                   mx  = mx,
-                   lx0 = 1,
-                   sex = 'female' )$lt
+        MortalityLaws::LifeTable( x   = age,
+                                 mx  = mx,
+                                 lx0 = 1,
+                                 sex = 'female' )$lt
 
       if( tolower( sex ) == 'female' ){
         lt_df <-
@@ -318,10 +313,10 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
       lxb <- ltf$lx * 0.4886 + ( 1 - 0.4886 )*ltm$lx
 
       ltb <-
-        LifeTable( x   = age,
-                   lx  = lxb,
-                   lx0 = 1,
-                   sex = 'total' )$lt
+        MortalityLaws::LifeTable( x   = age,
+                                 lx  = lxb,
+                                 lx0 = 1,
+                                 sex = 'total' )$lt
 
       lt_df <-
         rbind( lt_df,
@@ -358,7 +353,7 @@ FetchPopWpp2019 <-
             age_interval = 1,
             sex = 'total' ){
 
-    require( wpp2019 )
+    utils::data("popWpp2019x1", package = "wpp2019")
 
     if ( !is.numeric( locations ) ){
       location_codes <- get_location_code( locations )
@@ -532,11 +527,20 @@ find_mlt <- function( lt_family, e0, ages, sex ){
 #' @export
 #'
 #' @examples
+#' 
 #' # q0_5 for Mexico for periods 0-4, 5-9 and 10-14 before 2010
-#' q_calcWpp2019( location = 'Mexico', years = 2010 - c( 2.5, 7.5, 12.5 ), sex = 'both', age_inf = 0, age_sup = 5 )
+#' q_calcWpp2019( location = 'Mexico',
+#'                years = 2010 - c( 2.5, 7.5, 12.5 ),
+#'                sex = 'both',
+#'                age_inf = 0,
+#'                age_sup = 5 )
 #'
 #' # q15_45 for Mexican females for periods 0-4, 5-9 and 10-14 before 2010
-#' q_calcWpp2019( location = 'Mexico', years = 2010 - c( 2.5, 7.5, 12.5 ), sex = 'female', age_inf = 15, age_sup = 60 )
+#' q_calcWpp2019( location = 'Mexico',
+#'                years = 2010 - c( 2.5, 7.5, 12.5 ),
+#'                sex = 'female',
+#'                age_inf = 15,
+#'                age_sup = 60 )
 #'
 q_calcWpp2019 <- function( location, years, sex, age_inf, age_sup ){
 
@@ -878,36 +882,32 @@ SingleAgeLogQuad <-
             lt = NULL,
             sex = 'total' ){
 
-    require(ungroup)
-    require(MortalityEstimate)
-    require(MortalityLaws)
-
     if( is.null(lt) ){
       W <- hmd_lqcoeffs[[sex ]]
     } else{
       # fit log-quadratic
       x <- c( 0, 1, seq( 5, 110, by = 5 ) )
-      W <- wilmoth(x = x, LT = lt )
+      W <- MortalityEstimate::wilmoth(x = x, LT = lt )
     }
 
     # use available information to retrieve life table
-    lt5 <- wilmothLT( W,
-                      q0_1 = q0_1, q0_5 = q0_5,
-                      q15_35 = q15_35, q15_45 = q15_45,
-                      e0 = e0, k = k )
+    lt5 <- MortalityEstimate::wilmothLT( W,
+                                        q0_1 = q0_1, q0_5 = q0_5,
+                                        q15_35 = q15_35, q15_45 = q15_45,
+                                        e0 = e0, k = k )
 
     # ungroup using ages 1 - 110
-    lts_model <- pclm( x = lt5$lt$x[ 2:24 ],
-                       y = lt5$lt$dx[ 2:24 ],
-                       nlast = 20,
-                       offset = lt5$lt$Lx[ 2:24 ] )
+    lts_model <- ungroup::pclm( x = lt5$lt$x[ 2:24 ],
+                               y = lt5$lt$dx[ 2:24 ],
+                               nlast = 20,
+                               offset = lt5$lt$Lx[ 2:24 ] )
 
     # single life table
     lts <-
-      LifeTable( x = 0:99,
-                 mx = c( lt5$lt$mx[1], fitted( lts_model )[ 1:99 ] ),
-                 lx0 = 1,
-                 sex = sex )$lt
+      MortalityLaws::LifeTable( x = 0:99,
+                               mx = c( lt5$lt$mx[1], fitted( lts_model )[ 1:99 ] ),
+                               lx0 = 1,
+                               sex = sex )$lt
 
     return( lts )
   }
