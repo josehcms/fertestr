@@ -1,7 +1,6 @@
 
 require(wpp2019)
 require(dplyr)
-require(data.table)
 library(fertestr)
 
 pop_c <-  c( 281260, 261320, 268410, 286810, 278990, 293760, 293490, 302060, 315970, 267190, 326980, 280260, 354120, 356920, 354830 )
@@ -66,16 +65,16 @@ for( i in mxF$country_code %>% unique ){
 dat <-
   rbind(
     revSurvWpp( country_list = sel_list , year = 2010, family = 'General' ) %>%
-      as.data.table %>%
+      data.table::as.data.table %>%
       .[, year_est := 2010],
     revSurvWpp( country_list = sel_list , year = 2000, family = 'General' ) %>%
-      as.data.table %>%
+      data.table::as.data.table %>%
       .[, year_est := 2000],
     revSurvWpp( country_list = sel_list , year = 1990, family = 'General' ) %>%
-      as.data.table %>%
+      data.table::as.data.table %>%
       .[, year_est := 1990],
     revSurvWpp( country_list = sel_list , year = 1980, family = 'General' ) %>%
-      as.data.table %>%
+      data.table::as.data.table %>%
       .[, year_est := 1980]
   )
 
@@ -85,7 +84,7 @@ baselinedat <-
   tfr[tfr$country_code %in% sel_list,
       c('country_code', '1965-1970', '1970-1975', '1975-1980', '1980-1985', '1985-1990',
         '1990-1995', '1995-2000', '2000-2005', '2005-2010', '2010-2015')] %>%
-  as.data.table %>%
+  data.table::as.data.table %>%
   melt( id.vars = c('country_code'),
         measure.vars = c( '1965-1970', '1970-1975', '1975-1980', '1980-1985', '1985-1990',
                           '1990-1995', '1995-2000', '2000-2005', '2005-2010','2010-2015'),
@@ -102,15 +101,14 @@ datError <-
     )
 
 
-require(ggplot2)
-ggplot( data = datError ) +
-  geom_abline( slope = 1, intercept = 0, color = 'tomato3', size = 0.75 ) +
-  geom_point( aes( x = TFR, y = TFR.wpp, color = as.factor(year) ), size = 2 ) +
-  scale_x_continuous( breaks = seq( 0, 15, 1 ), limits = c( 0, 10 ), name = 'TFR - Reverse Survival' ) +
-  scale_y_continuous( breaks = seq( 0, 15, 1 ), limits = c( 0, 10 ), name = 'TFR - WPP 2019\n(mid period)' )  +
-  facet_wrap( ~year_est, ncol = 2 ) +
-  theme_classic() +
-  theme(
+ggplot2::ggplot( data = datError ) +
+  ggplot2::geom_abline( slope = 1, intercept = 0, color = 'tomato3', size = 0.75 ) +
+  ggplot2::geom_point( aes( x = TFR, y = TFR.wpp, color = as.factor(year) ), size = 2 ) +
+  ggplot2::scale_x_continuous( breaks = seq( 0, 15, 1 ), limits = c( 0, 10 ), name = 'TFR - Reverse Survival' ) +
+  ggplot2::scale_y_continuous( breaks = seq( 0, 15, 1 ), limits = c( 0, 10 ), name = 'TFR - WPP 2019\n(mid period)' )  +
+  ggplot2::facet_wrap( ~year_est, ncol = 2 ) +
+  ggplot2::theme_classic() +
+  ggplot2::theme(
     legend.position = 'top',
     axis.text = element_text( color = 'black', size = 12 ),
     panel.grid.major = element_line( color = 'gray80', linetype = 'dashed', size = 0.25 ),
@@ -121,12 +119,11 @@ ggplot( data = datError ) +
 datError[, diff := round( 100*abs(TFR.wpp - TFR)/TFR.wpp, 5 )]
 
 require(sf)
-require(countrycode)
 
 
 codes <-
-  codelist %>%
-  as.data.table %>%
+  countrycode::codelist %>%
+  data.table::as.data.table %>%
   .[,.( country_name = country.name.en,
         country_code_char = iso3c,
         country_code_num = iso3n)
@@ -155,13 +152,12 @@ datWorld <-
 
 
 x11()
-ggplot(data = datWorld) +
-  geom_sf(aes(fill = diff_class)) +
-  labs(title = 'Maximum relative difference for TFR estimated by fertestr from TFR of WPP2019',
+ggplot2::ggplot(data = datWorld) +
+  ggplot2::geom_sf(aes(fill = diff_class)) +
+  ggplot2::labs(title = 'Maximum relative difference for TFR estimated by fertestr from TFR of WPP2019',
        subtitle = 'Years of estimation: 1980, 1990, 2000, 2010') +
-  scale_fill_viridis_d(option = "plasma", 'Max relative difference (%)\n |TRF_est - TFR_wpp| / TFR_wpp')+
-  theme_classic()
-
+  ggplot2::scale_fill_viridis_d(option = "plasma", 'Max relative difference (%)\n |TRF_est - TFR_wpp| / TFR_wpp')+
+  ggplot2::theme_classic()
 
 
 plot(y = datError$TFR.wpp, x = datError$TFR )
@@ -170,31 +166,31 @@ abline(a = 0, b = 1)
 dat <-
   rbind(
     revSurvWpp( country_list = 'Brazil', year = 1970, family = 'West' ) %>%
-      as.data.table %>%
+      data.table::as.data.table %>%
       .[,ref:=1970],
     revSurvWpp( country_list = 'Brazil', year = 1980, family = 'West' ) %>%
-      as.data.table %>%
+      data.table::as.data.table %>%
       .[,ref:=1980],
     revSurvWpp( country_list = 'Brazil', year = 1991, family = 'West' ) %>%
-      as.data.table %>%
+      data.table::as.data.table %>%
       .[,ref:=1991],
     revSurvWpp( country_list = 'Brazil', year = 2000, family = 'West' ) %>%
-      as.data.table %>%
+      data.table::as.data.table %>%
       .[,ref:=2000],
     revSurvWpp( country_list = 'Brazil', year = 2010, family = 'West' ) %>%
-      as.data.table %>%
+      data.table::as.data.table %>%
       .[,ref:=2010]
   )
 
-ggplot( data = dat ) +
-  geom_line( aes( x = as.numeric(year), y = TFR, color = as.factor(ref) ), size = 1 ) +
-  scale_x_continuous( breaks = seq(1955,2020,2.5), limits = c( 1955, 2010 ), name = '' ) +
-  scale_y_continuous( breaks = seq( 1, 7, 0.25 ), name = 'TFR' )  +
-  scale_color_manual( values = c( '2010' = 'black', '2000' = 'gray20',
+ggplot2::ggplot( data = dat ) +
+  ggplot2::geom_line( aes( x = as.numeric(year), y = TFR, color = as.factor(ref) ), size = 1 ) +
+  ggplot2::scale_x_continuous( breaks = seq(1955,2020,2.5), limits = c( 1955, 2010 ), name = '' ) +
+  ggplot2::scale_y_continuous( breaks = seq( 1, 7, 0.25 ), name = 'TFR' )  +
+  ggplot2::scale_color_manual( values = c( '2010' = 'black', '2000' = 'gray20',
                                   '1991' = 'gray40', '1980' = 'gray60',
                                   '1970' = 'gray80' ), name = ''  ) +
-  theme_classic() +
-  theme(
+  ggplot2::theme_classic() +
+  ggplot2::theme(
     legend.position = 'top',
     axis.text.x = element_text( color = 'black', angle = 90, vjust = 0.5, size = 12 ),
     axis.text.y = element_text( color = 'black', size = 12 ),

@@ -22,6 +22,14 @@ Imports:
     wpp2019,
     lubridate,
     MortalityLaws,
-    MortalityEstimate (>= 0.9.10)
-Remotes:  
+    MortalityEstimate (>= 0.9.10),
+    ungroup
+Remotes: 
     mpascariu/MortalityEstimate
+Suggests: 
+    countrycode,
+    sf,
+    dplyr,
+    data.table,
+    ggplot2
+
