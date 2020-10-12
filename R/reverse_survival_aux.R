@@ -106,9 +106,12 @@ locs_avail <- function( ){
 #' get_location_code( names )
 #'
 
-get_location_code <- function( location_names ){
+get_location_code <- function( location_names=NULL){
 
   locs_list <- locs_avail()
+
+  if (is.null(location_names)) return(locs_list$location_code)
+
   location_code_list <- NULL
   invalid_names <- NULL
   for( name in location_names ){

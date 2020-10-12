@@ -18,3 +18,10 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
+Imports: 
+    wpp2019,
+    lubridate,
+    MortalityLaws,
+    MortalityEstimate (>= 0.9.10)
+Remotes:  
+    mpascariu/MortalityEstimate
