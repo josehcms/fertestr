@@ -81,7 +81,7 @@ decimal_anydate <-
 #'
 
 locs_avail <- function( ){
-  utils::data('UNlocations', package = "wpp2019")
+  UNlocations <- load_named_data('UNlocations', "wpp2019")
   locs <- UNlocations[, c( 'name', 'country_code' ) ]
   names( locs ) = c( 'location_name', 'location_code' )
   return( locs )
@@ -165,8 +165,8 @@ get_location_name <- function( location_code ){
 #'
 FetchFertilityWpp2019 <- function( locations = NULL, year ){
 
-  utils::data('percentASFR', package = "wpp2019")
-  utils::data('tfr', package = "wpp2019")
+  percentASFR <- load_named_data('percentASFR', "wpp2019")
+  tfr <- load_named_data('tfr', "wpp2019")
 
   if ( !is.numeric( locations ) ){
     location_codes <- get_location_code( locations )
@@ -244,7 +244,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 
     if( tolower( sex ) == 'male' | tolower( sex ) == 'both' ){
 
-      utils::data('mxM', package = "wpp2019")
+      mxM <- load_named_data('mxM', "wpp2019")
       mx_inf <- mxM[ mxM$country_code %in% location_code,
                      c( paste0( year_inf - 5, '-', year_inf ) ) ]
 
@@ -277,7 +277,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 
     if( tolower( sex ) == 'female' | tolower( sex ) == 'both' ){
 
-      utils::data('mxF', package = "wpp2019")
+      mxF <- load_named_data('mxF', "wpp2019")
       mx_inf <- mxF[ mxF$country_code %in% location_code,
                      c( paste0( year_inf - 5, '-', year_inf ) ) ]
 

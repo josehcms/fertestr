@@ -53,7 +53,7 @@
 #'              parity = data.prty_KHM$parity,
 #'              women = data.prty_KHM$women )
 #'
-#' ###
+#'
 
 
 prtyAverage <-

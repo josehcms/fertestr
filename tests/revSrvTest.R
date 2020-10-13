@@ -41,8 +41,9 @@ dic_year <-
     '2015-2020' = '2017.5' )
 
 
-data("mxF", package = "wpp2019")
-data("mxM", package = "wpp2019")
+mxF <- load_named_data('mxF', "wpp2019")
+mxM <- load_named_data('mxM', "wpp2019")
+
 # error analysis
 listSample <- mxF[ mxF$country_code > 900, ]$country_code %>% unique
 
