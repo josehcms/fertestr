@@ -10,12 +10,10 @@
 #' @param women A vector of women counts by parity and age group
 #' @param na_code A numeric value representing the label for missing parities (default = NA)
 #' @param prtyElBadry.set TRUE or FALSE for correction of zeros and missing values by El-Badry method (default = FALSE)
-#' @param prtyElBadry.graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #' @param prtyImp.set TRUE or FALSE for correction of implausible parities (default = FALSE)
-#' @param prtyAssess.set TRUE or FALSE for parity assessment of average parity results (default = FALSE)
+#' @param prtyElBadry.graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #' @param prtyAssess.graph TRUE or FALSE for parity assessment plot output (default = FALSE)
 #' @param age_group Character assuming values 'q' (default) for quinquennial age group or 's' for single age group input
-#'
 #' @return A data.frame with 2 variables: ages and P for average parities by age group
 #' @export
 #' @source
@@ -26,30 +24,44 @@
 #'   Feeney G. 1991. "Child survivorship estimation: Methods and data analysis",
 #'   Asian and Pacific Population Forum 5(2-3):51-55, 76-87. http://hdl.handle.net/10125/3600.
 #' @examples
+#'
+#' library(DemoToolsData)
+#' 
 #' ### Kenya 1989 data:
-#' prtyAverage( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
+#' prtyAverage( ages = data.prty_KEN$ages,
+#'              parity = data.prty_KEN$parity,
+#'              women = data.prty_KEN$women
+#' )
+#'
 #' # With El-Badry:
-#' prtyAverage(  ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women,
-#' prtyElBadry.set = TRUE, prtyElBadry.graph = TRUE)
+#' prtyAverage(  ages = data.prty_KEN$ages,
+#'               parity = data.prty_KEN$parity,
+#'               women = data.prty_KEN$women,
+#'               prtyElBadry.set = TRUE,
+#'               prtyElBadry.graph = TRUE )
+#'
 #' # Correction for implausible parities
-#' prtyAverage(  ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyImp.set = TRUE )
+#' prtyAverage(  ages = data.prty_KEN$ages,
+#'               parity = data.prty_KEN$parity,
+#'               women = data.prty_KEN$women,
+#'               prtyImp.set = TRUE )
 #' ###
 #' ### Cambodia 2008 data:
-#' prtyAverage( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
-#' ###
-
-
-prtyAverage <-
-  function(
-    ages,
-    parity,
-    women,
-    na_code           = NA,
-    prtyElBadry.set   = FALSE,
-    prtyImp.set       = FALSE,
-    prtyElBadry.graph = FALSE,
-    prtyAssess.graph  = FALSE,
-    age_group         = 'q'){
+#' prtyAverage( ages = data.prty_KHM$ages,
+#'              parity = data.prty_KHM$parity,
+#'              women = data.prty_KHM$women )
+#'
+#'
+prtyAverage <- function(
+                        ages,
+                        parity,
+                        women,
+                        na_code           = NA,
+                        prtyElBadry.set   = FALSE,
+                        prtyImp.set       = FALSE,
+                        prtyElBadry.graph = FALSE,
+                        prtyAssess.graph  = FALSE,
+                        age_group         = 'q'){
 
     # stop with lengths are not equal
     stopifnot( all.equal( length(ages), length(parity), length(women) ) )
@@ -64,17 +76,17 @@ prtyAverage <-
     if ( prtyImp.set ){
       data_par <-
         prtyImplaus( ages   = data_par$ages,
-                     parity = data_par$parity,
-                     women  = data_par$women,
-                     age_group
-                     )
+                    parity = data_par$parity,
+                    women  = data_par$women,
+                    age_group
+                    )
 
       data_par <-
         data.frame(
           ages   = data_par$ages,
           parity = data_par$parity,
           women  = data_par$women.updt
-          )
+        )
     }
 
     if ( age_group == 's' ){
@@ -94,26 +106,26 @@ prtyAverage <-
         )
 
       data_par <-
-        aggregate(
-          women ~ ages + parity,
-          data = data_par,
-          FUN = 'sum'
-          )
+        stats::aggregate(
+                 women ~ ages + parity,
+                 data = data_par,
+                 FUN = 'sum'
+               )
 
     }
 
     # compute maximum unkown women parity percentage
     max_missing_rt <-
       max( 100 *
-             tapply( data_par[ is.na(data_par$parity),]$women,
-                     data_par[ is.na(data_par$parity),]$ages,
-                     sum
-                     ) /
-             tapply( data_par[!is.na(data_par$parity),]$women,
-                     data_par[!is.na(data_par$parity),]$ages,
-                     sum
-                     )
-           )
+           tapply( data_par[ is.na(data_par$parity),]$women,
+                  data_par[ is.na(data_par$parity),]$ages,
+                  sum
+                  ) /
+           tapply( data_par[!is.na(data_par$parity),]$women,
+                  data_par[!is.na(data_par$parity),]$ages,
+                  sum
+                  )
+          )
     if ( prtyElBadry.set ){
       if ( max_missing_rt < 2 ){
         warning('Maximum parity missing percentage lower than 2% , verify whether El Badry correction is necessary!')
@@ -121,10 +133,10 @@ prtyAverage <-
 
       out.elbadry <-
         prtyElBadry( ages   = data_par$ages,
-                     parity = data_par$parity,
-                     women  = data_par$women,
-                     prtyElBadry.graph
-                     )
+                    parity = data_par$parity,
+                    women  = data_par$women,
+                    prtyElBadry.graph
+                    )
       data_par <-
         out.elbadry$data_par
     }
@@ -139,18 +151,18 @@ prtyAverage <-
           tapply(data_par[!is.na(data_par$parity), ]$women*data_par[!is.na(data_par$parity), ]$parity,
                  data_par[!is.na(data_par$parity), ]$ages,
                  sum
-          ) /
+                 ) /
           tapply(data_par$women,
                  data_par$ages,
                  sum
-          ),
+                 ),
         row.names = NULL
       )
 
     if( prtyAssess.graph ){
       prtyAssess.plot( ages = avg_par$ages,
-                       P    = avg_par$P
-                       )
+                      P    = avg_par$P
+                      )
     }
 
     return(avg_par)
@@ -181,12 +193,22 @@ prtyAverage <-
 #'  UN Population Division. 1983. Manual X: Indirect Techniques for Demographic Estimation.
 #'  New York: United Nations, Department of Economic and Social Affairs, ST/ESA/SER.A/81.
 #'  http://www.un.org/esa/population/techcoop/DemEst/manual10/manual10.html
+#'
 #' @examples
+#'
+#' library(DemoToolsData)
+#'
 #' ### Kenya 1989 data:
-#' prtyElBadry( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women, prtyElBadry.graph = T )
-#' ###
+#' prtyElBadry( ages = data.prty_KEN$ages,
+#'              parity = data.prty_KEN$parity,
+#'              women = data.prty_KEN$women,
+#'              prtyElBadry.graph = TRUE)
+#'
+#'
 #' ### Cambodia 2008 data:
-#' prtyElBadry( ages = data.prty_KHM$ages, parity = data.prty_KHM$parity, women = data.prty_KHM$women )
+#' prtyElBadry( ages = data.prty_KHM$ages,
+#'              parity = data.prty_KHM$parity,
+#'              women = data.prty_KHM$women )
 #' ###
 
 
@@ -210,16 +232,16 @@ prtyElBadry <-
     # Compute women totals by age group
     totals_1 <-
       tapply( data_par$women,
-              data_par$ages,
-              sum
-      )
+             data_par$ages,
+             sum
+             )
 
     # Compute percentage of unknown parities by age group
     Ui <-
       tapply( data_par[is.na(data_par$parity),]$women,
-              data_par[is.na(data_par$parity),]$ages,
-              sum
-      ) /
+             data_par[is.na(data_par$parity),]$ages,
+             sum
+             ) /
       totals_1
 
     # get data.frame of Ui
@@ -228,14 +250,14 @@ prtyElBadry <-
         ages = seq(15,45,5),
         Ui = round( Ui, 4 ),
         row.names = NULL
-        )
+      )
 
     # Compute percentage of zero parities by age group
     Zi <-
       tapply( data_par[!is.na(data_par$parity) & data_par$parity == 0,]$women,
-              data_par[!is.na(data_par$parity) & data_par$parity == 0,]$ages,
-              sum
-      ) /
+             data_par[!is.na(data_par$parity) & data_par$parity == 0,]$ages,
+             sum
+             ) /
       totals_1
 
     # get data.frame of Zi
@@ -247,20 +269,20 @@ prtyElBadry <-
       )
 
     # Take the intercept of regression Ui vs Zi
-    alpha <- lm(as.numeric(Ui)~as.numeric(Zi))$coefficients[1]
+    alpha <- stats::lm(as.numeric(Ui)~as.numeric(Zi))$coefficients[1]
 
     data_par[!is.na(data_par$parity) & data_par$parity == 0,]$women <-
       round(
-        ( Ui + Zi - alpha ) * totals_1 ,
-        digits=0
+      ( Ui + Zi - alpha ) * totals_1 ,
+      digits=0
       )
 
     data_par[is.na(data_par$parity),]$women <-
       totals_1 -
       tapply( data_par[!is.na(data_par$parity),]$women,
-              data_par[!is.na(data_par$parity),]$ages,
-              sum
-      )
+             data_par[!is.na(data_par$parity),]$ages,
+             sum
+             )
 
     if (prtyElBadry.graph==TRUE){
       plot(
@@ -274,29 +296,29 @@ prtyElBadry <-
         xlim = c(0,max(as.numeric(Zi),na.rm=T)+0.1),
         ylim = c(0,max(as.numeric(Ui),na.rm=T)+0.05)
       )
-      text(x = as.numeric(Zi),
-           y = as.numeric(Ui),
-           labels = c('15-19','20-24','25-29','30-34','35-39','40-44','45-49'),
-           cex=1,
-           pos=4
-      )
-      abline(
-        lm( as.numeric(Ui) ~ as.numeric(Zi) ) ,
-        col = 'red',
-        cex = 1.25 ,
-        lty = 3
-      )
-      legend(
-        'topleft',
-        legend = paste0( 'Ui = ' ,
-                         round(lm( as.numeric(Ui) ~ as.numeric(Zi) )$coefficients[1],3) ,
-                         ' + Zi * ',
-                         round(lm( as.numeric(Ui) ~ as.numeric(Zi) )$coefficients[2],3)
-        ),
-        col = 'red',
-        lty = 3,
-        bty = 'n'
-      )
+      graphics::text(x = as.numeric(Zi),
+                     y = as.numeric(Ui),
+                     labels = c('15-19','20-24','25-29','30-34','35-39','40-44','45-49'),
+                     cex=1,
+                     pos=4
+                     )
+      graphics::abline(
+                  stats::lm( as.numeric(Ui) ~ as.numeric(Zi) ) ,
+                  col = 'red',
+                  cex = 1.25 ,
+                  lty = 3
+                )
+      graphics::legend(
+                  'topleft',
+                  legend = paste0( 'Ui = ' ,
+                                  round(stats::lm( as.numeric(Ui) ~ as.numeric(Zi) )$coefficients[1],3) ,
+                                  ' + Zi * ',
+                                  round(stats::lm( as.numeric(Ui) ~ as.numeric(Zi) )$coefficients[2],3)
+                                  ),
+                  col = 'red',
+                  lty = 3,
+                  bty = 'n'
+                )
 
     }
 
@@ -327,15 +349,19 @@ prtyElBadry <-
 #'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
 #'   Population. demographicestimation.iussp.org
 #' @examples
+#'
+#' library(DemoToolsData)
+#'
 #' ### Kenya 1989 data:
 #' prtyImplaus( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
+#' 
 
 # correct implausible parities
 prtyImplaus <-
   function( ages,
-            parity,
-            women,
-            age_group = 'q'){
+           parity,
+           women,
+           age_group = 'q'){
 
     # stop with lengths are not equal
     stopifnot( all.equal( length(ages), length(parity), length(women) ) )
@@ -385,13 +411,17 @@ prtyImplaus <-
 #'   Tools for Demographic Estimation. Paris: International Union for the Scientific Study of
 #'   Population. demographicestimation.iussp.org
 #' @examples
+#'
+#' library(DemoToolsData)
+#'
 #' ### Malawi 2008 data:
 #' prtyAssess.plot( ages = data.pf_MWI$ages, P = data.pf_MWI$P )
+#'
 
 prtyAssess.plot <-
   function( ages,
-            P
-            ){
+           P
+           ){
 
     # stop with lengths are not equal
     stopifnot( all.equal( length(ages), length(P) ) )
@@ -411,15 +441,15 @@ prtyAssess.plot <-
       cex  = 1.5,
       xlim = c(15,50),
       ylim = c(0,ceiling(max(as.numeric(avg_par$P),na.rm=T)+0.5))
-      )
-    lines(
-      x = as.numeric(avg_par$ages),
-      y = as.numeric(avg_par$P),
-      type = 'l',
-      lty  = 5,
-      cex  = 1.25
-      )
-    }
+    )
+    graphics::lines(
+                x = as.numeric(avg_par$ages),
+                y = as.numeric(avg_par$P),
+                type = 'l',
+                lty  = 5,
+                cex  = 1.25
+              )
+  }
 
 #' Parity Assessment function between two surveys
 #'

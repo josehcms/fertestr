@@ -4,10 +4,10 @@
 \alias{get_location_code}
 \title{Get WPP 2019 country codes from country names}
 \usage{
-get_location_code(location_names)
+get_location_code(location_names = NULL)
 }
 \arguments{
-\item{location_name}{country name or vector of country names}
+\item{location_names}{country name or vector of country names}
 }
 \value{
 data.frame with two columns country_name and country_code

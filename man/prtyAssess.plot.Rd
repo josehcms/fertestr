@@ -23,6 +23,10 @@ Average parities vs ages plot
 Parity Assessment Plot
 }
 \examples{
+
+library(DemoToolsData)
+
 ### Malawi 2008 data:
 prtyAssess.plot( ages = data.pf_MWI$ages, P = data.pf_MWI$P )
+
 }

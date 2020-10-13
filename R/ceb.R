@@ -8,6 +8,7 @@
 #' @param ages_w women starting age of 5 year age group
 #' @param pop_w total women matching ages in ages_w
 #' @param ceb total children ever born by women age group
+#' @param mean_ceb 
 #' @param mac mean age at childbearing matching ages in age_w or unique value for all ages,
 #' default = 28
 #' @param location_mac retrieve MAC from a given location id or name from WPP2019
@@ -29,17 +30,14 @@
 #'
 #'# Using mac retrieved from WPP2019
 #'ceb_eval( date_svy, ages_w, pop_w, ceb, location_mac = 'Kenya', plot_ceb = TRUE )
-
-
-ceb_eval <-
-  function( date_svy,
-            ages_w,
-            pop_w = NULL,
-            ceb = NULL,
-            mean_ceb = NULL,
-            mac = 28,
-            location_mac = NULL,
-            plot_ceb = TRUE ){
+ceb_eval <- function( date_svy,
+                     ages_w,
+                     pop_w = NULL,
+                     ceb = NULL,
+                     mean_ceb = NULL,
+                     mac = 28,
+                     location_mac = NULL,
+                     plot_ceb = TRUE ){
 
     year_svy <- decimal_anydate( date_svy )
 
@@ -115,7 +113,7 @@ ceb_eval <-
             xlab = 'Reference year of CEB',
             ylab = 'Children per Women',
             main = 'Cohort analysis of mean CEB' )
-      legend( 'bottomleft',
+      graphics::legend( 'bottomleft',
               legend = paste0( substr( date_svy, 1, 4 ), ' census/survey' ),
               lty = c( 5 ), col = c( 'blue' ), pch = c( 1 ),
               bty = 'n' )
@@ -137,8 +135,7 @@ ceb_eval <-
 #'
 fetch_mac_Wpp2019 <- function( country_code = NULL, year ){
 
-  require( wpp2019 )
-  data('percentASFR')
+  percentASFR <- load_named_data('percentASFR', "wpp2019")
   year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
 
   year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
