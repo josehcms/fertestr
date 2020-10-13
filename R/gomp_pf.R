@@ -1,11 +1,15 @@
 #' Gompertz PF Fertility Estimation
 #'
+#' Gompertz PF Fertility Estimation
+#'
 #' @param ages A vector of starting ages of five-year age groups ranging from 15 to 45 (default = c(15,20,25,30,35,40,45))
-#' @param P A vector of mean parities by five-year age group - same groups as 'ages'
 #' @param asfr A vector of age-specific fertility rates by five-year age group - same groups as 'ages'
+#' @param P A vector of mean parities by five-year age group - same groups as 'ages'
 #' @param level TRUE for correction of fertility level using parity data information, false for correction of fertility shape only
 #' @param madef Mother's age definition: '0m' for age at birth of child, '12m' for age at survey for 12 months data (default),
 #' '24m' for age at survey for 24 months data, '36m' for age at survey for 36 months data
+#' @param sel.ages
+#' @param plot.diagnostic
 #'
 #' @return A list with 3 elements:
 #' pf_data data frame with columns ages, P for mean parities, asfr, Fi for cumulate fertility estimated from Brass coefficients,PF for ratios P/F and adj_asfr for adjusted asfr;
@@ -30,15 +34,14 @@
 #'             plot.diagnostic = FALSE)
 #'
 
-fertGompPF <-
-  function( ages            = seq( 15, 45, 5 ),
-           asfr,
-           P               = NULL,
-           level           = FALSE,
-           madef           = '12m',
-           sel.ages        = c( 20, 25, 30, 35, 40, 45 ),
-           plot.diagnostic = TRUE
-           ){
+fertGompPF <- function( ages            = seq( 15, 45, 5 ),
+                       asfr,
+                       P               = NULL,
+                       level           = FALSE,
+                       madef           = '12m',
+                       sel.ages        = c( 20, 25, 30, 35, 40, 45 ),
+                       plot.diagnostic = TRUE
+                       ){
 
 
     # 1. Adjust the inputs into the correct form for the method

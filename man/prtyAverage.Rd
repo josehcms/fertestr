@@ -42,8 +42,6 @@ prtyAverage(
 \item{prtyAssess.graph}{TRUE or FALSE for parity assessment plot output (default = FALSE)}
 
 \item{age_group}{Character assuming values 'q' (default) for quinquennial age group or 's' for single age group input}
-
-\item{prtyAssess.set}{TRUE or FALSE for parity assessment of average parity results (default = FALSE)}
 }
 \value{
 A data.frame with 2 variables: ages and P for average parities by age group

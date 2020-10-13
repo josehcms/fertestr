@@ -92,7 +92,7 @@ locs_avail <- function( ){
 #' Provides the list of countries and respective codes available in WPP 2019 or
 #' fetch the country code for given country name
 #'
-#' @param location_name country name or vector of country names
+#' @param location_names country name or vector of country names
 #' @return data.frame with two columns country_name and country_code
 #' @export
 
@@ -153,8 +153,8 @@ get_location_name <- function( location_code ){
 #'
 #' Retrieve age-specific fertility rates for available WPP 2019 locations
 #'
-#' @param location_code list of location codes to retrieve fertility pattern data from
-#' @param year period of reference to retrieve fertility pattern data
+#' @param locations 
+#' @param year 
 #' @return data.frame with three columns age: women ages, asfr_std_ref:
 #' age-specific fertility rates for the time-period which contains the reference year and
 #' asfr_std_15prior: age-specific fertility rates for the time-period

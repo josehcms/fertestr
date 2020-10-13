@@ -7,9 +7,9 @@
 FetchFertilityWpp2019(locations = NULL, year)
 }
 \arguments{
-\item{year}{period of reference to retrieve fertility pattern data}
+\item{locations}{}
 
-\item{location_code}{list of location codes to retrieve fertility pattern data from}
+\item{year}{}
 }
 \value{
 data.frame with three columns age: women ages, asfr_std_ref:

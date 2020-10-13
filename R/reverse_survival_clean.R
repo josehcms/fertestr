@@ -2,16 +2,15 @@
 #'
 #' Reverse Survival Fertility Estimation
 #'
-#' @param ages_c children ages (default 0:14)
-#' @param pop_c children population matching ages_c vector
-#' @param lx_c children survival function vector for single ages from 0 to 15
-#' @param ages_w women ages (default c( 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65 ))
-#' @param pop_women women population matching ages_w vector
-#' @param lx_w women survival function matching ages_w vector
+#' @param ages1_c 
+#' @param popx1_c 
+#' @param ages5_w 
+#' @param popx5_w 
+#' @param lx1_c 
+#' @param lx5_w 
 #' @param asfr age specific fertility rates for five-year age groups from 10-45 for current period
 #' of estimation
-#' @param asfr_15_prior standardized age specific fertility rates for five-year age groups from 10-45 for the
-#' period of 15 years before the current inquiry period
+#' @param asfr_15prior 
 #' @param q0_5 3 element vector for mortality probability between ages 0-4 for the period of estimation,
 #' period 5 years prior to estimation period, and period 10 years prior to estimation period
 #' @param q15_45f female adult mortality probability for the period of estimation,
@@ -20,6 +19,14 @@
 #' Y-m-d (4 digit year - 2 digit month - 2 digit day), Y-m (4 digit year - 2 digit month),
 #' Y (4 digit year)
 #'
+#' @param ages_c children ages (default 0:14)
+#' @param pop_c children population matching ages_c vector
+#' @param lx_c children survival function vector for single ages from 0 to 15
+#' @param ages_w women ages (default c( 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65 ))
+#' @param pop_women women population matching ages_w vector
+#' @param lx_w women survival function matching ages_w vector
+#' @param asfr_15_prior standardized age specific fertility rates for five-year age groups from 10-45 for the
+#' period of 15 years before the current inquiry period
 #' @return data.frame with 2 elements: year (reference period of fertility estimation) and
 #' TFR (indirect estimated total fertility rate) plus location name and ID if using wpp 2019 country data
 #'
@@ -64,13 +71,17 @@
 #'              date_ref = '2008-03-03' )
 #'
 #'
-FertRevSurv <- function( ages1_c = 0:14, popx1_c,
-                         ages5_w = seq( 10, 65, 5 ), popx5_w,
-                         lx1_c, lx5_w,
-                         asfr = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
-                         asfr_15prior = NULL,
-                         q0_5 = NULL, q15_45f = NULL,
-                         date_ref ){
+FertRevSurv <- function(ages1_c = 0:14,
+                        popx1_c,
+                        ages5_w = seq( 10, 65, 5 ),
+                        popx5_w,
+                        lx1_c,
+                        lx5_w,
+                        asfr = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
+                        asfr_15prior = NULL,
+                        q0_5 = NULL,
+                        q15_45f = NULL,
+                        date_ref ){
 
   year <- decimal_anydate( date_ref )
 

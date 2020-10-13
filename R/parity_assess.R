@@ -10,12 +10,10 @@
 #' @param women A vector of women counts by parity and age group
 #' @param na_code A numeric value representing the label for missing parities (default = NA)
 #' @param prtyElBadry.set TRUE or FALSE for correction of zeros and missing values by El-Badry method (default = FALSE)
-#' @param prtyElBadry.graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #' @param prtyImp.set TRUE or FALSE for correction of implausible parities (default = FALSE)
-#' @param prtyAssess.set TRUE or FALSE for parity assessment of average parity results (default = FALSE)
+#' @param prtyElBadry.graph TRUE of FALSE for El-Badry diagnose plot output (default = FALSE)
 #' @param prtyAssess.graph TRUE or FALSE for parity assessment plot output (default = FALSE)
 #' @param age_group Character assuming values 'q' (default) for quinquennial age group or 's' for single age group input
-#'
 #' @return A data.frame with 2 variables: ages and P for average parities by age group
 #' @export
 #' @source
@@ -54,19 +52,16 @@
 #'              women = data.prty_KHM$women )
 #'
 #'
-
-
-prtyAverage <-
-  function(
-           ages,
-           parity,
-           women,
-           na_code           = NA,
-           prtyElBadry.set   = FALSE,
-           prtyImp.set       = FALSE,
-           prtyElBadry.graph = FALSE,
-           prtyAssess.graph  = FALSE,
-           age_group         = 'q'){
+prtyAverage <- function(
+                        ages,
+                        parity,
+                        women,
+                        na_code           = NA,
+                        prtyElBadry.set   = FALSE,
+                        prtyImp.set       = FALSE,
+                        prtyElBadry.graph = FALSE,
+                        prtyAssess.graph  = FALSE,
+                        age_group         = 'q'){
 
     # stop with lengths are not equal
     stopifnot( all.equal( length(ages), length(parity), length(women) ) )

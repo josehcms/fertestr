@@ -24,8 +24,22 @@ FertRevSurv(
 )
 }
 \arguments{
+\item{ages1_c}{}
+
+\item{popx1_c}{}
+
+\item{ages5_w}{}
+
+\item{popx5_w}{}
+
+\item{lx1_c}{}
+
+\item{lx5_w}{}
+
 \item{asfr}{age specific fertility rates for five-year age groups from 10-45 for current period
 of estimation}
+
+\item{asfr_15prior}{}
 
 \item{q0_5}{3 element vector for mortality probability between ages 0-4 for the period of estimation,
 period 5 years prior to estimation period, and period 10 years prior to estimation period}

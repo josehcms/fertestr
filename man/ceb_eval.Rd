@@ -25,6 +25,8 @@ Y, Y-m, Y-m-d}
 
 \item{ceb}{total children ever born by women age group}
 
+\item{mean_ceb}{}
+
 \item{mac}{mean age at childbearing matching ages in age_w or unique value for all ages,
 default = 28}
 

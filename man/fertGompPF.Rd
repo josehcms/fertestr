@@ -42,6 +42,8 @@ fertGompPF(
 
 \item{madef}{Mother's age definition: '0m' for age at birth of child, '12m' for age at survey for 12 months data (default),
 '24m' for age at survey for 24 months data, '36m' for age at survey for 36 months data}
+
+\item{plot.diagnostic}{}
 }
 \value{
 A list with 3 elements:
@@ -56,6 +58,8 @@ and tfr_adj for adjusted total fertility rate estimate by applying the selected 
 }
 \description{
 Performs Gompertz PF model for fertility estimation by user's F and P points selection
+
+Gompertz PF Fertility Estimation
 }
 \examples{
 ## Malawi 2008 Census data:
