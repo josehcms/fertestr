@@ -26,7 +26,7 @@ Imports:
     ungroup,
     DemoToolsData (>= 0.0.0.9000)
 Remotes: 
-    mpascariu/MortalityEstimate
+    mpascariu/MortalityEstimate,
     timriffe/DemoToolsData
 Suggests: 
     countrycode,
