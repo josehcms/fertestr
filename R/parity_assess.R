@@ -26,7 +26,7 @@
 #' @examples
 #'
 #' library(DemoToolsData)
-#' 
+#'
 #' ### Kenya 1989 data:
 #' prtyAverage( ages = data.prty_KEN$ages,
 #'              parity = data.prty_KEN$parity,
@@ -354,7 +354,7 @@ prtyElBadry <-
 #'
 #' ### Kenya 1989 data:
 #' prtyImplaus( ages = data.prty_KEN$ages, parity = data.prty_KEN$parity, women = data.prty_KEN$women )
-#' 
+#'
 
 # correct implausible parities
 prtyImplaus <-
@@ -451,62 +451,61 @@ prtyAssess.plot <-
               )
   }
 
-#' Parity Assessment function between two surveys
-#'
-#' Verify if the average number of children ever born of women birth cohorts increase between two surveys/censuses
-#'
-#' @param ages.t1 vector of ages or starting ages of age group intervals for census/survey year 1
-#' @param ages.t2 vector of ages or starting ages of age group intervals for census/survey year 2
-#' @param P.t1 vector of average parities by women age group for census/survey year 1
-#' @param P.t2 vector of average parities by women age group for census/survey year 2
-#' @param time.span census/survey time span (default = 10)
-#'
-#' @return
-#'
-#' @export
-#' @examples
-#'
 
-prtyAssess.cohort <-
-  function(ages.t1,
-           ages.t2,
-           P.t1,
-           P.t2,
-           time.span = 10){
 
-    # stop with lengths are not equal
-    stopifnot( all.equal( length(ages.t1), length(P.t1), length(ages.t2), length(P.t2) ) )
+# Parity Assessment function between two surveys
+#
+# Verify if the average number of children ever born of women birth cohorts increase between two surveys/censuses
+#
+# @param ages.t1 vector of ages or starting ages of age group intervals for census/survey year 1
+# @param ages.t2 vector of ages or starting ages of age group intervals for census/survey year 2
+# @param P.t1 vector of average parities by women age group for census/survey year 1
+# @param P.t2 vector of average parities by women age group for census/survey year 2
+# @param time.span census/survey time span (default = 10)
+#
+# @return
+#
 
-    # set data frame:
-    avg_par1 <-
-      data.frame( ages.t1, P.t1 )
-
-    avg_par2 <-
-      data.frame( ages.t2, P.t2 )
-
-    # create t2 for base t1
-    avg_par1$ages.t2 <-
-      avg_par1$ages.t1 + time.span
-
-    # merge data for same cohorts
-    avg_par.cohort <-
-      merge(
-        avg_par1,
-        avg_par2,
-        by  = 'ages.t2'
-      )
-
-    # check cohort P diffs
-    avg_par.cohort$P.diff <-
-      avg_par.cohort$P.t2 - avg_par.cohort$P.t1
-
-    # verify if P.diffs are all positive (average parities of a same cohort should not decrease in between surveys)
-    verif.P <-
-      prod(avg_par.cohort$P.diff > 0) == 1
-
-    if( !verif.P ){
-      warning('Average parity estimates for some cohorts do not increase in between surveys/censuses. Verify parity data!')
-    }
-
-    return(avg_par.cohort[,c('ages.t1','ages.t2','P.t1','P.t2','P.diff')])
-  }
+# prtyAssess.cohort <-
+#   function(ages.t1,
+#            ages.t2,
+#            P.t1,
+#            P.t2,
+#            time.span = 10){
+#
+#     # stop with lengths are not equal
+#     stopifnot( all.equal( length(ages.t1), length(P.t1), length(ages.t2), length(P.t2) ) )
+#
+#     # set data frame:
+#     avg_par1 <-
+#       data.frame( ages.t1, P.t1 )
+#
+#     avg_par2 <-
+#       data.frame( ages.t2, P.t2 )
+#
+#     # create t2 for base t1
+#     avg_par1$ages.t2 <-
+#       avg_par1$ages.t1 + time.span
+#
+#     # merge data for same cohorts
+#     avg_par.cohort <-
+#       merge(
+#         avg_par1,
+#         avg_par2,
+#         by  = 'ages.t2'
+#       )
+#
+#     # check cohort P diffs
+#     avg_par.cohort$P.diff <-
+#       avg_par.cohort$P.t2 - avg_par.cohort$P.t1
+#
+#     # verify if P.diffs are all positive (average parities of a same cohort should not decrease in between surveys)
+#     verif.P <-
+#       prod(avg_par.cohort$P.diff > 0) == 1
+#
+#     if( !verif.P ){
+#       warning('Average parity estimates for some cohorts do not increase in between surveys/censuses. Verify parity data!')
+#     }
+#
+#     return(avg_par.cohort[,c('ages.t1','ages.t2','P.t1','P.t2','P.diff')])
+#   }
