@@ -923,16 +923,15 @@ womenRevSurv <- function( age, lx_std, women, alphaWomen, year, std_asfr ){
 
 #' Estimate single-age survival functions using Log-Quadratic Model
 #'
-#' Estimate single-age survival functions using Log-Quadratic Model for children 0-14 and
-#' women 10-64
+#' Estimate single-age survival functions using Log-Quadratic Model and ungroup
 #'
+#' @param k log-quad parameter k
+#' @param e0 log-quad parameter e0
 #' @param q0_1 log-quad parameter 0q1
 #' @param q0_5 log-quad parameter 0q5
 #' @param q15_35 log-quad parameter 15q35
 #' @param q15_45 log-quad parameter 15q45
-#' @param e0 log-quad parameter e0
-#' @param k log-quad parameter k
-#' @param lt reference life table for modeling log quad parametes, defaul = HMD
+#' @param lt reference life table for modeling log quad parameters, default = HMD
 #' @param sex sex to retrieve HMD sex and life table ('female','male','total' - default)
 #'
 #' @return single age life table estimated by ungrouping log-quad model estimation
