@@ -2,15 +2,16 @@
 #'
 #' Reverse Survival Fertility Estimation
 #'
-#' @param ages1_c 
-#' @param popx1_c 
-#' @param ages5_w 
-#' @param popx5_w 
-#' @param lx1_c 
-#' @param lx5_w 
+#' @param ages1_c children single ages vector (default 0:14)
+#' @param popx1_c children population in single ages (x1) matching ages1_c vector
+#' @param ages5_w women five-year age group ages vector ( default seq( 10, 65, 5 ) )
+#' @param popx5_w women population in five-year age group format (x5) matching ages_w vector
+#' @param lx1_c children survival function vector in single age groups from 0 to 15
+#' @param lx5_w women survival function vector in five-year age groups matching ages_w vector
 #' @param asfr age specific fertility rates for five-year age groups from 10-45 for current period
 #' of estimation
-#' @param asfr_15prior 
+#' @param asfr_15_prior standardized age specific fertility rates for five-year age groups from 10-45 for the
+#' period of 15 years before the current inquiry period
 #' @param q0_5 3 element vector for mortality probability between ages 0-4 for the period of estimation,
 #' period 5 years prior to estimation period, and period 10 years prior to estimation period
 #' @param q15_45f female adult mortality probability for the period of estimation,
@@ -19,16 +20,10 @@
 #' Y-m-d (4 digit year - 2 digit month - 2 digit day), Y-m (4 digit year - 2 digit month),
 #' Y (4 digit year)
 #'
-#' @param ages_c children ages (default 0:14)
-#' @param pop_c children population matching ages_c vector
-#' @param lx_c children survival function vector for single ages from 0 to 15
-#' @param ages_w women ages (default c( 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65 ))
-#' @param pop_women women population matching ages_w vector
-#' @param lx_w women survival function matching ages_w vector
-#' @param asfr_15_prior standardized age specific fertility rates for five-year age groups from 10-45 for the
-#' period of 15 years before the current inquiry period
-#' @return data.frame with 2 elements: year (reference period of fertility estimation) and
-#' TFR (indirect estimated total fertility rate) plus location name and ID if using wpp 2019 country data
+#' @return data.frame with 3 elements:
+#' `year` - reference period of fertility estimation in decimal format;
+#' `TFR`  - estimated total fertility rate;
+#' `births` - estimated total number of births
 #'
 #' @export
 #' @source
@@ -38,19 +33,19 @@
 #' @examples
 #'
 #' # 1 - User input data
-#' pop_c <-  c( 281260, 261320, 268410, 286810, 278990, 293760,
-#'              293490, 302060, 315970, 267190, 326980, 280260,
-#'              354120, 356920, 354830 )
+#' popx1_c <-  c( 281260, 261320, 268410, 286810, 278990, 293760,
+#'                293490, 302060, 315970, 267190, 326980, 280260,
+#'                354120, 356920, 354830 )
 #'
-#' pop_w <- c(  815930, 780320, 697160, 626430, 361650, 435880,
-#'              393760, 352520, 294280, 230200, 160590, NA )
+#' popx5_w <- c(  815930, 780320, 697160, 626430, 361650, 435880,
+#'                393760, 352520, 294280, 230200, 160590, NA )
 #'
-#' lx_c <- c( 1.0000, 0.9320, 0.9275, 0.9228, 0.9165, 0.9125, 0.9110,
-#'            0.9094, 0.9079, 0.9063, 0.9048, 0.9032, 0.9017, 0.9001,
-#'            0.8986, 0.8970 )
+#' lx1_c <- c( 1.0000, 0.9320, 0.9275, 0.9228, 0.9165, 0.9125, 0.9110,
+#'             0.9094, 0.9079, 0.9063, 0.9048, 0.9032, 0.9017, 0.9001,
+#'             0.8986, 0.8970 )
 #'
-#' lx_w <- c( 0.91381, 0.90989, 0.90492, 0.89798, 0.88893, 0.87596,
-#'            0.86029, 0.84188, 0.81791, 0.78472, 0.73735, 0.67316 )
+#' lx5_w <- c( 0.91381, 0.90989, 0.90492, 0.89798, 0.88893, 0.87596,
+#'             0.86029, 0.84188, 0.81791, 0.78472, 0.73735, 0.67316 )
 #'
 #' q0_5 <-  c( 0.0683, 0.1008, 0.1189)
 #'
@@ -62,9 +57,9 @@
 #' asfr_15prior <- c( 0.0000, 0.0533, 0.1974, 0.2144, 0.1836, 0.1332,
 #'                    0.0676, 0.0134 )
 #'
-#' FertRevSurv( ages1_c = 0:14, popx1_c = pop_c,
-#'              ages5_w = seq( 10, 65, 5 ), popx5_w = pop_w,
-#'              lx1_c = lx_c, lx5_w = lx_w,
+#' FertRevSurv( ages1_c = 0:14, popx1_c = popx1_c,
+#'              ages5_w = seq( 10, 65, 5 ), popx5_w = popx5_w,
+#'              lx1_c = lx1_c, lx5_w = lx5_w,
 #'              asfr = asfr,
 #'              asfr_15prior = asfr_15prior,
 #'              q0_5 = q0_5, q15_45f = q15_45f,
@@ -137,8 +132,12 @@ FertRevSurv <- function(ages1_c = 0:14,
 #' Y (4 digit year)
 #' @param logquad if TRUE estimates lx functions from logquad models instead of using lt_family (default FALSE)
 #'
-#' @return data.frame with 2 elements: year (reference period of fertility estimation) and
-#' TFR (indirect estimated total fertility rate) plus location name and ID if using wpp 2019 country data
+#' @return data.frame with 5 elements:
+#' `location_code`: WPP 2019 location code
+#' `location_name`: WPP 2019 location name
+#' `year` - reference period of fertility estimation in decimal format;
+#' `TFR`  - estimated total fertility rate;
+#' `births` - estimated total number of births
 #'
 #' @export
 #' @source
