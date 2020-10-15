@@ -4,10 +4,10 @@
 \alias{fetch_mac_Wpp2019}
 \title{Function to retrieve mean age of childbearing from Wpp 2019 data}
 \usage{
-fetch_mac_Wpp2019(country_code = NULL, year)
+fetch_mac_Wpp2019(location_code = NULL, year)
 }
 \arguments{
-\item{country_code}{list of country codes to retrieve fertility pattern data from}
+\item{location_code}{list of location codes to retrieve fertility pattern data from}
 
 \item{year}{period of reference to retrieve fertility pattern data}
 }
@@ -17,4 +17,9 @@ mean age at childbearing for country and year selected
 \description{
 Function to retrieve mean age of childbearing from Wpp 2019 data
 }
-\keyword{internal}
+\examples{
+# mac for Honduras 2007
+fetch_mac_Wpp2019( 340, 2007 )
+
+
+}

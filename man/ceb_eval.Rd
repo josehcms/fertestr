@@ -19,13 +19,13 @@ ceb_eval(
 \item{date_svy}{survey or census date in the format Y-m-d or string in the formats
 Y, Y-m, Y-m-d}
 
-\item{ages_w}{women starting age of 5 year age group}
+\item{ages_w}{women five-year age group starting-ages vector}
 
 \item{pop_w}{total women matching ages in ages_w}
 
 \item{ceb}{total children ever born by women age group}
 
-\item{mean_ceb}{}
+\item{mean_ceb}{mean children ever born by women age group}
 
 \item{mac}{mean age at childbearing matching ages in age_w or unique value for all ages,
 default = 28}

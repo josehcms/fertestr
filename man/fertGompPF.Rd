@@ -43,7 +43,9 @@ fertGompPF(
 \item{madef}{Mother's age definition: '0m' for age at birth of child, '12m' for age at survey for 12 months data (default),
 '24m' for age at survey for 24 months data, '36m' for age at survey for 36 months data}
 
-\item{plot.diagnostic}{}
+\item{sel.ages}{select ages for curve fitting}
+
+\item{plot.diagnostic}{plot diagnostic graph}
 }
 \value{
 A list with 3 elements:

@@ -39,6 +39,9 @@ FertRevSurv(
 \item{asfr}{age specific fertility rates for five-year age groups from 10-45 for current period
 of estimation}
 
+\item{asfr_15prior}{standardized age specific fertility rates for five-year age groups from 10-45 for the
+period of 15 years before the current inquiry period}
+
 \item{q0_5}{3 element vector for mortality probability between ages 0-4 for the period of estimation,
 period 5 years prior to estimation period, and period 10 years prior to estimation period}
 
@@ -48,9 +51,6 @@ period 5 years prior to estimation period, and period 10 years prior to estimati
 \item{date_ref}{reference date of inquiry given in the following formats:
 Y-m-d (4 digit year - 2 digit month - 2 digit day), Y-m (4 digit year - 2 digit month),
 Y (4 digit year)}
-
-\item{asfr_15_prior}{standardized age specific fertility rates for five-year age groups from 10-45 for the
-period of 15 years before the current inquiry period}
 }
 \value{
 data.frame with 3 elements:
