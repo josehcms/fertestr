@@ -17,7 +17,7 @@ devtools::install_github("josehcms/fertestr")
 We are still at **initial development**, so major bugs might be frequent.
 
 ## Getting started
-Soon we will add some tutorials on the usage of the package. By now, we recommend you to explore the help files which containt some worked examples and description of functions.
+Soon we will add some tutorials on the usage of the package. By now, we recommend you to explore the help files which contain some worked examples and description of functions.
 
 ```
 library(fertestr)
@@ -29,16 +29,6 @@ library(fertestr)
 
 # El-Badry correction
 ?prtyElBadry
-
-# Age Specific Fertility Rates and Average Parity data for Malawi 2008
-?data.pf_MWI
-
-# Parity data for Cambodia 2008
-?data.prty_KHM
-
-# Parity data for Kenya 1989
-?data.prty_KEN
-
 
 ```
 ## References
