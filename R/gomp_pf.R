@@ -8,8 +8,8 @@
 #' @param level TRUE for correction of fertility level using parity data information, false for correction of fertility shape only
 #' @param madef Mother's age definition: '0m' for age at birth of child, '12m' for age at survey for 12 months data (default),
 #' '24m' for age at survey for 24 months data, '36m' for age at survey for 36 months data
-#' @param sel.ages
-#' @param plot.diagnostic
+#' @param sel.ages select ages for curve fitting
+#' @param plot.diagnostic plot diagnostic graph
 #'
 #' @return A list with 3 elements:
 #' pf_data data frame with columns ages, P for mean parities, asfr, Fi for cumulate fertility estimated from Brass coefficients,PF for ratios P/F and adj_asfr for adjusted asfr;
@@ -20,7 +20,7 @@
 #' Brass W, AJ. 1968. Coale Methods  of  analysis  and  estimation.  In:  BRASS,  W.  et  al.  (Ed.).  The demography of tropical Africa. 1. ed. New Jersey: Princeton University Press, p. 88-139.
 #' Brass W. 1975. Methods for Estimating Fertility and Mortality from Limited and Defected Data. North Carolina: Carolina Population Center.
 #' @examples
-#' 
+#'
 #' ## Malawi 2008 Census data:
 #' ages_ma = c(15, 20, 25, 30, 35, 40, 45)
 #' asfr_ma = c(0.111, 0.245, 0.230, 0.195, 0.147, 0.072, 0.032)
