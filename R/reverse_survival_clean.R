@@ -10,7 +10,7 @@
 #' @param lx5_w women survival function vector in five-year age groups matching ages_w vector
 #' @param asfr age specific fertility rates for five-year age groups from 10-45 for current period
 #' of estimation
-#' @param asfr_15_prior standardized age specific fertility rates for five-year age groups from 10-45 for the
+#' @param asfr_15prior standardized age specific fertility rates for five-year age groups from 10-45 for the
 #' period of 15 years before the current inquiry period
 #' @param q0_5 3 element vector for mortality probability between ages 0-4 for the period of estimation,
 #' period 5 years prior to estimation period, and period 10 years prior to estimation period
