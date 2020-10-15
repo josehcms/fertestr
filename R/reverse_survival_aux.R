@@ -400,6 +400,8 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 #' `ages`: age group starting age of population count
 #' `pop`: population count (in thousands)
 #'
+#' @export
+#'
 #' @examples
 #' # Argentina 10:69 females 2010
 #' FetchPopWpp2019( 32, 2010, 10:69, 1, 'female')
@@ -409,7 +411,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 #'
 #'  # Mexico and Panama 10:15 males 2001 in single year age groups
 #'  FetchPopWpp2019( c( 'Mexico', 'Panama'), 2001, 10:15, 1, 'male')
-#' @export
+#'
 #'
 #'
 FetchPopWpp2019 <-
@@ -519,6 +521,8 @@ interpolate <- function( y1, y2, x1, x2, x ){
 #' @param sex `female` or `male` or `both`
 #'
 #' @return data.frame with selected ages `age` and survival functions `lx_std`
+#'
+#' @export
 #'
 #' @examples
 #' find_mlt( lt_family = 'Latin', e0 = 60, ages = 0:5, sex = 'male')
