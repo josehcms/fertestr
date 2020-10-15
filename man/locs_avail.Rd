@@ -7,7 +7,7 @@
 locs_avail()
 }
 \value{
-data.frame with two columns name and location_code
+data.frame with two columns `location_name` and `location_code`
 }
 \description{
 Provides the list of available locations from WPP 2019 data

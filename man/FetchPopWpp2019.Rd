@@ -4,21 +4,42 @@
 \alias{FetchPopWpp2019}
 \title{Fetch population data from WPP2019}
 \usage{
-FetchPopWpp2019(locations = NULL, year, ages, age_interval = 1, sex = "total")
+FetchPopWpp2019(
+  locations = NULL,
+  year,
+  ages = 0:100,
+  age_interval = 1,
+  sex = "total"
+)
 }
 \arguments{
-\item{locations}{location id from WPP 2019 data}
+\item{locations}{location codes or names from WPP 2019 data}
 
-\item{year}{period of reference of population data}
+\item{year}{period of reference of population data (numeric)}
 
-\item{ages}{selected ages to retrieve pop data}
+\item{ages}{selected ages to retrieve pop data (default - 0:100, all)}
 
 \item{age_interval}{how to display ages in result - single ages (1 - default)
 or 5-year age group (5)}
 
-\item{sex}{sex to retrieve information form (default - total)}
+\item{sex}{sex to retrieve information form (default - total, male, female)}
+}
+\value{
+a data.frame with 3 elements:
+`LocID`: location code
+`ages`: age group starting age of population count
+`pop`: population count (in thousands)
 }
 \description{
 Fetch population data from WPP2019
 }
-\keyword{internal}
+\examples{
+# Argentina 10:69 females 2010
+FetchPopWpp2019( 32, 2010, 10:69, 1, 'female')
+
+# Ecuador 15:59 males 2004 in five year age groups
+ FetchPopWpp2019( 'Ecuador', 2004, 15:59, 5, 'male')
+
+ # Mexico and Panama 10:15 males 2001 in single year age groups
+ FetchPopWpp2019( c( 'Mexico', 'Panama'), 2001, 10:15, 1, 'male')
+}

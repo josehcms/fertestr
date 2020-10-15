@@ -16,9 +16,13 @@ find_mlt(lt_family, e0, ages, sex)
 \item{sex}{`female` or `male` or `both`}
 }
 \value{
-data.frame with selected ages `$age` and survival functions `$lx_std`
+data.frame with selected ages `age` and survival functions `lx_std`
 }
 \description{
 Retrieve survival data for provided model life tables
 }
-\keyword{internal}
+\examples{
+find_mlt( lt_family = 'Latin', e0 = 60, ages = 0:5, sex = 'male')
+
+
+}

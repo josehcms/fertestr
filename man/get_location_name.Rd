@@ -7,12 +7,19 @@
 get_location_name(location_code)
 }
 \arguments{
-\item{location_code}{location code}
+\item{location_code}{WPP 2019 location code}
 }
 \value{
-location_name
+`location_name` of given `location_code`
 }
 \description{
 Get WPP 2019 location name from codes
 }
-\keyword{internal}
+\examples{
+# Get name for Argentina (code 32)
+get_location_name( 32 )
+
+# Get name for list of countries
+get_location_name( c( 76, 32, 600, 604, 152 ))
+
+}

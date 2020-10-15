@@ -17,4 +17,9 @@ Yx, survival function logit value
 \description{
 Cumpute logit of survival function from lx or qx
 }
-\keyword{internal}
+\examples{
+logit( lx = 0.9 )
+logit( qx = 0.25)
+
+
+}

@@ -9,10 +9,43 @@ FetchLifeTableWpp2019(locations = NULL, year, sex = "both")
 \arguments{
 \item{locations}{list of location codes or names to retrieve LT information}
 
-\item{year}{period of reference to generate estimates}
+\item{year}{period of reference to generate estimates (numeric format)}
 
 \item{sex}{sex to retrieve mortality (male, female or both)}
 }
+\value{
+a data.frame with 15 elements:
+`location_code`: WPP 2019 location code;
+`location_name`: WPP 2019 location name;
+`reference_period`: reference year of each period used for interpolating mortality rates;
+`sex`: both, male or female;
+`x.int`: age group interval;
+`x`: age group starting age;
+`mx`: age-specific mortality rates;
+`qx`: mortality probability;
+`ax`: person-years lived by those who die of the age group;
+`lx`: survival function;
+`dx`: life table synthetic cohort deaths;
+`Lx`: person-years lived by age group;
+`Tx`: cumulate person-years lived by age group;
+`ex`: life expectancy
+}
 \description{
 Retrieve life tables for selected period and locations from WPP 2019 data
+}
+\examples{
+# life table for both sexes Uruguay 1990
+FetchLifeTableWpp2019( 'Uruguay', 1990 )
+
+# female life tables for Japan and Canada 1987
+FetchLifeTableWpp2019( locations = c( 'Japan', 'Canada' ),
+                       year = 1987,
+                       sex = 'female' )
+
+# male life tables for Finland in '2014-10-22'
+FetchLifeTableWpp2019( locations = 'Finland',
+                       year = lubridate::decimal_date( as.Date( '2014-10-22' ) ),
+                       sex  = 'male' )
+
+
 }

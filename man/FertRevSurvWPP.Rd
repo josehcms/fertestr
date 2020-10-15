@@ -23,8 +23,12 @@ Y (4 digit year)}
 \item{logquad}{if TRUE estimates lx functions from logquad models instead of using lt_family (default FALSE)}
 }
 \value{
-data.frame with 2 elements: year (reference period of fertility estimation) and
-TFR (indirect estimated total fertility rate) plus location name and ID if using wpp 2019 country data
+data.frame with 5 elements:
+`location_code`: WPP 2019 location code
+`location_name`: WPP 2019 location name
+`year` - reference period of fertility estimation in decimal format;
+`TFR`  - estimated total fertility rate;
+`births` - estimated total number of births
 }
 \description{
 Apply reverse survival fertility estimation to WPP2019 country data

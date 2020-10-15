@@ -7,16 +7,31 @@
 FetchFertilityWpp2019(locations = NULL, year)
 }
 \arguments{
-\item{locations}{}
+\item{locations}{list of locations by name or code according to WPP 2019 location list (check fertestr::locs_avail() for list of available locations)}
 
-\item{year}{}
+\item{year}{desired reference year to fetch fertility information (numeric)}
 }
 \value{
-data.frame with three columns age: women ages, asfr_std_ref:
-age-specific fertility rates for the time-period which contains the reference year and
-asfr_std_15prior: age-specific fertility rates for the time-period
-15 years prior to the reference period
+data.frame with five columns:
+`location_code`: WPP 2019 location code
+`location_name`: WPP 2019 location name
+`age`: women ages in five-year age groups from 10 to 45;
+`asfr`: interpolated age-specific fertility rates for desired year
+`asfr_std`: proportional age-specific fertility rates for desired year (sum(asfr_std*5) = 1)
 }
 \description{
 Retrieve age-specific fertility rates for available WPP 2019 locations
+}
+\examples{
+
+# Fertility pattern for Taiwan 2007
+FetchFertilityWpp2019( locations = 158, year = 2007 )
+
+# Fertility pattern for Peru and Paraguay 1994
+FetchFertilityWpp2019( locations = c( 604, 600 ), year = 1994 )
+
+# Fertility pattern for Italy and Australia 2002 (using names)
+FetchFertilityWpp2019( locations = c( 'Italy', 'Australia'), year = 2002)
+
+
 }

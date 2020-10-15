@@ -7,10 +7,10 @@
 get_location_code(location_names = NULL)
 }
 \arguments{
-\item{location_names}{country name or vector of country names}
+\item{location_names}{location name or vector of location names}
 }
 \value{
-data.frame with two columns country_name and country_code
+WPP 2019 `location_code` for given location names
 }
 \description{
 Provides the list of countries and respective codes available in WPP 2019 or
