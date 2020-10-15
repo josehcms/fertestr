@@ -72,7 +72,7 @@ decimal_anydate <-
 #'
 #' Provides the list of available locations from WPP 2019 data
 #'
-#' @return data.frame with two columns name and location_code
+#' @return data.frame with two columns `location_name` and `location_code`
 #' @export
 
 #' @examples
@@ -92,8 +92,10 @@ locs_avail <- function( ){
 #' Provides the list of countries and respective codes available in WPP 2019 or
 #' fetch the country code for given country name
 #'
-#' @param location_names country name or vector of country names
-#' @return data.frame with two columns country_name and country_code
+#' @param location_names location name or vector of location names
+#'
+#' @return WPP 2019 `location_code` for given location names
+#'
 #' @export
 
 #' @examples
@@ -135,17 +137,25 @@ get_location_code <- function( location_names=NULL){
 
 #' Get WPP 2019 location name from codes
 #'
-#' @param location_code location code
-#' @return location_name
+#' @param location_code WPP 2019 location code
+#'
+#' @return `location_name` of given `location_code`
+#'
 #' @export
-
-#' @keywords internal
+#'
+#' @examples
+#' # Get name for Argentina (code 32)
+#' get_location_name( 32 )
+#'
+#' # Get name for list of countries
+#' get_location_name( c( 76, 32, 600, 604, 152 ))
+#'
 
 get_location_name <- function( location_code ){
   locs_list <- locs_avail()
   location_name <-
     as.character(
-      locs_list[ locs_list$location_code == location_code, ]$location_name )
+      locs_list[ locs_list$location_code %in% location_code, ]$location_name )
   return( location_name )
 }
 
@@ -153,14 +163,28 @@ get_location_name <- function( location_code ){
 #'
 #' Retrieve age-specific fertility rates for available WPP 2019 locations
 #'
-#' @param locations 
-#' @param year 
-#' @return data.frame with three columns age: women ages, asfr_std_ref:
-#' age-specific fertility rates for the time-period which contains the reference year and
-#' asfr_std_15prior: age-specific fertility rates for the time-period
-#' 15 years prior to the reference period
+#' @param locations list of locations by name or code according to WPP 2019 location list (check fertestr::locs_avail() for list of available locations)
+#' @param year desired reference year to fetch fertility information (numeric)
+#'
+#' @return data.frame with five columns:
+#' `location_code`: WPP 2019 location code
+#' `location_name`: WPP 2019 location name
+#' `age`: women ages in five-year age groups from 10 to 45;
+#' `asfr`: interpolated age-specific fertility rates for desired year
+#' `asfr_std`: proportional age-specific fertility rates for desired year (sum(asfr_std*5) = 1)
 #'
 #' @export
+#'
+#' @examples
+#'
+#' # Fertility pattern for Taiwan 2007
+#' FetchFertilityWpp2019( locations = 158, year = 2007 )
+#'
+#' # Fertility pattern for Peru and Paraguay 1994
+#' FetchFertilityWpp2019( locations = c( 604, 600 ), year = 1994 )
+#'
+#' # Fertility pattern for Italy and Australia 2002 (using names)
+#' FetchFertilityWpp2019( locations = c( 'Italy', 'Australia'), year = 2002)
 #'
 #'
 FetchFertilityWpp2019 <- function( locations = NULL, year ){
@@ -214,11 +238,40 @@ FetchFertilityWpp2019 <- function( locations = NULL, year ){
 #' Retrieve life tables for selected period and locations from WPP 2019 data
 #'
 #' @param locations list of location codes or names to retrieve LT information
-#' @param year period of reference to generate estimates
+#' @param year period of reference to generate estimates (numeric format)
 #' @param sex sex to retrieve mortality (male, female or both)
 #'
+#' @return a data.frame with 15 elements:
+#' `location_code`: WPP 2019 location code;
+#' `location_name`: WPP 2019 location name;
+#' `reference_period`: reference year of each period used for interpolating mortality rates;
+#' `sex`: both, male or female;
+#' `x.int`: age group interval;
+#' `x`: age group starting age;
+#' `mx`: age-specific mortality rates;
+#' `qx`: mortality probability;
+#' `ax`: person-years lived by those who die of the age group;
+#' `lx`: survival function;
+#' `dx`: life table synthetic cohort deaths;
+#' `Lx`: person-years lived by age group;
+#' `Tx`: cumulate person-years lived by age group;
+#' `ex`: life expectancy
 #'
 #' @export
+#'
+#' @examples
+#' # life table for both sexes Uruguay 1990
+#' FetchLifeTableWpp2019( 'Uruguay', 1990 )
+#'
+#' # female life tables for Japan and Canada 1987
+#' FetchLifeTableWpp2019( locations = c( 'Japan', 'Canada' ),
+#'                        year = 1987,
+#'                        sex = 'female' )
+#'
+#' # male life tables for Finland in '2014-10-22'
+#' FetchLifeTableWpp2019( locations = 'Finland',
+#'                        year = lubridate::decimal_date( as.Date( '2014-10-22' ) ),
+#'                        sex  = 'male' )
 #'
 #'
 FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
@@ -335,21 +388,34 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 
 #' Fetch population data from WPP2019
 #'
-#' @param locations location id from WPP 2019 data
-#' @param year period of reference of population data
-#' @param ages selected ages to retrieve pop data
+#' @param locations location codes or names from WPP 2019 data
+#' @param year period of reference of population data (numeric)
+#' @param ages selected ages to retrieve pop data (default - 0:100, all)
 #' @param age_interval how to display ages in result - single ages (1 - default)
 #' or 5-year age group (5)
-#' @param sex sex to retrieve information form (default - total)
+#' @param sex sex to retrieve information form (default - total, male, female)
 #'
-#' @keywords internal
+#' @return a data.frame with 3 elements:
+#' `LocID`: location code
+#' `ages`: age group starting age of population count
+#' `pop`: population count (in thousands)
+#'
+#' @examples
+#' # Argentina 10:69 females 2010
+#' FetchPopWpp2019( 32, 2010, 10:69, 1, 'female')
+#'
+#' # Ecuador 15:59 males 2004 in five year age groups
+#'  FetchPopWpp2019( 'Ecuador', 2004, 15:59, 5, 'male')
+#'
+#'  # Mexico and Panama 10:15 males 2001 in single year age groups
+#'  FetchPopWpp2019( c( 'Mexico', 'Panama'), 2001, 10:15, 1, 'male')
 #' @export
 #'
 #'
 FetchPopWpp2019 <-
   function( locations = NULL,
             year,
-            ages,
+            ages = 0:100,
             age_interval = 1,
             sex = 'total' ){
 
@@ -412,8 +478,8 @@ FetchPopWpp2019 <-
 
       popx5 <-
         stats::aggregate( popx1$pop,
-                         by = list( LocID = popx1$LocID, ages = popx1$age.x5 ),
-                         FUN = 'sum' )
+                          by = list( LocID = popx1$LocID, ages = popx1$age.x5 ),
+                          FUN = 'sum' )
 
       names( popx5 ) <- c( 'LocID', 'ages', 'pop' )
 
@@ -452,9 +518,10 @@ interpolate <- function( y1, y2, x1, x2, x ){
 #' @param ages age selection of data (single age-interval from 0 to 130)
 #' @param sex `female` or `male` or `both`
 #'
-#' @return data.frame with selected ages `$age` and survival functions `$lx_std`
+#' @return data.frame with selected ages `age` and survival functions `lx_std`
 #'
-#' @keywords internal
+#' @examples
+#' find_mlt( lt_family = 'Latin', e0 = 60, ages = 0:5, sex = 'male')
 #'
 #'
 find_mlt <- function( lt_family, e0, ages, sex ){
@@ -528,7 +595,7 @@ find_mlt <- function( lt_family, e0, ages, sex ){
 #' @export
 #'
 #' @examples
-#' 
+#'
 #' # q0_5 for Mexico for periods 0-4, 5-9 and 10-14 before 2010
 #' q_calcWpp2019( location = 'Mexico',
 #'                years = 2010 - c( 2.5, 7.5, 12.5 ),
@@ -581,7 +648,9 @@ q_calcWpp2019 <- function( location, years, sex, age_inf, age_sup ){
 #'
 #' @return Yx, survival function logit value
 #'
-#' @keywords internal
+#' @examples
+#' logit( lx = 0.9 )
+#' logit( qx = 0.25)
 #'
 #'
 logit <- function( lx = NULL, qx = NULL ){
