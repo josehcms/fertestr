@@ -16,6 +16,7 @@
 #'
 #' @return data.frame with 2 vectors: reference date of mean children ever born (decimal)
 #' and mean children ever born
+#'
 #' @export
 
 #' @examples
@@ -129,6 +130,8 @@ ceb_eval <- function( date_svy,
 #' @param year period of reference to retrieve fertility pattern data
 #'
 #' @return mean age at childbearing for country and year selected
+#'
+#' @export
 #'
 #' @examples
 #' # mac for Honduras 2007
