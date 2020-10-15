@@ -43,7 +43,6 @@ Construct estimates of mean CEB in the reference period of childbearing
 (mean age of childbearing)
 }
 \examples{
-
 ## Kenya 1989 census
 date_svy <- "1989-08-25"
 ages_w <- seq( 40, 75, 5 )

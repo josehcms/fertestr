@@ -28,7 +28,7 @@ SingleAgeLogQuad(
 
 \item{q15_45}{log-quad parameter 15q45}
 
-\item{lt}{reference life table for modeling log quad parametes, defaul = HMD}
+\item{lt}{reference life table for modeling log quad parameters, default = HMD}
 
 \item{sex}{sex to retrieve HMD sex and life table ('female','male','total' - default)}
 }
@@ -36,8 +36,7 @@ SingleAgeLogQuad(
 single age life table estimated by ungrouping log-quad model estimation
 }
 \description{
-Estimate single-age survival functions using Log-Quadratic Model for children 0-14 and
-women 10-64
+Estimate single-age survival functions using Log-Quadratic Model and ungroup
 }
 \examples{
 SingleAgeLogQuad( e0 = 70, q0_5 = 0.04 )

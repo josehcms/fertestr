@@ -652,6 +652,8 @@ q_calcWpp2019 <- function( location, years, sex, age_inf, age_sup ){
 #'
 #' @return Yx, survival function logit value
 #'
+#' @export
+#'
 #' @examples
 #' logit( lx = 0.9 )
 #' logit( qx = 0.25)

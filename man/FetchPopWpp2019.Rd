@@ -42,4 +42,7 @@ FetchPopWpp2019( 32, 2010, 10:69, 1, 'female')
 
  # Mexico and Panama 10:15 males 2001 in single year age groups
  FetchPopWpp2019( c( 'Mexico', 'Panama'), 2001, 10:15, 1, 'male')
+
+
+
 }
