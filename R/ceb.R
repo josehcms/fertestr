@@ -55,7 +55,7 @@ ceb_eval <- function( date_svy,
       }
 
       age_interval <- unique( diff( ages_w ) )
-      mac <- fetch_mac_Wpp2019( country_code = location_code, year = year_svy )
+      mac <- fetch_mac_Wpp2019( location_code = location_code, year = year_svy )
 
       cat( paste0( 'WPP 2019 - Mean Age at Childbearing for ',
                    get_location_name( location_code ),
