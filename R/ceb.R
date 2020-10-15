@@ -5,10 +5,10 @@
 #'
 #' @param date_svy survey or census date in the format Y-m-d or string in the formats
 #' Y, Y-m, Y-m-d
-#' @param ages_w women starting age of 5 year age group
+#' @param ages_w women five-year age group starting-ages vector
 #' @param pop_w total women matching ages in ages_w
 #' @param ceb total children ever born by women age group
-#' @param mean_ceb 
+#' @param mean_ceb mean children ever born by women age group
 #' @param mac mean age at childbearing matching ages in age_w or unique value for all ages,
 #' default = 28
 #' @param location_mac retrieve MAC from a given location id or name from WPP2019
@@ -31,13 +31,13 @@
 #'# Using mac retrieved from WPP2019
 #'ceb_eval( date_svy, ages_w, pop_w, ceb, location_mac = 'Kenya', plot_ceb = TRUE )
 ceb_eval <- function( date_svy,
-                     ages_w,
-                     pop_w = NULL,
-                     ceb = NULL,
-                     mean_ceb = NULL,
-                     mac = 28,
-                     location_mac = NULL,
-                     plot_ceb = TRUE ){
+                      ages_w,
+                      pop_w = NULL,
+                      ceb = NULL,
+                      mean_ceb = NULL,
+                      mac = 28,
+                      location_mac = NULL,
+                      plot_ceb = TRUE ){
 
     year_svy <- decimal_anydate( date_svy )
 
@@ -88,7 +88,7 @@ ceb_eval <- function( date_svy,
         length( ages_w ) == length( mac )
       )
 
-      print( 'Estimates using mean_ceb provided values.' )
+      print( 'Estimates using mean_ceb values computed from pop_w and ceb.' )
 
       mean_ceb <- round( ceb / pop_w , 3 )
 
@@ -99,7 +99,7 @@ ceb_eval <- function( date_svy,
         length( ages_w ) == length( mac )
       )
 
-      print( 'Estimates using mean_ceb values computed from pop_w and ceb.' )
+      print( 'Estimates using mean_ceb provided values.' )
     }
 
     if( plot_ceb ){
@@ -125,15 +125,17 @@ ceb_eval <- function( date_svy,
 
 #' Function to retrieve mean age of childbearing from Wpp 2019 data
 #'
-#' @param country_code list of country codes to retrieve fertility pattern data from
+#' @param location_code list of location codes to retrieve fertility pattern data from
 #' @param year period of reference to retrieve fertility pattern data
 #'
 #' @return mean age at childbearing for country and year selected
 #'
-#' @keywords internal
+#' @examples
+#' # mac for Honduras 2007
+#' fetch_mac_Wpp2019( 340, 2007 )
 #'
 #'
-fetch_mac_Wpp2019 <- function( country_code = NULL, year ){
+fetch_mac_Wpp2019 <- function( location_code = NULL, year ){
 
   percentASFR <- load_named_data('percentASFR', "wpp2019")
   year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
@@ -142,7 +144,7 @@ fetch_mac_Wpp2019 <- function( country_code = NULL, year ){
   year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
 
   # standardized fertility distribution of selected country
-  asfr_std <- c( percentASFR[ percentASFR$country_code %in% country_code,
+  asfr_std <- c( percentASFR[ percentASFR$country_code %in% location_code,
                               c( paste0( year_inf, '-', year_sup) ) ] / ( 5 * 100 ) )
   ages <- seq( 15, 45, 5 )
 
