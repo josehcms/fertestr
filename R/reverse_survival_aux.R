@@ -443,7 +443,11 @@ FetchPopWpp2019 <-
                       popWpp2019x1$Time == year_sup & popWpp2019x1$AgeGrp %in% ages,
                     c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
 
-    pop_sex <- names( popx1_inf )[ grep( sex, tolower( names( popx1_inf ) ) )]
+    # Replace the Pop part from gender for easier matching
+    gender_cleaned <- gsub("Pop", "", names(popx1_inf))
+
+    # Match the gender name unambiguously
+    pop_sex <- names(popx1_inf)[grep(paste0("^", sex), tolower(gender_cleaned))]
 
     popx1_inf <- popx1_inf[, c( 'LocID', 'AgeGrp', pop_sex ) ]
     popx1_sup <- popx1_sup[, c( 'LocID', 'AgeGrp', pop_sex ) ]
