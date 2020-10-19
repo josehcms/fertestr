@@ -393,7 +393,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 #' @param ages selected ages to retrieve pop data (default - 0:100, all)
 #' @param age_interval how to display ages in result - single ages (1 - default)
 #' or 5-year age group (5)
-#' @param sex sex to retrieve information form (default - total, male, female)
+#' @param sex sex to retrieve information from (default - 'total', 'male', 'female')
 #'
 #' @return a data.frame with 3 elements:
 #' `LocID`: location code
