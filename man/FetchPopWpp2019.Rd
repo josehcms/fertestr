@@ -22,7 +22,7 @@ FetchPopWpp2019(
 \item{age_interval}{how to display ages in result - single ages (1 - default)
 or 5-year age group (5)}
 
-\item{sex}{sex to retrieve information form (default - total, male, female)}
+\item{sex}{sex to retrieve information from (default - 'total', 'male', 'female')}
 }
 \value{
 a data.frame with 3 elements:
