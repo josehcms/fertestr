@@ -122,8 +122,10 @@ get_location_name <- function( location_code ){
 #'
 FetchFertilityWpp2019 <- function( locations = NULL, year ){
 
-  percentASFR <- load_named_data('percentASFR', "wpp2019")
-  tfr <- load_named_data('tfr', "wpp2019")
+  # percentASFR <- load_named_data('percentASFR', "wpp2019")
+  # tfr <- load_named_data('tfr', "wpp2019")
+
+  ASFR <- load_named_data( 'WPP2019_asfr', 'DemoToolsData' )
 
   if ( !is.numeric( locations ) ){
     location_codes <- get_location_code( locations )
@@ -131,34 +133,82 @@ FetchFertilityWpp2019 <- function( locations = NULL, year ){
     location_codes <- locations
   }
 
-  year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
-
-  year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
-  year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
-
-  # print( paste0( 'Fetching Fertility Pattern for period ', year_inf, '-', year_sup ) )
-
   asfr_df <- data.frame()
 
   for( location_code in location_codes ){
-    tfr_aux <- tfr[ tfr$country_code %in% location_code,
-                    c( paste0( year_inf, '-', year_sup ) ) ]
 
-    asfr <- tfr_aux * c( 0,
-                         percentASFR[ percentASFR$country_code %in% location_code,
-                                      c( paste0( year_inf, '-', year_sup ) ) ] / ( 5 * 100 ) )
+    year_range <-
+      seq( min( ASFR[ ASFR$LocID == location_code, 'Year' ] ),
+           max( ASFR[ ASFR$LocID == location_code, 'Year' ] ),
+           5 )
 
-    asfr_std <- c( 0,
-                   percentASFR[ percentASFR$country_code %in% location_code,
-                                c( paste0( year_inf, '-', year_sup ) ) ] / ( 5 * 100 ) )
+    if( year %in% min(year_range):max(year_range) ){
+
+      year_interv <-
+        findInterval( x = year,
+                      vec = year_range )
+
+      year_sup <- year_range[ year_interv + 1 ]
+      year_inf <- year_range[ year_interv ]
+
+      asfr <-
+        interpolate(
+          y1 = ASFR[ ASFR$LocID == location_code &
+                       ASFR$Year == year_inf, ]$ASFR,
+          x1 = year_inf,
+          y2 = ASFR[ ASFR$LocID == location_code &
+                       ASFR$Year == year_sup, ]$ASFR,
+          x2 = year_sup,
+          x  = year
+        )
+
+    } else if( year < min( year_range ) ){
+
+      # if year < 1953, set ASFR to 1950-55 period
+      asfr <- ASFR[ ASFR$LocID == location_code &
+                      ASFR$Year == min( year_range ), ]$ASFR
+
+      warning(
+        paste0( 'location_code = ',
+                location_code,
+                ': year is lower than min value for location_code (',
+                min( year_range ),
+                '). Setting asfr to the period ',
+                min( year_range ),
+                '-',
+                ( min( year_range ) + 5 ) )
+      )
+
+    } else if( year > max( year_range ) ){
+
+      # if year > 2023, set ASFR to 2018-2023 period
+      asfr <- ASFR[ ASFR$LocID == location_code &
+                      ASFR$Year == max( year_range ), ]$ASFR
+      warning(
+        paste0( 'location_code = ',
+                location_code,
+                ': year is greater than max value for location_code (',
+                max( year_range ),
+                '). Setting asfr to the period ',
+                ( max( year_range ) - 5 ),
+                '-',
+                max( year_range ) )
+      )
+
+    }
+
+    asfr_std <-
+      asfr / sum( 5 * asfr )
+
     asfr_df <-
       rbind( asfr_df,
              data.frame(
                location_code = location_code,
                location_name = get_location_name( location_code ),
+               year_ref = year,
                age  = seq( 10, 45, 5 ),
-               asfr = asfr,
-               asfr_std = asfr_std ) )
+               asfr = c( 0, asfr ),
+               asfr_std = c( 0, asfr_std ) ) )
   }
 
   return( asfr_df )
