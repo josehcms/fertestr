@@ -134,6 +134,9 @@ FetchFertilityWpp2019 <- function( locations = NULL, year ){
       location_code <- location_code
     }
 
+    # Stop if location code is not in lt_wpp dataset
+    stopifnot( location_code %in% unique( ASFR$LocID ) )
+
     year_range <-
       seq( min( ASFR[ ASFR$LocID == location_code, 'Year' ] ),
            max( ASFR[ ASFR$LocID == location_code, 'Year' ] ),
@@ -323,7 +326,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 
     } else if( year < min( year_range ) ){
 
-      # if year < 1953, set ASFR to 1950-55 period
+      # if year < 1953, set mx to 1950-55 period
       mx <- lt_wpp[ lt_wpp$LocID == location_code &
                       lt_wpp$Year == min( year_range ) &
                       lt_wpp$Sex == sex_code, ]$mx
@@ -348,7 +351,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 
     } else if( year >= max( year_range ) ){
 
-      # if year >= 2023, set ASFR to 2018-2023 period
+      # if year >= 2023, set mx to 2018-2023 period
       mx <- lt_wpp[ lt_wpp$LocID == location_code &
                       lt_wpp$Year == max( year_range ) &
                       lt_wpp$Sex == sex_code, ]$mx
@@ -456,7 +459,7 @@ FetchPopWpp2019 <-
       }
 
       # Stop if location code is not in lt_wpp dataset
-      stopifnot( location_code %in% unique( lt_wpp$LocID ) )
+      stopifnot( location_code %in% unique( popWpp2019x1$LocID ) )
 
       year_range <-
         sort(
@@ -577,7 +580,7 @@ FetchPopWpp2019 <-
           data.frame(
             LocID = location_code,
             ages  = ages,
-            pop   = pop
+            pop   = pop / 1000
           )
         )
 
