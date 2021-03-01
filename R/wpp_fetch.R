@@ -142,7 +142,7 @@ FetchFertilityWpp2019 <- function( locations = NULL, year ){
            max( ASFR[ ASFR$LocID == location_code, 'Year' ] ),
            5 )
 
-    if( year %in% min( year_range ):  ( max( year_range ) - 1 ) ){
+    if( year >= min( year_range ) & year < max( year_range ) ){
 
       year_interv <-
         findInterval( x = year,
@@ -298,7 +298,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
            max( lt_wpp[ lt_wpp$LocID == location_code, 'Year' ] ),
            5 )
 
-    if( year %in% min( year_range ) : ( max( year_range ) - 1 ) ){
+    if( year >= min( year_range ) & year < max( year_range ) ){
 
       year_interv <-
         findInterval( x = year,
