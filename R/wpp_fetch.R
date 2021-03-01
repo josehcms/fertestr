@@ -122,27 +122,24 @@ get_location_name <- function( location_code ){
 #'
 FetchFertilityWpp2019 <- function( locations = NULL, year ){
 
-  # percentASFR <- load_named_data('percentASFR', "wpp2019")
-  # tfr <- load_named_data('tfr', "wpp2019")
-
   ASFR <- load_named_data( 'WPP2019_asfr', 'DemoToolsData' )
-
-  if ( !is.numeric( locations ) ){
-    location_codes <- get_location_code( locations )
-  } else {
-    location_codes <- locations
-  }
 
   asfr_df <- data.frame()
 
-  for( location_code in location_codes ){
+  for( location_code in locations ){
+
+    if ( !is_LocID( location_code ) ){
+      location_code <- get_location_code( location_code )
+    } else {
+      location_code <- location_code
+    }
 
     year_range <-
       seq( min( ASFR[ ASFR$LocID == location_code, 'Year' ] ),
            max( ASFR[ ASFR$LocID == location_code, 'Year' ] ),
            5 )
 
-    if( year %in% min(year_range):max(year_range) ){
+    if( year %in% min( year_range ):  ( max( year_range ) - 1 ) ){
 
       year_interv <-
         findInterval( x = year,
@@ -179,15 +176,15 @@ FetchFertilityWpp2019 <- function( locations = NULL, year ){
                 ( min( year_range ) + 5 ) )
       )
 
-    } else if( year > max( year_range ) ){
+    } else if( year >= max( year_range ) ){
 
-      # if year > 2023, set ASFR to 2018-2023 period
+      # if year >= 2023, set ASFR to 2018-2023 period
       asfr <- ASFR[ ASFR$LocID == location_code &
                       ASFR$Year == max( year_range ), ]$ASFR
       warning(
         paste0( 'location_code = ',
                 location_code,
-                ': year is greater than max value for location_code (',
+                ': year is greater or equal the max value for location_code (',
                 max( year_range ),
                 '). Setting asfr to the period ',
                 ( max( year_range ) - 5 ),
@@ -259,118 +256,138 @@ FetchFertilityWpp2019 <- function( locations = NULL, year ){
 #'
 FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
 
-  if ( !is.numeric( locations ) ){
-    location_codes <- get_location_code( locations )
-  } else {
-    location_codes <- locations
-  }
+  lt_wpp <-
+    load_named_data( 'WPP2019_lt', 'DemoToolsData' )
 
-  year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
-  year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
-  year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
+  sex_code <-
+    ifelse( tolower( sex ) == 'both',
+            'b',
+            ifelse( tolower( sex ) == 'female',
+                    'f',
+                    ifelse( tolower( sex ) == 'male' ,
+                            'm',
+                            NA ) ) )
 
-  year_ref_sup <- ( year_sup - year_inf ) / 2 + year_inf
-  year_ref_inf <- ( year_inf - ( year_inf - 5 ) ) / 2 + ( year_inf - 5 )
+  stopifnot( "Invalid sex name, please set it to 'both', 'male' or 'female'" =
+               !is.na( sex_code ) )
 
-  # print( paste0( 'Estimating Life Tables from mx interpolated from periods ', year_inf - 5, '-', year_inf, ' and ', year_inf, '-', year_sup ) )
+  sex_mortlaws <-
+    ifelse( sex_code == 'b',
+            'total',
+            tolower( sex )
+            )
 
   lt_df <- data.frame()
 
-  for( location_code in location_codes ){
+  for( location_code in locations ){
 
-    if( tolower( sex ) == 'male' | tolower( sex ) == 'both' ){
-
-      mxM <- load_named_data('mxM', "wpp2019")
-
-      # TR: enforce we have the location
-      stopifnot(location_code %in% mxM$country_code)
-
-      mx_inf <- mxM[ mxM$country_code %in% location_code,
-                     c( paste0( year_inf - 5, '-', year_inf ) ) ]
-
-      mx_sup <- mxM[ mxM$country_code %in% location_code,
-                     c( paste0( year_inf, '-', year_sup ) ) ]
-
-      mx <- interpolate( y1 = mx_inf, y2 = mx_sup,
-                         x1 = year_ref_inf, x2 = year_ref_sup, x = year )
-
-      age <- mxM[ mxM$country_code %in% location_code,
-                  c( 'age' ) ]
-
-      ltm <-
-        MortalityLaws::LifeTable( x   = age,
-                                  mx  = mx,
-                                  lx0 = 1,
-                                  sex = 'male' )$lt
-
-      if( tolower( sex ) == 'male' ){
-        lt_df <-
-          rbind( lt_df,
-                 data.frame( location_code = location_code,
-                             location_name = get_location_name( location_code ),
-                             year = year,
-                             reference_period = paste0( year_ref_inf, '-', year_ref_sup ),
-                             sex = 'male',
-                             ltm ) )
-      }
+    if ( !is_LocID( location_code ) ){
+      location_code <- get_location_code( location_code )
+    } else {
+      location_code <- location_code
     }
 
-    if( tolower( sex ) == 'female' | tolower( sex ) == 'both' ){
+    # Stop if location code is not in lt_wpp dataset
+    stopifnot( location_code %in% unique( lt_wpp$LocID ) )
 
-      mxF <- load_named_data('mxF', "wpp2019")
+    year_range <-
+      seq( min( lt_wpp[ lt_wpp$LocID == location_code, 'Year' ] ),
+           max( lt_wpp[ lt_wpp$LocID == location_code, 'Year' ] ),
+           5 )
 
-      # TR: enforce we have the location
-      stopifnot(location_code %in% mxF$country_code)
+    if( year %in% min( year_range ) : ( max( year_range ) - 1 ) ){
 
-      mx_inf <- mxF[ mxF$country_code %in% location_code,
-                     c( paste0( year_inf - 5, '-', year_inf ) ) ]
+      year_interv <-
+        findInterval( x = year,
+                      vec = year_range )
 
-      mx_sup <- mxF[ mxF$country_code %in% location_code,
-                     c( paste0( year_inf, '-', year_sup ) ) ]
+      year_sup <- year_range[ year_interv + 1 ]
+      year_inf <- year_range[ year_interv ]
 
-      mx <- interpolate( y1 = mx_inf, y2 = mx_sup,
-                         x1 = year_ref_inf, x2 = year_ref_sup, x = year )
+      mx <-
+        interpolate(
+          y1 = lt_wpp[ lt_wpp$LocID == location_code &
+                         lt_wpp$Year == year_inf &
+                         lt_wpp$Sex == sex_code, ]$mx,
+          x1 = year_inf,
+          y2 = lt_wpp[ lt_wpp$LocID == location_code &
+                         lt_wpp$Year == year_sup &
+                         lt_wpp$Sex == sex_code, ]$mx,
+          x2 = year_sup,
+          x  = year
+        )
 
+      age <- lt_wpp[ lt_wpp$LocID == location_code &
+                       lt_wpp$Year == year_inf &
+                       lt_wpp$Sex == sex_code, ]$AgeStart
 
-      age <- mxF[ mxF$country_code %in% location_code,
-                  c( 'age' ) ]
+    } else if( year < min( year_range ) ){
 
-      ltf <-
-        MortalityLaws::LifeTable( x   = age,
-                                  mx  = mx,
-                                  lx0 = 1,
-                                  sex = 'female' )$lt
+      # if year < 1953, set ASFR to 1950-55 period
+      mx <- lt_wpp[ lt_wpp$LocID == location_code &
+                      lt_wpp$Year == min( year_range ) &
+                      lt_wpp$Sex == sex_code, ]$mx
 
-      if( tolower( sex ) == 'female' ){
-        lt_df <-
-          rbind( lt_df,
-                 data.frame( location_code = location_code,
-                             location_name = get_location_name( location_code ),
-                             year = year,
-                             reference_period = paste0( year_ref_inf, '-', year_ref_sup ),
-                             sex = 'female',
-                             ltf ) )
-      }
+      age <- lt_wpp[ lt_wpp$LocID == location_code &
+                       lt_wpp$Year == min( year_range ) &
+                       lt_wpp$Sex == sex_code, ]$AgeStart
+
+      year_sup <- min( year_range ) + 5
+      year_inf <- min( year_range )
+
+      warning(
+        paste0( 'location_code = ',
+                location_code,
+                ': year is lower than min value for location_code (',
+                min( year_range ),
+                '). Setting mortality rates to the period ',
+                min( year_range ),
+                '-',
+                ( min( year_range ) + 5 ) )
+      )
+
+    } else if( year >= max( year_range ) ){
+
+      # if year >= 2023, set ASFR to 2018-2023 period
+      mx <- lt_wpp[ lt_wpp$LocID == location_code &
+                      lt_wpp$Year == max( year_range ) &
+                      lt_wpp$Sex == sex_code, ]$mx
+
+      age <- lt_wpp[ lt_wpp$LocID == location_code &
+                      lt_wpp$Year == max( year_range ) &
+                      lt_wpp$Sex == sex_code, ]$AgeStart
+
+      year_sup <- max( year_range )
+      year_inf <- max( year_range ) - 5
+
+      warning(
+        paste0( 'location_code = ',
+                location_code,
+                ': year is greater or equal the max value for location_code (',
+                max( year_range ),
+                '). Setting mortality rates to the period ',
+                ( max( year_range ) - 5 ),
+                '-',
+                max( year_range ) )
+      )
+
     }
 
-    if( tolower( sex ) == 'both' ){
-      lxb <- ltf$lx * 0.4886 + ( 1 - 0.4886 )*ltm$lx
+    lt <-
+      MortalityLaws::LifeTable( x   = age,
+                                mx  = mx,
+                                lx0 = 1,
+                                sex = sex_mortlaws )$lt
 
-      ltb <-
-        MortalityLaws::LifeTable( x   = age,
-                                  lx  = lxb,
-                                  lx0 = 1,
-                                  sex = 'total' )$lt
+    lt_df <-
+      rbind( lt_df,
+             data.frame( location_code = location_code,
+                         location_name = get_location_name( location_code ),
+                         year = year,
+                         reference_period = paste0( year_inf, '-', year_sup ),
+                         sex = tolower( sex ),
+                         lt ) )
 
-      lt_df <-
-        rbind( lt_df,
-               data.frame( location_code = location_code,
-                           location_name = get_location_name( location_code ),
-                           year = year,
-                           reference_period = paste0( year_ref_inf, '-', year_ref_sup ),
-                           sex = 'both',
-                           ltb ) )
-    }
   }
 
   return( lt_df )
@@ -412,7 +429,7 @@ FetchPopWpp2019 <-
             age_interval = 1,
             sex = 'total' ){
 
-    popWpp2019x1 <- DemoToolsData::popWpp2019x1
+    popWpp2019x1 <- load_named_data( 'WPP2019_pop', 'DemoToolsData' )
 
     if ( !is.numeric( locations ) ){
       location_codes <- get_location_code( locations )
@@ -506,3 +523,17 @@ interpolate <- function( y1, y2, x1, x2, x ){
   return( y )
 }
 
+#' Check if given location code corresponds to a location ID
+#'
+#' @param location
+#'
+#' @return TRUE if location corresponds to a location ID
+#'
+#' @keywords internal
+#'
+#'
+
+is_LocID <- function(location){
+  location <- as.character(location)
+  gsub( "[^\\d]+", "", location, perl = TRUE ) == location
+}
