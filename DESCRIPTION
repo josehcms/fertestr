@@ -1,6 +1,6 @@
 Package: fertestr
 Title: Package for Fertility and Parity Estimation
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: c(
     person(given = "José H",
            family = "Monteiro da Silva",

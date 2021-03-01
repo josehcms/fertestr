@@ -429,48 +429,159 @@ FetchPopWpp2019 <-
             age_interval = 1,
             sex = 'total' ){
 
-    popWpp2019x1 <- load_named_data( 'WPP2019_pop', 'DemoToolsData' )
+    popWpp2019x1 <-
+      load_named_data( 'WPP2019_pop', 'DemoToolsData' )
 
-    if ( !is.numeric( locations ) ){
-      location_codes <- get_location_code( locations )
-    } else {
-      location_codes <- locations
-    }
+    sex_code <-
+      ifelse( tolower( sex ) == 'total',
+              'b',
+              ifelse( tolower( sex ) == 'female',
+                      'f',
+                      ifelse( tolower( sex ) == 'male' ,
+                              'm',
+                              NA ) ) )
 
-    year_interv <- findInterval( x = year, vec = seq( 1950, 2020, 5 ) )
-
-    year_sup <- seq( 1950, 2020, 5 )[ year_interv + 1 ]
-    year_inf <- seq( 1950, 2020, 5 )[ year_interv ]
-
-    popx1_inf <-
-      popWpp2019x1[ popWpp2019x1$LocID %in% location_codes &
-                      popWpp2019x1$Time == year_inf & popWpp2019x1$AgeGrp %in% ages,
-                    c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
-    popx1_sup <-
-      popWpp2019x1[ popWpp2019x1$LocID %in% location_codes &
-                      popWpp2019x1$Time == year_sup & popWpp2019x1$AgeGrp %in% ages,
-                    c( 'LocID','AgeGrp', 'PopTotal', 'PopFemale', 'PopMale' ) ]
-
-    # Replace the Pop part from gender for easier matching
-    gender_cleaned <- gsub("Pop", "", names(popx1_inf))
-
-    # Match the gender name unambiguously
-    pop_sex <- names(popx1_inf)[grep(paste0("^", sex), tolower(gender_cleaned))]
-
-    popx1_inf <- popx1_inf[, c( 'LocID', 'AgeGrp', pop_sex ) ]
-    popx1_sup <- popx1_sup[, c( 'LocID', 'AgeGrp', pop_sex ) ]
-
-    names( popx1_inf ) <- c( 'LocID' ,'ages', 'pop' )
-    names( popx1_sup ) <- c( 'LocID' ,'ages', 'pop' )
+    stopifnot( "Invalid sex name, please set it to 'total', 'male' or 'female'" =
+                 !is.na( sex_code ) )
 
     popx1 <-
-      data.frame(
-        LocID = popx1_inf$LocID,
-        ages  = popx1_inf$ages,
-        pop   = interpolate( y1 = popx1_inf$pop, y2 = popx1_sup$pop,
-                             x1 = year_inf, x2 = year_sup,
-                             x = year )
-      )
+      data.frame()
+
+    for( location_code in locations ){
+
+      if ( !is_LocID( location_code ) ){
+        location_code <- get_location_code( location_code )
+      } else {
+        location_code <- location_code
+      }
+
+      # Stop if location code is not in lt_wpp dataset
+      stopifnot( location_code %in% unique( lt_wpp$LocID ) )
+
+      year_range <-
+        sort(
+          unique(
+            popWpp2019x1[ popWpp2019x1$LocID == location_code,]$Year
+            )
+        )
+
+      if( sex_code == 'm' ){
+
+        pop_aux_df <-
+          popWpp2019x1[ popWpp2019x1$LocID == location_code &
+                          popWpp2019x1$AgeStart %in% ages,
+                        c( 'LocID', 'Year', 'AgeStart', 'PopMale' ) ]
+
+        names( pop_aux_df ) <-
+          c( 'LocID', 'Year', 'AgeStart', 'Pop' )
+
+      } else if( sex_code == 'f' ){
+
+        pop_aux_df <-
+          popWpp2019x1[ popWpp2019x1$LocID == location_code &
+                          popWpp2019x1$AgeStart %in% ages,
+                        c( 'LocID', 'Year', 'AgeStart', 'PopFemale' ) ]
+
+        names( pop_aux_df ) <-
+          c( 'LocID', 'Year', 'AgeStart', 'Pop' )
+
+      } else{
+
+        pop_aux_df <-
+          popWpp2019x1[ popWpp2019x1$LocID == location_code &
+                          popWpp2019x1$AgeStart %in% ages,
+                        c( 'LocID', 'Year', 'AgeStart', 'PopMale', 'PopFemale' ) ]
+
+        pop_aux_df$Pop <- pop_aux_df$PopMale + pop_aux_df$PopFemale
+
+        pop_aux_df <-
+          pop_aux_df[, c( 'LocID', 'Year', 'AgeStart', 'Pop' ) ]
+
+      }
+
+      if( year >= min( year_range ) & year < ( max( year_range ) - 1 ) ){
+
+        year_interv <-
+          findInterval( x = year,
+                        vec = year_range )
+
+        year_sup <- year_range[ year_interv + 1 ]
+        year_inf <- year_range[ year_interv ]
+
+        pop <-
+          interpolate(
+            y1 = pop_aux_df[ pop_aux_df$Year == year_inf, ]$Pop,
+            x1 = year_inf,
+            y2 = pop_aux_df[ pop_aux_df$Year == year_sup, ]$Pop,
+            x2 = year_sup,
+            x  = year
+          )
+
+      } else if( year < min( year_range ) ){
+
+        # if year < 1950.5, interpolate pop according to 1950.5-1951.5
+        year_sup <- min( year_range ) + 1
+        year_inf <- min( year_range )
+
+        pop <-
+          interpolate(
+            y1 = pop_aux_df[ pop_aux_df$Year == year_inf, ]$Pop,
+            x1 = year_inf,
+            y2 = pop_aux_df[ pop_aux_df$Year == year_sup, ]$Pop,
+            x2 = year_sup,
+            x  = year
+          )
+
+        warning(
+          paste0( 'location_code = ',
+                  location_code,
+                  ': year is lower than min value for location_code (',
+                  min( year_range ),
+                  '). Interpolating population using period ',
+                  min( year_range ),
+                  '-',
+                  ( min( year_range ) + 1 ) )
+        )
+
+      } else if( year >= max( year_range ) ){
+
+        # if year >= 2020.5, interpolate pop according to 2019.5-2020.5
+        year_sup <- max( year_range )
+        year_inf <- max( year_range ) - 1
+
+        pop <-
+          interpolate(
+            y1 = pop_aux_df[ pop_aux_df$Year == year_inf, ]$Pop,
+            x1 = year_inf,
+            y2 = pop_aux_df[ pop_aux_df$Year == year_sup, ]$Pop,
+            x2 = year_sup,
+            x  = year
+          )
+
+        warning(
+          paste0( 'location_code = ',
+                  location_code,
+                  ': year is lower than min value for location_code (',
+                  min( year_range ),
+                  '). Interpolating population using period ',
+                  ( max( year_range ) - 1 ),
+                  '-',
+                  max( year_range ) )
+        )
+
+      }
+
+      popx1 <-
+        rbind(
+          popx1,
+          data.frame(
+            LocID = location_code,
+            ages  = ages,
+            pop   = pop
+          )
+        )
+
+    }
 
     if( age_interval == 5 ){
 
@@ -492,14 +603,14 @@ FetchPopWpp2019 <-
 
       popx5 <-
         stats::aggregate( popx1$pop,
-                          by = list( LocID = popx1$LocID, ages = popx1$age.x5 ),
+                          by = list( ages = popx1$age.x5, LocID = popx1$LocID ),
                           FUN = 'sum' )
 
-      names( popx5 ) <- c( 'LocID', 'ages', 'pop' )
+      names( popx5 ) <- c( 'ages', 'LocID', 'pop' )
 
-      return( popx5 )
+      return( popx5[ , c( 'LocID', 'ages', 'pop' ) ] )
 
-    } else if( age_interval == 1){
+    } else if( age_interval == 1 ){
 
       return( popx1 )
 
