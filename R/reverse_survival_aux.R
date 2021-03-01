@@ -337,7 +337,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
       mxF <- load_named_data('mxF', "wpp2019")
 
       # TR: enforce we have the location
-      stopifnot(location_code %in% mxM$country_code)
+      stopifnot(location_code %in% mxF$country_code)
 
       mx_inf <- mxF[ mxF$country_code %in% location_code,
                      c( paste0( year_inf - 5, '-', year_inf ) ) ]
