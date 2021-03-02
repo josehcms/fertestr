@@ -645,7 +645,7 @@ interpolate <- function( y1, y2, x1, x2, x ){
 #'
 #' @keywords internal
 #'
-#'
+#' @export
 
 is_LocID <- function(location){
   location <- as.character(location)
