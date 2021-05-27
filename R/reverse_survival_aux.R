@@ -607,14 +607,27 @@ revSurvMain <-
                     year,
                     fertPattern )
 
-    revSurvBirths <-
-      data.frame(
-        year = year - seq( 0.5, 14.5, 1 ),
-        births = datChildren$pop_c / Lc )
+    if( unique( diff( datChildren$ages ) ) == 5 ){
+
+      Lc_x5 <-
+        c( sum( Lc[ 1:5 ] ),
+           sum( Lc[ 6:10 ] ),
+           sum( Lc[ 11:15 ] ) )
+
+      revSurvBirths <-
+        data.frame(
+          year = year - c( 2.5, 7.5, 12.5 ),
+          births = datChildren$pop_c / Lc_x5 )
+    } else{
+      revSurvBirths <-
+        data.frame(
+          year = year - seq( 0.5, 14.5, 1 ),
+          births = datChildren$pop_c / Lc )
+    }
 
     revSurvTFR <- data.frame()
 
-    for( t in unique( revSurvWomen$year ) ){
+    for( t in unique( revSurvBirths$year ) ){
       den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
       num <- revSurvBirths[ revSurvBirths$year == t, ]$births
 

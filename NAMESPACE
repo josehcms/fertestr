@@ -2,6 +2,7 @@
 
 export(FertRevSurv)
 export(FertRevSurvWPP)
+export(FertRevSurvx5c)
 export(FetchFertilityWpp2019)
 export(FetchLifeTableWpp2019)
 export(FetchPopWpp2019)
