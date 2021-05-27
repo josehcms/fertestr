@@ -131,7 +131,7 @@ FetchFertilityWpp2019 <- function( locations = NULL, year ){
     if ( !is_LocID( location_code ) ){
       location_code <- get_location_code( location_code )
     } else {
-      location_code <- location_code
+      location_code <- as.integer(location_code)
     }
 
     # Stop if location code is not in lt_wpp dataset
@@ -287,7 +287,7 @@ FetchLifeTableWpp2019 <- function( locations = NULL, year, sex = 'both'){
     if ( !is_LocID( location_code ) ){
       location_code <- get_location_code( location_code )
     } else {
-      location_code <- location_code
+      location_code <- as.integer(location_code)
     }
 
     # Stop if location code is not in lt_wpp dataset
@@ -455,7 +455,7 @@ FetchPopWpp2019 <-
       if ( !is_LocID( location_code ) ){
         location_code <- get_location_code( location_code )
       } else {
-        location_code <- location_code
+        location_code <- as.integer(location_code)
       }
 
       # Stop if location code is not in lt_wpp dataset
@@ -639,13 +639,13 @@ interpolate <- function( y1, y2, x1, x2, x ){
 
 #' Check if given location code corresponds to a location ID
 #'
-#' @param location
+#' @param location character string of location name, character string of \code{LocID}, or numeric \code{LocID}.
 #'
 #' @return TRUE if location corresponds to a location ID
 #'
 #' @keywords internal
 #'
-#'
+#' @export
 
 is_LocID <- function(location){
   location <- as.character(location)

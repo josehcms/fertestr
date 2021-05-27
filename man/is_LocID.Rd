@@ -7,7 +7,7 @@
 is_LocID(location)
 }
 \arguments{
-\item{location}{}
+\item{location}{character string of location name, character string of \code{LocID}, or numeric \code{LocID}.}
 }
 \value{
 TRUE if location corresponds to a location ID
