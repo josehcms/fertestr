@@ -128,14 +128,13 @@ FertRevSurv <- function(ages1_c = 0:14,
 #' @param popx5_c children population in five-year age group (x5) matching ages5_c vector
 #' @param ages5_w women five-year age group ages vector ( default seq( 10, 65, 5 ) )
 #' @param popx5_w women population in five-year age group format (x5) matching ages_w vector
-#' @param lx1_c children survival function vector in single age groups from 0 to 15
+#' @param nLx_c life table person years for ages 0-15 in five year age groups (0L5,5L5,5L10)
+#' @param l0_c life table radix l0 for children survival estimation
 #' @param lx5_w women survival function vector in five-year age groups matching ages_w vector
 #' @param asfr age specific fertility rates for five-year age groups from 10-45 for current period
 #' of estimation
 #' @param asfr_15prior standardized age specific fertility rates for five-year age groups from 10-45 for the
 #' period of 15 years before the current inquiry period
-#' @param q0_5 3 element vector for mortality probability between ages 0-4 for the period of estimation,
-#' period 5 years prior to estimation period, and period 10 years prior to estimation period
 #' @param q15_45f female adult mortality probability for the period of estimation,
 #' period 5 years prior to estimation period, and period 10 years prior to estimation period
 #' @param date_ref reference date of inquiry given in the following formats:
@@ -160,14 +159,10 @@ FertRevSurv <- function(ages1_c = 0:14,
 #' popx5_w <- c(  815930, 780320, 697160, 626430, 361650, 435880,
 #'                393760, 352520, 294280, 230200, 160590, NA )
 #'
-#' lx1_c <- c( 1.0000, 0.9320, 0.9275, 0.9228, 0.9165, 0.9125, 0.9110,
-#'             0.9094, 0.9079, 0.9063, 0.9048, 0.9032, 0.9017, 0.9001,
-#'             0.8986, 0.8970 )
+#' nLx_c <- c( ( 96270 + 375715 ), 465228, 462406 )
 #'
 #' lx5_w <- c( 0.91381, 0.90989, 0.90492, 0.89798, 0.88893, 0.87596,
 #'             0.86029, 0.84188, 0.81791, 0.78472, 0.73735, 0.67316 )
-#'
-#' q0_5 <-  c( 0.0683, 0.1008, 0.1189)
 #'
 #' q15_45f <- c( 0.1946, 0.2290, 0.2674 )
 #'
@@ -179,10 +174,11 @@ FertRevSurv <- function(ages1_c = 0:14,
 #'
 #' FertRevSurvx5c( ages5_c = c( 0, 5, 10 ), popx5_c = popx5_c,
 #'                 ages5_w = seq( 10, 65, 5 ), popx5_w = popx5_w,
-#'                 lx1_c = lx1_c, lx5_w = lx5_w,
+#'                 nLx_c = nLx_c, lx5_w = lx5_w,
+#'                 l0_c = 100000,
 #'                 asfr = asfr,
 #'                 asfr_15prior = asfr_15prior,
-#'                 q0_5 = q0_5, q15_45f = q15_45f,
+#'                 q15_45f = q15_45f,
 #'                 date_ref = '2008-03-03' )
 #'
 #'
@@ -191,11 +187,11 @@ FertRevSurvx5c <-
             popx5_c,
             ages5_w = seq( 10, 65, 5 ),
             popx5_w,
-            lx1_c,
+            nLx_c,
+            l0_c,
             lx5_w,
             asfr = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
             asfr_15prior = NULL,
-            q0_5 = NULL,
             q15_45f = NULL,
             date_ref ){
 
@@ -203,7 +199,10 @@ FertRevSurvx5c <-
   year <- decimal_anydate( date_ref )
 
   datChildren <-
-    data.frame( ages = ages5_c, pop_c = popx5_c )
+    data.frame( ages  = ages5_c,
+                pop_c = popx5_c,
+                B     = popx5_c * l0_c / nLx_c,
+                year  = year - c( 2.5, 7.5, 12.5 ) )
 
   datWomen <-
     data.frame( ages = ages5_w, pop_w = popx5_w )
@@ -219,11 +218,6 @@ FertRevSurvx5c <-
     fertPattern$asfr_std_15prior <- asfr_15prior / sum( 5 * asfr_15prior )
   }
 
-  lxChildren_std <-
-    data.frame(
-      age = 0:15,
-      lx_std = lx1_c
-    )
 
   lxWomen_std <-
     data.frame(
@@ -235,9 +229,9 @@ FertRevSurvx5c <-
                  substr( lubridate::date_decimal( year ), 1, 10 ) ) )
 
   revSurvTFR <-
-    revSurvMain( year,
+    revSurvMainx5( year,
                  datWomen, lxWomen_std, q15_45f,fertPattern,
-                 datChildren, lxChildren_std, q0_5 )
+                 datChildren )
 
   return( revSurvTFR )
 

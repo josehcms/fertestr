@@ -23,7 +23,7 @@
 #             asfr_15prior = asfr_std_15prior,
 #             q0_5 = q0_5,
 #             q15_45f = q15_45,
-#             date_ref = 2008)
+#             date_ref = 2008.3)
 #
 # ?FertRevSurv
 #

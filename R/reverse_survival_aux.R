@@ -607,23 +607,10 @@ revSurvMain <-
                     year,
                     fertPattern )
 
-    if( unique( diff( datChildren$ages ) ) == 5 ){
-
-      Lc_x5 <-
-        c( sum( Lc[ 1:5 ] ),
-           sum( Lc[ 6:10 ] ),
-           sum( Lc[ 11:15 ] ) )
-
-      revSurvBirths <-
-        data.frame(
-          year = year - c( 2.5, 7.5, 12.5 ),
-          births = datChildren$pop_c / Lc_x5 )
-    } else{
-      revSurvBirths <-
-        data.frame(
-          year = year - seq( 0.5, 14.5, 1 ),
-          births = datChildren$pop_c / Lc )
-    }
+    revSurvBirths <-
+      data.frame(
+        year = year - seq( 0.5, 14.5, 1 ),
+        births = datChildren$pop_c / Lc )
 
     revSurvTFR <- data.frame()
 
@@ -645,3 +632,68 @@ revSurvMain <-
   }
 
 
+#' Reverse Survival Estimation for 5-year age groups of children
+#'
+#' Estimate TFR levels from processed information of women, children and date for five year periods before inquiry
+#'
+#' @param year reference date of estimation in decimal format
+#' @param datWoman women population data.frame
+#' @param lxWomen_std female survival functions data.frame for reverse survival of females
+#' @param q15_45f female adult mortality probability 3 element vector or single value
+#' @param fertPattern female fertility pattern (age-specific standardized rates)
+#' @param datChildren children population data.frame
+#'
+#' @return estimates of TFR by year prior to reference date
+#'
+#' @keywords internal
+#
+
+revSurvMainx5 <-
+  function(  year,
+             datWomen, lxWomen_std, q15_45f, fertPattern,
+             datChildren ){
+
+    if( length( q15_45f ) != 3 ){
+      if( length( q15_45f ) == 1 ){
+        q15_45f <- rep( q15_45f, 3)
+        warning( 'q15_45f unique value provided - q15_45f set to 3 element vector of same value' )
+      } else{
+        stop( 'Please provide a 3 element vector for q15_45f or an unique value for all 3 elements')
+      }
+    }
+
+    alphaWomen <- alphaRevSurv( lx_std = lxWomen_std,
+                                qx =  q15_45f,
+                                type = 'women' )
+
+    revSurvWomen <-
+      womenRevSurv( age = lxWomen_std$age,
+                    lx_std = lxWomen_std$lx_std,
+                    women = datWomen$pop_w,
+                    alphaWomen,
+                    year,
+                    fertPattern )
+
+    revSurvBirths <-
+      data.frame(
+        year = datChildren$year,
+        births = datChildren$B )
+
+    revSurvTFR <- data.frame()
+
+    for( t in unique( revSurvBirths$year ) ){
+      den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
+      num <- revSurvBirths[ revSurvBirths$year == t, ]$births
+
+      revSurvTFR <- rbind(
+        revSurvTFR,
+        data.frame(
+          year = t,
+          TFR  = num / den,
+          births = num
+        )
+      )
+    }
+
+    return( revSurvTFR )
+  }

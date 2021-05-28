@@ -14,11 +14,11 @@ FertRevSurvx5c(
   popx5_c,
   ages5_w = seq(10, 65, 5),
   popx5_w,
-  lx1_c,
+  nLx_c,
+  l0_c,
   lx5_w,
   asfr = c(0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002),
   asfr_15prior = NULL,
-  q0_5 = NULL,
   q15_45f = NULL,
   date_ref
 )
@@ -32,7 +32,9 @@ FertRevSurvx5c(
 
 \item{popx5_w}{women population in five-year age group format (x5) matching ages_w vector}
 
-\item{lx1_c}{children survival function vector in single age groups from 0 to 15}
+\item{nLx_c}{life table person years for ages 0-15 in five year age groups (0L5,5L5,5L10)}
+
+\item{l0_c}{life table radix l0 for children survival estimation}
 
 \item{lx5_w}{women survival function vector in five-year age groups matching ages_w vector}
 
@@ -41,9 +43,6 @@ of estimation}
 
 \item{asfr_15prior}{standardized age specific fertility rates for five-year age groups from 10-45 for the
 period of 15 years before the current inquiry period}
-
-\item{q0_5}{3 element vector for mortality probability between ages 0-4 for the period of estimation,
-period 5 years prior to estimation period, and period 10 years prior to estimation period}
 
 \item{q15_45f}{female adult mortality probability for the period of estimation,
 period 5 years prior to estimation period, and period 10 years prior to estimation period}
@@ -69,14 +68,10 @@ popx5_c <-  c( 1376790, 1472470, 1673110 )
 popx5_w <- c(  815930, 780320, 697160, 626430, 361650, 435880,
                393760, 352520, 294280, 230200, 160590, NA )
 
-lx1_c <- c( 1.0000, 0.9320, 0.9275, 0.9228, 0.9165, 0.9125, 0.9110,
-            0.9094, 0.9079, 0.9063, 0.9048, 0.9032, 0.9017, 0.9001,
-            0.8986, 0.8970 )
+nLx_c <- c( ( 96270 + 375715 ), 465228, 462406 )
 
 lx5_w <- c( 0.91381, 0.90989, 0.90492, 0.89798, 0.88893, 0.87596,
             0.86029, 0.84188, 0.81791, 0.78472, 0.73735, 0.67316 )
-
-q0_5 <-  c( 0.0683, 0.1008, 0.1189)
 
 q15_45f <- c( 0.1946, 0.2290, 0.2674 )
 
@@ -88,10 +83,11 @@ asfr_15prior <- c( 0.0000, 0.0533, 0.1974, 0.2144, 0.1836, 0.1332,
 
 FertRevSurvx5c( ages5_c = c( 0, 5, 10 ), popx5_c = popx5_c,
                 ages5_w = seq( 10, 65, 5 ), popx5_w = popx5_w,
-                lx1_c = lx1_c, lx5_w = lx5_w,
+                nLx_c = nLx_c, lx5_w = lx5_w,
+                l0_c = 100000,
                 asfr = asfr,
                 asfr_15prior = asfr_15prior,
-                q0_5 = q0_5, q15_45f = q15_45f,
+                q15_45f = q15_45f,
                 date_ref = '2008-03-03' )
 
 
