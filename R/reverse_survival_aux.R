@@ -366,6 +366,79 @@ childSurvProb <- function( age, lx_std, alphaChildren ){
 #'
 #' Estimate cohort survival probabilities for children aged 0-14 in the reference date
 #'
+#' @param lx_std standard survival values for children
+#' @param age age vector related to standard survival values
+#' @param alphaChildren alpha values estimated from alphaRevSurv function
+#'
+#' @return Lc vector with cohort survival probabilities
+#'
+#' @keywords internal
+#'
+#'
+childSurvProb_x5 <- function( age, lx_std, alphaChildren, a0_5 ){
+
+  lt_est <-
+    data.frame(
+      age,
+      lx_std,
+      Yx_std  = logit( lx = lx_std )
+    )
+
+
+  lt_est$Yx0_4   = alphaChildren[1] + lt_est$Yx_std
+  lt_est$Yx5_9   = alphaChildren[2] + lt_est$Yx_std
+  lt_est$Yx10_14 = alphaChildren[3] + lt_est$Yx_std
+
+  lt_est$lx0_4   = 1 / ( 1 + exp( 2 * lt_est$Yx0_4 ) )
+  lt_est$lx5_9   = 1 / ( 1 + exp( 2 * lt_est$Yx5_9 ) )
+  lt_est$lx10_14   = 1 / ( 1 + exp( 2 * lt_est$Yx10_14 ) )
+
+  lt_est$Lx0_4   = NA
+  lt_est$Lx5_9   = NA
+  lt_est$Lx10_14 = NA
+
+  lt_est$Lx0_4[1]   = lt_est$lx0_4[2] * 5 + a0_5 * ( lt_est$lx0_4[1]-lt_est$lx0_4[2] )
+  lt_est$Lx5_9[1]   = lt_est$lx5_9[2] * 5 + a0_5 *( lt_est$lx5_9[1]- lt_est$lx5_9[2] )
+  lt_est$Lx10_14[1] = lt_est$lx10_14[2] * 5 + a0_5 * ( lt_est$lx10_14[1]-lt_est$lx10_14[2])
+
+  for( i in 2:3 ){
+    lt_est$Lx0_4[i]   = lt_est$lx0_4[i+1] * 5 + 2.5 * ( lt_est$lx0_4[i]-lt_est$lx0_4[i+1] )
+    lt_est$Lx5_9[i]   = lt_est$lx5_9[i+1] * 5 + 2.5 *( lt_est$lx5_9[i]- lt_est$lx5_9[i+1] )
+    lt_est$Lx10_14[i] = lt_est$lx10_14[i+1] * 5 + 2.5 * ( lt_est$lx10_14[i]-lt_est$lx10_14[i+1])
+
+  }
+
+  lt_est$Px0_4   = NA
+  lt_est$Px5_9   = NA
+  lt_est$Px10_14 = NA
+
+  lt_est$Px0_4[1]   = lt_est$Lx0_4[1] / ( 5 )
+  lt_est$Px5_9[1]   = lt_est$Lx5_9[1] / ( 5 )
+  lt_est$Px10_14[1] = lt_est$Lx10_14[1] / ( 5 )
+
+
+  for ( i in 2 : 3 ){
+    lt_est$Px0_4[ i ]   = lt_est$Lx0_4[ i ] / lt_est$Lx0_4[ i - 1 ]
+    lt_est$Px5_9[ i ]   = lt_est$Lx5_9[ i ] / lt_est$Lx5_9[ i - 1 ]
+    lt_est$Px10_14[ i ] = lt_est$Lx10_14[ i ] / lt_est$Lx10_14[ i - 1 ]
+  }
+
+
+  Lc = c( ( lt_est$Px0_4[ lt_est$age == 0 ] ),
+          ( lt_est$Px5_9[ lt_est$age == 0 ] * lt_est$Px0_4[ lt_est$age == 5 ] ),
+          ( lt_est$Px10_14[ lt_est$age == 0 ] *
+              0.5 * ( lt_est$Px0_4[ lt_est$age == 5 ] + lt_est$Px5_9[ lt_est$age == 5 ] ) *
+              lt_est$Px0_4[ lt_est$age == 10 ] )
+          )
+
+  return( Lc )
+
+}
+
+#' Estimate women survival probabilities
+#'
+#' Estimate women survival probabilities for females aged 15-49 the reference date
+#'
 #' @param age age vector related to standard survival values and women population
 #' @param lx_std standard survival function for selected women
 #' @param women women population for selected ages
@@ -678,6 +751,93 @@ revSurvMainx5 <-
       data.frame(
         year = datChildren$year,
         births = datChildren$B )
+
+    revSurvTFR <- data.frame()
+
+    for( t in unique( revSurvBirths$year ) ){
+      den <- sum( revSurvWomen[ revSurvWomen$year == t, ]$popWomen * revSurvWomen[ revSurvWomen$year == t, ]$asfr_std )
+      num <- revSurvBirths[ revSurvBirths$year == t, ]$births
+
+      revSurvTFR <- rbind(
+        revSurvTFR,
+        data.frame(
+          year = t,
+          TFR  = num / den,
+          births = num
+        )
+      )
+    }
+
+    return( revSurvTFR )
+  }
+
+#' Reverse Survival Estimation for 5-year age group of children (BETA)
+#'
+#' Estimate TFR levels from processed information of women, children and date
+#'
+#' @param year reference date of estimation in decimal format
+#' @param datWoman women population data.frame
+#' @param lxWomen_std female survival functions data.frame for reverse survival of females
+#' @param q15_45f female adult mortality probability 3 element vector or single value
+#' @param fertPattern female fertility pattern (age-specific standardized rates)
+#' @param datChildren children population data.frame
+#' @param lxChildren_std children survival functions data.frame for reverse survival of
+#' children
+#' @param q0_5 children mortality probability 3 element vector or single value
+#'
+#' @return estimates of TFR by year prior to reference date
+#'
+#' @keywords internal
+#
+
+revSurvMainx5_Beta <-
+  function(  year,
+             datWomen, lxWomen_std, q15_45f, fertPattern,
+             datChildren, lxChildren_std, q0_5, a0_5  ){
+
+    if( length( q0_5 ) != 3 ){
+      if( length( q0_5 ) == 1 ){
+        q0_5 <- rep( q0_5, 3)
+        warning( 'q0_5 unique value provided - q0_5 set to 3 element vector of same value' )
+      } else{
+        stop( 'Please provide a 3 element vector for q0_5 or an unique value for all 3 elements')
+      }
+    }
+
+    if( length( q15_45f ) != 3 ){
+      if( length( q15_45f ) == 1 ){
+        q15_45f <- rep( q15_45f, 3)
+        warning( 'q15_45f unique value provided - q15_45f set to 3 element vector of same value' )
+      } else{
+        stop( 'Please provide a 3 element vector for q15_45f or an unique value for all 3 elements')
+      }
+    }
+
+    alphaChildren <- alphaRevSurv( lx_std = lxChildren_std[ lxChildren_std$age == 5, ],
+                                   qx = q0_5,
+                                   type = 'child' )
+
+    alphaWomen <- alphaRevSurv( lx_std = lxWomen_std,
+                                qx =  q15_45f,
+                                type = 'women' )
+
+    Lc <- childSurvProb_x5( age = lxChildren_std$age,
+                            lx_std = lxChildren_std$lx_std,
+                            alphaChildren,
+                            a0_5 )
+
+    revSurvWomen <-
+      womenRevSurv( age = lxWomen_std$age,
+                    lx_std = lxWomen_std$lx_std,
+                    women = datWomen$pop_w,
+                    alphaWomen,
+                    year,
+                    fertPattern )
+
+    revSurvBirths <-
+      data.frame(
+        year = year - c( 2.5, 7.5, 12.5 ),
+        births = ( datChildren$pop_c / Lc ) / 5 )
 
     revSurvTFR <- data.frame()
 

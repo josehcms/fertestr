@@ -2,7 +2,7 @@
 % Please edit documentation in R/reverse_survival_aux.R
 \name{womenRevSurv}
 \alias{womenRevSurv}
-\title{Estimate children cohort survival probabilities Lc}
+\title{Estimate women survival probabilities}
 \usage{
 womenRevSurv(age, lx_std, women, alphaWomen, year, std_asfr)
 }
@@ -27,6 +27,6 @@ popWomen: women population
 asfr_std: standardized age-specific fetrtility rates for estimation period
 }
 \description{
-Estimate cohort survival probabilities for children aged 0-14 in the reference date
+Estimate women survival probabilities for females aged 15-49 the reference date
 }
 \keyword{internal}
