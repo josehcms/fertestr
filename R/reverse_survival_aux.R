@@ -362,20 +362,24 @@ childSurvProb <- function( age, lx_std, alphaChildren ){
 
 }
 
-#' Estimate children cohort survival probabilities Lc
+#' Estimate children cohort survival probabilities Lc for x5 version
 #'
-#' Estimate cohort survival probabilities for children aged 0-14 in the reference date
+#' Estimate cohort survival probabilities for children aged 0-4, 5-9, 10-14 in the reference date
 #'
 #' @param lx_std standard survival values for children
 #' @param age age vector related to standard survival values
 #' @param alphaChildren alpha values estimated from alphaRevSurv function
+#' @param a0_5 a0_5
+#' @param a5_5 a5_5
+#' @param a10_5 a10_5
 #'
 #' @return Lc vector with cohort survival probabilities
 #'
 #' @keywords internal
 #'
 #'
-childSurvProb_x5 <- function( age, lx_std, alphaChildren, a0_5 ){
+childSurvProb_x5 <-
+  function( age, lx_std, alphaChildren, a0_5, a5_5, a10_5 ){
 
   lt_est <-
     data.frame(
@@ -401,12 +405,13 @@ childSurvProb_x5 <- function( age, lx_std, alphaChildren, a0_5 ){
   lt_est$Lx5_9[1]   = lt_est$lx5_9[2] * 5 + a0_5 *( lt_est$lx5_9[1]- lt_est$lx5_9[2] )
   lt_est$Lx10_14[1] = lt_est$lx10_14[2] * 5 + a0_5 * ( lt_est$lx10_14[1]-lt_est$lx10_14[2])
 
-  for( i in 2:3 ){
-    lt_est$Lx0_4[i]   = lt_est$lx0_4[i+1] * 5 + 2.5 * ( lt_est$lx0_4[i]-lt_est$lx0_4[i+1] )
-    lt_est$Lx5_9[i]   = lt_est$lx5_9[i+1] * 5 + 2.5 *( lt_est$lx5_9[i]- lt_est$lx5_9[i+1] )
-    lt_est$Lx10_14[i] = lt_est$lx10_14[i+1] * 5 + 2.5 * ( lt_est$lx10_14[i]-lt_est$lx10_14[i+1])
+  lt_est$Lx0_4[2]   = lt_est$lx0_4[3] * 5 + a5_5 * ( lt_est$lx0_4[2]-lt_est$lx0_4[3] )
+  lt_est$Lx5_9[2]   = lt_est$lx5_9[3] * 5 + a5_5 *( lt_est$lx5_9[2]- lt_est$lx5_9[3] )
+  lt_est$Lx10_14[2] = lt_est$lx10_14[3] * 5 + a5_5 * ( lt_est$lx10_14[2]-lt_est$lx10_14[3])
 
-  }
+  lt_est$Lx0_4[3]   = lt_est$lx0_4[4] * 5 + a10_5 * ( lt_est$lx0_4[3]-lt_est$lx0_4[4] )
+  lt_est$Lx5_9[3]   = lt_est$lx5_9[4] * 5 + a10_5 *( lt_est$lx5_9[3]- lt_est$lx5_9[4] )
+  lt_est$Lx10_14[3] = lt_est$lx10_14[4] * 5 + a10_5 * ( lt_est$lx10_14[3]-lt_est$lx10_14[4])
 
   lt_est$Px0_4   = NA
   lt_est$Px5_9   = NA
@@ -785,6 +790,9 @@ revSurvMainx5 <-
 #' @param lxChildren_std children survival functions data.frame for reverse survival of
 #' children
 #' @param q0_5 children mortality probability 3 element vector or single value
+#' @param a0_5 a0_5
+#' @param a5_5 a5_5
+#' @param a10_5 a10_5
 #'
 #' @return estimates of TFR by year prior to reference date
 #'
@@ -794,7 +802,7 @@ revSurvMainx5 <-
 revSurvMainx5_Beta <-
   function(  year,
              datWomen, lxWomen_std, q15_45f, fertPattern,
-             datChildren, lxChildren_std, q0_5, a0_5  ){
+             datChildren, lxChildren_std, q0_5, a0_5, a5_5, a10_5  ){
 
     if( length( q0_5 ) != 3 ){
       if( length( q0_5 ) == 1 ){
@@ -825,7 +833,7 @@ revSurvMainx5_Beta <-
     Lc <- childSurvProb_x5( age = lxChildren_std$age,
                             lx_std = lxChildren_std$lx_std,
                             alphaChildren,
-                            a0_5 )
+                            a0_5, a5_5, a10_5 )
 
     revSurvWomen <-
       womenRevSurv( age = lxWomen_std$age,

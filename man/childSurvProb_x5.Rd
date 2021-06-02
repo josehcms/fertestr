@@ -2,9 +2,9 @@
 % Please edit documentation in R/reverse_survival_aux.R
 \name{childSurvProb_x5}
 \alias{childSurvProb_x5}
-\title{Estimate children cohort survival probabilities Lc}
+\title{Estimate children cohort survival probabilities Lc for x5 version}
 \usage{
-childSurvProb_x5(age, lx_std, alphaChildren, a0_5)
+childSurvProb_x5(age, lx_std, alphaChildren, a0_5, a5_5, a10_5)
 }
 \arguments{
 \item{age}{age vector related to standard survival values}
@@ -12,11 +12,17 @@ childSurvProb_x5(age, lx_std, alphaChildren, a0_5)
 \item{lx_std}{standard survival values for children}
 
 \item{alphaChildren}{alpha values estimated from alphaRevSurv function}
+
+\item{a0_5}{a0_5}
+
+\item{a5_5}{a5_5}
+
+\item{a10_5}{a10_5}
 }
 \value{
 Lc vector with cohort survival probabilities
 }
 \description{
-Estimate cohort survival probabilities for children aged 0-14 in the reference date
+Estimate cohort survival probabilities for children aged 0-4, 5-9, 10-14 in the reference date
 }
 \keyword{internal}

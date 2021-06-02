@@ -396,6 +396,8 @@ FertRevSurvWPP <-
 #' @param asfr_15prior standardized age specific fertility rates for five-year age groups from 10-45 for the
 #' period of 15 years before the current inquiry period
 #' @param a0_5 average number of person-years lived in the interval by those dying in the interval between ages 0 and 5
+#' @param a5_5 average number of person-years lived in the interval by those dying in the interval between ages 5 and 10
+#' @param a10_5 average number of person-years lived in the interval by those dying in the interval between ages 10 and 15
 #' @param q0_5 3 element vector for mortality probability between ages 0-4 for the period of estimation,
 #' period 5 years prior to estimation period, and period 10 years prior to estimation period
 #' @param q15_45f female adult mortality probability for the period of estimation,
@@ -457,7 +459,9 @@ FertRevSurvx5c_Beta <-
             lx5_w,
             asfr = c( 0, 0.017, 0.055, 0.057, 0.041, 0.022, 0.007, 0.002 ),
             asfr_15prior = NULL,
-            a0_5 = 1.7,
+            a0_5  = 0.5,
+            a5_5  = 2.0,
+            a10_5 = 2.5,
             q0_5 = NULL,
             q15_45f = NULL,
             date_ref ){
@@ -500,7 +504,8 @@ FertRevSurvx5c_Beta <-
     revSurvTFR <-
       revSurvMainx5_Beta( year,
                           datWomen, lxWomen_std, q15_45f, fertPattern,
-                          datChildren, lxChildren_std, q0_5, a0_5 )
+                          datChildren, lxChildren_std, q0_5,
+                          a0_5, a5_5, a10_5 )
 
 
     return( revSurvTFR )

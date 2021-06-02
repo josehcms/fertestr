@@ -13,7 +13,9 @@ revSurvMainx5_Beta(
   datChildren,
   lxChildren_std,
   q0_5,
-  a0_5
+  a0_5,
+  a5_5,
+  a10_5
 )
 }
 \arguments{
@@ -31,6 +33,12 @@ revSurvMainx5_Beta(
 children}
 
 \item{q0_5}{children mortality probability 3 element vector or single value}
+
+\item{a0_5}{a0_5}
+
+\item{a5_5}{a5_5}
+
+\item{a10_5}{a10_5}
 
 \item{datWoman}{women population data.frame}
 }
