@@ -425,9 +425,10 @@ childSurvProb_x5 <- function( age, lx_std, alphaChildren, a0_5 ){
 
 
   Lc = c( ( lt_est$Px0_4[ lt_est$age == 0 ] ),
-          ( lt_est$Px5_9[ lt_est$age == 0 ] * lt_est$Px0_4[ lt_est$age == 5 ] ),
+          ( lt_est$Px5_9[ lt_est$age == 0 ] *
+              lt_est$Px0_4[ lt_est$age == 5 ] ),
           ( lt_est$Px10_14[ lt_est$age == 0 ] *
-              0.5 * ( lt_est$Px0_4[ lt_est$age == 5 ] + lt_est$Px5_9[ lt_est$age == 5 ] ) *
+              lt_est$Px5_9[ lt_est$age == 5 ] *
               lt_est$Px0_4[ lt_est$age == 10 ] )
           )
 
