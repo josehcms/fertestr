@@ -48,6 +48,10 @@ get_location_code <- function( location_names=NULL){
 
   location_code_list <- NULL
   invalid_names <- NULL
+
+  # TR just to give a local binding...
+  location_name <- NULL
+
   for( name in location_names ){
     if( !( name %in% locs_list$location_name ) ){
       invalid_names <- c( invalid_names, name )
