@@ -1,6 +1,6 @@
 Package: fertestr
 Title: Package for Fertility and Parity Estimation
-Version: 0.0.9
+Version: 0.10.00
 Authors@R: c(
     person(given = "José H",
            family = "Monteiro da Silva",
@@ -28,7 +28,7 @@ Imports:
     MortalityLaws,
     MortalityEstimate (>= 0.9.10),
     ungroup,
-    DemoToolsData (>= 0.0.0.9000)
+    DemoToolsData (>= 0.1.5)
 Remotes: 
     mpascariu/MortalityEstimate,
     timriffe/DemoToolsData,
