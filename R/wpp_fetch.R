@@ -89,10 +89,13 @@ get_location_code <- function( location_names=NULL){
 #'
 
 get_location_name <- function( location_code ){
+ .lc <- location_code
+ location_code <- NULL
+
   locs_list <- locs_avail()
+
   location_name <-
-    as.character(
-      locs_list[ locs_list$location_code %in% location_code, ]$location_name )
+    as.character( subset(locs_list, location_code == .lc)$location_name)
   return( location_name )
 }
 
@@ -435,6 +438,8 @@ FetchPopWpp2019 <-
             ages = 0:100,
             age_interval = 1,
             sex = 'total' ){
+    LocID <- NULL
+    AgeStart <- NULL
 
     popWpp2019x1 <-
       load_named_data( 'WPP2019_pop', 'DemoToolsData' )
@@ -468,36 +473,27 @@ FetchPopWpp2019 <-
       year_range <-
         sort(
           unique(
-            popWpp2019x1[ popWpp2019x1$LocID == location_code,]$Year
+            subset(popWpp2019x1, LocID == location_code)$Year
             )
         )
 
       if( sex_code == 'm' ){
-
+        # TR: flagging all subset actions such as this
         pop_aux_df <-
-          popWpp2019x1[ popWpp2019x1$LocID == location_code &
-                          popWpp2019x1$AgeStart %in% ages,
-                        c( 'LocID', 'Year', 'AgeStart', 'PopMale' ) ]
-
+          subset(popWpp2019x1, LocID == location_code & AgeStart %in% ages)[,c( 'LocID', 'Year', 'AgeStart', 'PopMale' ) ]
         names( pop_aux_df ) <-
           c( 'LocID', 'Year', 'AgeStart', 'Pop' )
 
       } else if( sex_code == 'f' ){
 
         pop_aux_df <-
-          popWpp2019x1[ popWpp2019x1$LocID == location_code &
-                          popWpp2019x1$AgeStart %in% ages,
-                        c( 'LocID', 'Year', 'AgeStart', 'PopFemale' ) ]
-
+          subset(popWpp2019x1,LocID == location_code & AgeStart %in% ages)[,c( 'LocID', 'Year', 'AgeStart', 'PopFemale' ) ]
         names( pop_aux_df ) <-
           c( 'LocID', 'Year', 'AgeStart', 'Pop' )
 
       } else{
-
         pop_aux_df <-
-          popWpp2019x1[ popWpp2019x1$LocID == location_code &
-                          popWpp2019x1$AgeStart %in% ages,
-                        c( 'LocID', 'Year', 'AgeStart', 'PopMale', 'PopFemale' ) ]
+          subset(popWpp2019x1,LocID == location_code & AgeStart %in% ages)[,c( 'LocID', 'Year', 'AgeStart', 'PopMale', 'PopFemale' ) ]
 
         pop_aux_df$Pop <- pop_aux_df$PopMale + pop_aux_df$PopFemale
 
