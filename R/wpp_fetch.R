@@ -55,7 +55,7 @@ get_location_code <- function( location_names=NULL){
     else{
       location_code_list <-
         c( location_code_list,
-           locs_list[locs_list$location_name == name,]$location_code )
+      subset(locs_list, location_name == name)$location_code)
     }
   }
 
