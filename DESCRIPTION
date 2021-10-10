@@ -1,6 +1,6 @@
 Package: fertestr
 Title: Package for Fertility and Parity Estimation
-Version: 0.0.6
+Version: 0.10.00
 Authors@R: c(
     person(given = "José H",
            family = "Monteiro da Silva",
@@ -11,7 +11,11 @@ Authors@R: c(
            family = "Lima",
            role = c("aut"),
            email = "everton.emanuel@gmail.com",
-           comment = c(ORCID = "0000-0001-6275-9854"))
+           comment = c(ORCID = "0000-0001-6275-9854")),
+    person(given = "Tim", 
+           family = "Riffe", 
+           role = c("ctb"), 
+           comment = c(ORCID = "0000-0002-2673-4622"))
            )
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
@@ -24,7 +28,7 @@ Imports:
     MortalityLaws,
     MortalityEstimate (>= 0.9.10),
     ungroup,
-    DemoToolsData (>= 0.0.0.9000)
+    DemoToolsData (>= 0.1.5)
 Remotes: 
     mpascariu/MortalityEstimate,
     timriffe/DemoToolsData,
