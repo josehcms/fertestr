@@ -28,6 +28,7 @@ owcm_adjust_unmatch =
     flag_match = nrow( owc[ owc$ages_w == 99, ] ) == 0
 
     if( flag_match ){
+      owc_adj = owc[ owc$ages_w != 99, ]
       owc_adj$k = 1
       owc_adj$adjcounts_c = owc_adj$counts_c * owc_adj$k
 
@@ -191,6 +192,9 @@ own_children =
         )
     }
 
+    # order
+    owc_adj = owc_adj[ order( owc_adj$year, owc_adj$ages_m, owc_adj$ages_w, owc_adj$ages_c ), ]
+
     ## 4) reverse survival of children to estimate back births
     owc_adj$B_temp = owc_adj$adjcounts_c / owc_adj$Lx_c
 
@@ -227,14 +231,3 @@ own_children =
   }
 
 
-chn2017_owcm
-
-
-col1978_owcm
-col1978_owcm_lt
-
-estim_owcm_col1978 = own_children( owc = col1978_owcm, owc_lt = col1978_owcm_lt )
-tapply( estim_owcm_col1978$asfr, estim_owcm_col1978$ref_year, sum )
-
-estim_owcm_chn2017 = own_children( owc = chn2017_owcm, owc_lt = chn2017_owcm_lt )
-tapply( estim_owcm_chn2017$asfr, estim_owcm_chn2017$ref_year, sum )
