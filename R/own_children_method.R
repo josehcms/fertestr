@@ -80,7 +80,6 @@ lagfunc = function( x ){
 #'
 #' Estimate age-specific fertility rates (single age) using the own-children method
 #'
-
 #' @param owc a data.frame with the information on matched children and mothers by age of children and age of mother with 5 columns:
 #' `source_year` - reference year of data source/data collection;
 #' `ages_w`   - women's ages at the interview year;
@@ -229,5 +228,3 @@ own_children =
     return( res )
 
   }
-
-
